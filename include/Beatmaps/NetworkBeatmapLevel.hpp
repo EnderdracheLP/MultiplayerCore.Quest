@@ -31,10 +31,10 @@ ___DECLARE_TYPE_WRAPPER_INHERITANCE(MultiplayerCore::Beatmaps, NetworkBeatmapLev
 	DECLARE_INSTANCE_FIELD(Il2CppString*, characteristic);
 	DECLARE_INSTANCE_FIELD(uint, difficulty);
 
-	DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::FindMethodUnsafe(classof(LiteNetLib::Utils::INetSerializable*), "Serialize", 1), LiteNetLib::Utils::NetDataWriter* writer);
-	DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::FindMethodUnsafe(classof(LiteNetLib::Utils::INetSerializable*), "Deserialize", 1), LiteNetLib::Utils::NetDataReader* reader);
-	DECLARE_OVERRIDE_METHOD(void, Release, il2cpp_utils::FindMethodUnsafe(classof(GlobalNamespace::IPoolablePacket*), "Release", 0));
-	public:
-	LiteNetLib::Utils::INetSerializable* ToINetSerializable() noexcept { return reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(this); }
+	//DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::FindMethodUnsafe(classof(LiteNetLib::Utils::INetSerializable*), "Serialize", 1), LiteNetLib::Utils::NetDataWriter* writer);
+	//DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::FindMethodUnsafe(classof(LiteNetLib::Utils::INetSerializable*), "Deserialize", 1), LiteNetLib::Utils::NetDataReader* reader);
+	//DECLARE_OVERRIDE_METHOD(void, Release, il2cpp_utils::FindMethodUnsafe(classof(GlobalNamespace::IPoolablePacket*), "Release", 0));
+	//public:
+	//LiteNetLib::Utils::INetSerializable* ToINetSerializable() noexcept { return reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(this); }
 )
 #undef PBPInterfaces

@@ -12,9 +12,9 @@ using namespace UnityEngine::UI;
 
 #include "questui/shared/BeatSaberUI.hpp"
 
-DEFINE_TYPE(MultiQuestensions::UI, CenterScreenLoading);
+DEFINE_TYPE(MultiplayerCore::UI, CenterScreenLoading);
 
-namespace MultiQuestensions::UI{
+namespace MultiplayerCore::UI{
 
     CenterScreenLoading* CenterScreenLoading::instance;
     int CenterScreenLoading::playersReady;

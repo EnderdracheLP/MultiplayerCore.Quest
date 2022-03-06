@@ -5,13 +5,15 @@
     "name": "MultiplayerCore",
     "id": "MultiplayerCore",
     "version": "0.1.0",
-    "url": "",
-    "additionalData": {}
+    "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
+    "additionalData": {
+      "overrideSoName": "libMultiplayerCore.so"
+    }
   },
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "^2.3.2",
+      "versionRange": "^3.6.7",
       "additionalData": {
         "extraFiles": [
           "src/inline-hook"
@@ -20,32 +22,27 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.14.0",
+      "versionRange": "^0.19.3",
       "additionalData": {}
     },
     {
       "id": "custom-types",
-      "versionRange": "=0.12.7",
+      "versionRange": "^0.15.6",
       "additionalData": {}
     },
     {
       "id": "songloader",
-      "versionRange": "^0.7.1",
+      "versionRange": "^0.8.3",
       "additionalData": {}
     },
     {
       "id": "questui",
-      "versionRange": "^0.11.1",
+      "versionRange": "^0.13.1",
       "additionalData": {}
     },
     {
       "id": "songdownloader",
-      "versionRange": "^0.3.2",
-      "additionalData": {}
-    },
-    {
-      "id": "libil2cpp",
-      "versionRange": "^0.2.3",
+      "versionRange": "^0.4.0",
       "additionalData": {}
     },
     {

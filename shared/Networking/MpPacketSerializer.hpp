@@ -31,7 +31,7 @@ DECLARE_CLASS_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, "Syste
 
     DECLARE_INSTANCE_FIELD(MultiplayerSessionManager*, _sessionManager)
 
-    DECLARE_CTOR(Construct);
+    DECLARE_CTOR(Construct, GlobalNamespace::MultiplayerSessionManager* sessionManager);
     DECLARE_DTOR(Deconstruct);
 
     private:

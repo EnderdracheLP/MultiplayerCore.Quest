@@ -19,6 +19,7 @@
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
 #include "songdownloader/shared/BeatSaverAPI.hpp"
 using namespace MultiQuestensions;
+using namespace MultiplayerCore;
 using namespace GlobalNamespace;
 
 // Handles a PreviewBeatmapPacket used to transmit data about a custom song.

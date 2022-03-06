@@ -70,7 +70,7 @@ Il2CppString* LevelIdToHash(Il2CppString* levelId) {
 
 
 
-namespace MultiQuestensions {
+namespace MultiplayerCore {
     // Plugin setup stuff
     GlobalNamespace::MultiplayerSessionManager* sessionManager;
     GlobalNamespace::LobbyPlayersDataModel* lobbyPlayersDataModel;

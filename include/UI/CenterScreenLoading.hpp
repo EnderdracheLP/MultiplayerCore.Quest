@@ -4,7 +4,7 @@
 #include "GlobalNamespace/LoadingControl.hpp"
 #include "GlobalNamespace/CenterStageScreenController.hpp"
 
-DECLARE_CLASS_CODEGEN(MultiQuestensions::UI, CenterScreenLoading, UnityEngine::MonoBehaviour,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, CenterScreenLoading, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(GlobalNamespace::LoadingControl*, loadingControl);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::CenterStageScreenController*, screenController);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::LobbyGameStateController*, gameStateController);
