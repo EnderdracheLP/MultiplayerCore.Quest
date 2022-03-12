@@ -4,55 +4,36 @@
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel);
 
-namespace MultiQuestensions::Beatmaps {
-
-	//void PreviewBeatmapPacket::New_ctor() {}
-	//PreviewBeatmapPacket::PreviewBeatmapPacket() {}
-	void PreviewBeatmapPacket::New() {}
-
-	void PreviewBeatmapPacket::Release() {
-		getLogger().debug("NetworkBeatmapLevel::Release");
-		GlobalNamespace::ThreadStaticPacketPool_1<PreviewBeatmapPacket*>::get_pool()->Release(this);
+namespace MultiplayerCore::Beatmaps {
+	void NetworkBeatmapLevel::New(Packets::MpBeatmapPacket* packet) {
+		levelHash = packet->levelHash;
+		_packet = packet;
 	}
 
-	void PreviewBeatmapPacket::Serialize(LiteNetLib::Utils::NetDataWriter* writer) {
-		getLogger().debug("NetworkBeatmapLevel::Serialize");
+#pragma region All the pain in form of getter functions
 
-		writer->Put(levelId);
-		writer->Put(levelHash);
-		writer->Put(songName);
-		writer->Put(songSubName);
-		writer->Put(songAuthorName);
-		writer->Put(levelAuthorName);
-		writer->Put(beatsPerMinute);
-		writer->Put(songDuration);
-
-		writer->Put(characteristic);
-		GlobalNamespace::VarIntExtensions::PutVarUInt(writer, difficulty);
-		//writer->Put(difficulty);
+	StringW NetworkBeatmapLevel::get_songName() {
+		return _packet->songName;
 	}
 
-	void PreviewBeatmapPacket::Deserialize(LiteNetLib::Utils::NetDataReader* reader) {
-		getLogger().debug("NetworkBeatmapLevel::Deserialize");
-
-		levelId = reader->GetString();
-		//getLogger().debug("levelID: %s", to_utf8(csstrtostr(levelId)).c_str());
-		levelHash = reader->GetString();
-		//getLogger().debug("levelHash: %s", to_utf8(csstrtostr(levelHash)).c_str());
-		songName = reader->GetString();
-		songSubName = reader->GetString();
-		songAuthorName = reader->GetString();
-		levelAuthorName = reader->GetString();
-		//getLogger().debug("songName: %s\n songSubName: %s\n songAuthorName: %s\n levelAuthorName: %s",
-		//	to_utf8(csstrtostr(songName)).c_str(),
-		//	to_utf8(csstrtostr(songSubName)).c_str(),
-		//	to_utf8(csstrtostr(songAuthorName)).c_str(),
-		//	to_utf8(csstrtostr(levelAuthorName)).c_str());
-		beatsPerMinute = reader->GetFloat();
-		songDuration = reader->GetFloat();
-
-		characteristic = reader->GetString();
-		difficulty = GlobalNamespace::VarIntExtensions::GetVarUInt(reader);
-		getLogger().debug("Deserialize NetworkBeatmapLevel done");
+	StringW NetworkBeatmapLevel::get_songSubName() {
+		return _packet->songSubName;
 	}
+
+	StringW NetworkBeatmapLevel::get_songAuthorName() {
+		return _packet->songAuthorName;
+	}
+
+	StringW NetworkBeatmapLevel::get_levelAuthorName() {
+		return _packet->levelAuthorName;
+	}
+
+	float NetworkBeatmapLevel::get_beatsPerMinute() {
+		return _packet->beatsPerMinute;
+	}
+
+	float NetworkBeatmapLevel::get_songDuration() {
+		return _packet->songDuration;
+	}
+#pragma endregion
 }
