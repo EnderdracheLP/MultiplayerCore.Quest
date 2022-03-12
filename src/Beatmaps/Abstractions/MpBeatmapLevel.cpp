@@ -17,52 +17,57 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
 
 #pragma region All the pain in form of getter functions
 
-	Il2CppString* MpBeatmapLevel::get_levelID() {
-		return levelID;
+	StringW MpBeatmapLevel::get_levelHash() {
+		return StringW();
 	}
 
-	Il2CppString* MpBeatmapLevel::get_songName() {
-		return songName;
+
+	StringW MpBeatmapLevel::get_levelID() {
+		return StringW("custom_level_") + get_levelHash();
 	}
 
-	Il2CppString* MpBeatmapLevel::get_songSubName() {
-		return songSubName;
+	StringW MpBeatmapLevel::get_songName() {
+		return StringW();
 	}
 
-	Il2CppString* MpBeatmapLevel::get_songAuthorName() {
-		return songAuthorName;
+	StringW MpBeatmapLevel::get_songSubName() {
+		return StringW();
 	}
 
-	Il2CppString* MpBeatmapLevel::get_levelAuthorName() {
-		return levelAuthorName;
+	StringW MpBeatmapLevel::get_songAuthorName() {
+		return StringW();
+	}
+
+	StringW MpBeatmapLevel::get_levelAuthorName() {
+		return StringW();
 	}
 
 	float MpBeatmapLevel::get_beatsPerMinute() {
-		return beatsPerMinute;
+		return 0;
 	}
 
 	float MpBeatmapLevel::get_songDuration() {
-		return songDuration;
+		return 0;
 	}
 
 	float MpBeatmapLevel::get_songTimeOffset() {
-		return songTimeOffset;
+		return 0;
 	}
 
 	float MpBeatmapLevel::get_previewDuration() {
-		return previewDuration;
+		return 0;
 	}
 
 	float MpBeatmapLevel::get_previewStartTime() {
-		return previewStartTime;
+		return 0;
 	}
 
 	float MpBeatmapLevel::get_shuffle() {
-		return shuffle;
+		return 0;
 	}
 
 	float MpBeatmapLevel::get_shufflePeriod() {
-		return shufflePeriod;
+		return 0;
 	}
 
 	GlobalNamespace::EnvironmentInfoSO* MpBeatmapLevel::get_allDirectionsEnvironmentInfo() {
@@ -73,8 +78,8 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
 		return nullptr;
 	}
 
-	Array<GlobalNamespace::PreviewDifficultyBeatmapSet*>* MpBeatmapLevel::get_previewDifficultyBeatmapSets() {
-		return previewDifficultyBeatmapSets;
+	ArrayW<GlobalNamespace::PreviewDifficultyBeatmapSet*> MpBeatmapLevel::get_previewDifficultyBeatmapSets() {
+		return ArrayW<GlobalNamespace::PreviewDifficultyBeatmapSet*>();
 	}
 
 #pragma endregion
