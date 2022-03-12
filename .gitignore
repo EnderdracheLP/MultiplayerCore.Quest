@@ -49,7 +49,6 @@ out/
 [Oo]bj/
 [Oo]bjs/
 *.zip
-*.txt
 extern/
 Android.mk.backup
 qpm.shared.json
@@ -59,3 +58,5 @@ log_timestamp
 # Quest modding stuff
 *.qmod
 /.vs
+/build/arm64-v8a-Debug
+/.idea/.idea.MultiplayerCore.Quest.dir/.idea

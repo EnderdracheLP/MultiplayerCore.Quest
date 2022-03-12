@@ -1,7 +1,9 @@
 #pragma once
-#include "Extensions/ExtendedPlayer.hpp"
+//#include "Extensions/ExtendedPlayer.hpp"
+#include "Players/MpPlayerData.hpp"
 
-extern SafePtr<MultiQuestensions::Extensions::ExtendedPlayer> localExtendedPlayer;
-extern std::map<std::string, SafePtr<MultiQuestensions::Extensions::ExtendedPlayer>> _extendedPlayers;
+extern SafePtr<MultiplayerCore::Players::MpPlayerData> localPlayer;
+//extern SafePtr<MultiQuestensions::Extensions::ExtendedPlayer> localExtendedPlayer;
+//extern std::map<std::string, SafePtr<MultiQuestensions::Extensions::ExtendedPlayer>> _extendedPlayers;
 
 static void HandlePreviewBeatmapPacket(MultiQuestensions::Beatmaps::PreviewBeatmapPacket* packet, GlobalNamespace::IConnectedPlayer* player);

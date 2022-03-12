@@ -198,11 +198,12 @@ MAKE_HOOK_FIND_VERBOSE(SessionManager_StartSession, il2cpp_utils::FindMethodUnsa
     SessionManager_StartSession(self, connectedPlayerManager);
     getLogger().debug("MultiplayerSessionManager.StartSession, creating localExtendedPlayerPacket");
     //try {
-        localExtendedPlayer = Extensions::ExtendedPlayer::CS_ctor(self->get_localPlayer());
+        
+        //localExtendedPlayer = Extensions::ExtendedPlayer::CS_ctor(self->get_localPlayer());
         //localExtendedPlayerSPTR = localExtendedPlayer;
 
-        if (!UnityEngine::ColorUtility::TryParseHtmlString(il2cpp_utils::newcsstr(getConfig().config["color"].GetString()), localExtendedPlayer->playerColor))
-            localExtendedPlayer->playerColor = UnityEngine::Color(0.031f, 0.752f, 1.0f, 1.0f);
+        //if (!UnityEngine::ColorUtility::TryParseHtmlString(il2cpp_utils::newcsstr(getConfig().config["color"].GetString()), localExtendedPlayer->playerColor))
+        //    localExtendedPlayer->playerColor = UnityEngine::Color(0.031f, 0.752f, 1.0f, 1.0f);
 
         static auto localNetworkPlayerModel = UnityEngine::Resources::FindObjectsOfTypeAll<LocalNetworkPlayerModel*>().get(0);
         static auto UserInfoTask = localNetworkPlayerModel->dyn__platformUserModel()->GetUserInfo();
