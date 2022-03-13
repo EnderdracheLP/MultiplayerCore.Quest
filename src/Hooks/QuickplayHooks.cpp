@@ -34,7 +34,7 @@ using MSQD_QPSPO_LocalizedCustomPackName = MasterServerQuickPlaySetupData::Quick
 
 bool gotSongPackOverrides = false;
 
-namespace MultiQuestensions {
+namespace MultiplayerCore {
     // Check for our custom packs
     MAKE_HOOK_MATCH(QuickPlaySongPacksDropdown_LazyInit, &QuickPlaySongPacksDropdown::LazyInit, void, QuickPlaySongPacksDropdown* self) {
         gotSongPackOverrides = (self->dyn__quickPlaySongPacksOverride() != nullptr);
@@ -47,7 +47,7 @@ namespace MultiQuestensions {
             self->dyn__songPackMaskModel()->ToSongPackMask(
                 levelPackName
             ).Contains(
-                BloomFilterUtil::ToBloomFilter<BitMask128>(getCustomLevelSongPackMaskStr(), 2, 13))
+                getCustomLevelSongPackMaskStr())
             ) {
             self->dyn__simpleDialogPromptViewController()->Init(
                 il2cpp_utils::newcsstr("Custom Song Quickplay"),

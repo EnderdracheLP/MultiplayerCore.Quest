@@ -13,7 +13,7 @@ using namespace UnityEngine;
 using namespace UnityEngine::Playables;
 using namespace UnityEngine::Timeline;
 
-namespace MultiQuestensions {
+namespace MultiplayerCore {
 
     int targetIterations = 0;
 

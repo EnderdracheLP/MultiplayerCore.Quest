@@ -51,7 +51,7 @@
 
 #include "songloader/shared/API.hpp"
 
-namespace MultiQuestensions {
+namespace MultiplayerCore {
 
     constexpr bool IsCustomLevel(const std::string& levelId) {
         return levelId.starts_with(RuntimeSongLoader::API::GetCustomLevelsPrefix());
@@ -59,10 +59,10 @@ namespace MultiQuestensions {
 
     extern bool HasSong(const std::string& levelId);
 
-    extern Il2CppString* getModdedStateStr();
-    extern Il2CppString* getMEStateStr();
-    extern Il2CppString* getNEStateStr();
-    extern Il2CppString* getChromaStateStr();
+    extern StringW getModdedStateStr();
+    extern StringW getMEStateStr();
+    extern StringW getNEStateStr();
+    extern StringW getChromaStateStr();
 
     extern GlobalNamespace::LobbyGameStateController* lobbyGameStateController;
 

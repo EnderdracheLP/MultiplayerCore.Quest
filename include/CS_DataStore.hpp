@@ -7,7 +7,7 @@
 #include "GlobalNamespace/IDifficultyBeatmap.hpp"
 #include "GlobalNamespace/GameplayModifiers.hpp"
 
-DECLARE_CLASS_CODEGEN(MultiQuestensions, DataStore, Il2CppObject, 
+DECLARE_CLASS_CODEGEN(MultiplayerCore, DataStore, Il2CppObject, 
 
     DECLARE_CTOR(New, GlobalNamespace::IPreviewBeatmapLevel*, GlobalNamespace::BeatmapCharacteristicSO*, GlobalNamespace::IDifficultyBeatmap*, GlobalNamespace::GameplayModifiers*);
     

@@ -1,7 +1,6 @@
 #pragma once
 #include "main.hpp"
 
-#include "Beatmaps/PreviewBeatmapPacket.hpp"
 #include "GlobalNamespace/ThreadStaticPacketPool_1.hpp"
 #include "GlobalNamespace/PacketPool_1.hpp"
 #include "LiteNetLib/Utils/NetDataReader.hpp"
@@ -9,7 +8,7 @@
 template <class T>
 using PacketCallback = void (*)(T, GlobalNamespace::IConnectedPlayer*);
 
-namespace MultiQuestensions {
+namespace MultiplayerCore {
 	class CallbackBase {
 	public:
 		virtual ~CallbackBase() {};

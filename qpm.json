@@ -49,6 +49,11 @@
       "id": "cpp-semver",
       "versionRange": "*",
       "additionalData": {}
+    },
+    {
+      "id": "modloader",
+      "versionRange": "^1.2.3",
+      "additionalData": {}
     }
   ],
   "additionalData": {}

@@ -1,7 +1,9 @@
 #pragma once
 #include "main.hpp"
+#include "SongLoader/shared/API.hpp"
 
-class Utilities {
+namespace MultiplayerCore {
+    class Utilities {
     public:
         static inline std::string GetHash(const std::string& levelId) {
             return levelId.substr(RuntimeSongLoader::API::GetCustomLevelsPrefix().length(), levelId.length() - RuntimeSongLoader::API::GetCustomLevelsPrefix().length());
@@ -25,4 +27,5 @@ class Utilities {
             //std::string hash = static_cast<std::string>(levelId).substr(RuntimeSongLoader::API::GetCustomLevelsPrefix().length(), levelId->get_Length() - RuntimeSongLoader::API::GetCustomLevelsPrefix().length())
             //return hash.length() == 40 ? StringW(hash.c_str()) : StringW();
         }
-};
+    };
+}

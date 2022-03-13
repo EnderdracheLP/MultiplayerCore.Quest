@@ -1,9 +1,9 @@
 #include "main.hpp"
 #include "CS_DataStore.hpp"
 
-DEFINE_TYPE(MultiQuestensions, DataStore);
+DEFINE_TYPE(MultiplayerCore, DataStore);
 
-namespace MultiQuestensions {
+namespace MultiplayerCore {
     void DataStore::New(GlobalNamespace::IPreviewBeatmapLevel* previewBeatmap, GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::GameplayModifiers* gameplayModifiers) {
         loadingPreviewBeatmapLevel = previewBeatmap;
         loadingBeatmapCharacteristic = beatmapCharacteristic;
@@ -18,7 +18,7 @@ namespace MultiQuestensions {
     }
 
     DataStore* DataStore::CS_Ctor(GlobalNamespace::IPreviewBeatmapLevel* previewBeatmap, GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::BeatmapDifficulty beatmapDifficulty) {
-        instance = THROW_UNLESS(il2cpp_utils::New<MultiQuestensions::DataStore*, il2cpp_utils::CreationType::Manual>(previewBeatmap, beatmapCharacteristic, difficultyBeatmap, gameplayModifiers));
+        instance = THROW_UNLESS(il2cpp_utils::New<MultiplayerCore::DataStore*, il2cpp_utils::CreationType::Manual>(previewBeatmap, beatmapCharacteristic, difficultyBeatmap, gameplayModifiers));
         instance->loadingBeatmapDifficulty = beatmapDifficulty;
         return instance;
     }

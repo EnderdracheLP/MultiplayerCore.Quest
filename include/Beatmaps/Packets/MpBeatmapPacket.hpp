@@ -4,7 +4,7 @@
 #include "GlobalNamespace/BeatmapDifficulty.hpp"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
 
-DECLARE_CLASS_CODEGEN_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, classof(MultiplayerCore::Networking::Abstractions::MpPacket*), "MultiplayerCore.Beatmaps.Packets",
+DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, MultiplayerCore::Networking::Abstractions::MpPacket, "MultiplayerCore.Beatmaps.Packets",
     DECLARE_INSTANCE_FIELD(StringW, levelHash);
 
     DECLARE_INSTANCE_FIELD(StringW, songName);

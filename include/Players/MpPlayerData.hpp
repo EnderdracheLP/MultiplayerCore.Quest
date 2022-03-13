@@ -14,17 +14,18 @@ namespace MultiplayerCore::Players {
     };
 }
 
-___DECLARE_TYPE_WRAPPER_INHERITANCE(MultiplayerCore::Players, MpPlayerData, Il2CppTypeEnum::IL2CPP_TYPE_CLASS,
-    Il2CppObject, "MultiplayerCore.Players",
-    classof(MultiplayerCore::MpPacket*), 0, nullptr,
+DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Players, MpPlayerData, MultiplayerCore::Networking::Abstractions::MpPacket, "MultiplayerCore.Players",
+//___DECLARE_TYPE_WRAPPER_INHERITANCE(MultiplayerCore::Players, MpPlayerData, Il2CppTypeEnum::IL2CPP_TYPE_CLASS,
+//    Il2CppObject, "MultiplayerCore.Players",
+//    classof(MultiplayerCore::MpPacket*), 0, nullptr,
 
-    DECLARE_CTOR(New, StringW platformID, int platform);
+    DECLARE_CTOR(New);
 
-// Player and platform information
-DECLARE_INSTANCE_FIELD(StringW, platformId);
+    // Player and platform information
+    DECLARE_INSTANCE_FIELD(StringW, platformId);
 
-DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::FindMethodUnsafe(classof(MultiplayerCore::Networking::Abstractions::MpPacket*), "Serialize", 1), LiteNetLib::Utils::NetDataWriter* writer);
-DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::FindMethodUnsafe(classof(MultiplayerCore::Networking::Abstractions::MpPacket*), "Deserialize", 1), LiteNetLib::Utils::NetDataReader* reader);
+    DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::FindMethodUnsafe(classof(MultiplayerCore::Networking::Abstractions::MpPacket*), "Serialize", 1), LiteNetLib::Utils::NetDataWriter* writer);
+    DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::FindMethodUnsafe(classof(MultiplayerCore::Networking::Abstractions::MpPacket*), "Deserialize", 1), LiteNetLib::Utils::NetDataReader* reader);
 
     public:
         Platform platform;

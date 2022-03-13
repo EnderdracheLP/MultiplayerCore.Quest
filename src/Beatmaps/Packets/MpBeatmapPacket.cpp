@@ -1,7 +1,11 @@
+#include "main.hpp"
 #include "custom-types/shared/register.hpp"
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "GlobalNamespace/VarIntExtensions.hpp"
 using namespace GlobalNamespace;
+
+#include "Utilities.hpp"
+using namespace MultiplayerCore;
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket);
 
@@ -10,7 +14,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
 	//void PreviewBeatmapPacket::New_ctor() {}
 	//PreviewBeatmapPacket::PreviewBeatmapPacket() {}
 	void MpBeatmapPacket::New(GlobalNamespace::IPreviewBeatmapLevel* preview, StringW characteristic, GlobalNamespace::BeatmapDifficulty difficulty) {
-		levelHash = Utilities.HashForLevelID(preview.levelID);
+		levelHash = Utilities::HashForLevelID(preview->get_levelID());
 		songName = preview->get_songName();
 		songSubName = preview->get_songSubName();
 		songAuthorName = preview->get_songAuthorName();

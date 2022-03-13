@@ -2,7 +2,7 @@
 #include "Utils/CustomData.hpp"
 #include "Utils/SemVerChecker.hpp"
 
-namespace MultiQuestensions::Utils {
+namespace MultiplayerCore::Utils {
     bool HasRequirement(const std::optional<GlobalNamespace::CustomPreviewBeatmapLevel*>& beatmapOpt) {
         using namespace MultiQuestensions::Utils;
         if (beatmapOpt)

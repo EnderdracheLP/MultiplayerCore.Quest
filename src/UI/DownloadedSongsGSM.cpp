@@ -19,6 +19,7 @@ using namespace QuestUI;
 using namespace RuntimeSongLoader::API;
 using namespace HMUI;
 using namespace MultiQuestensions;
+using namespace MultiplayerCore;
 
 
 DEFINE_TYPE(MultiQuestensions::UI, DownloadedSongsGSM);

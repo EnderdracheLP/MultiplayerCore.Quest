@@ -7,10 +7,10 @@ namespace MultiplayerCore::Networking {
 	void MpPacketSerializer::Construct(GlobalNamespace::MultiplayerSessionManager* sessionManager) {
 		getLogger().debug("Constructing MpPacketSerializer");
 		_sessionManager = sessionManager;
-		registeredTypes = std::move(TypeDictionary());
+		//registeredTypes = std::move(TypeDictionary());
 		packetHandlers = std::move(CallbackDictionary());
 		getLogger().debug("Registering MpPacketSerializer");
-		_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
+		_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 	}
 
 	void MpPacketSerializer::Deconstruct() {
@@ -20,14 +20,14 @@ namespace MultiplayerCore::Networking {
 		}
 		packetHandlers.clear();
 		getLogger().debug("Unregistering MpPacketSerializer");
-		_sessionManager->UnregisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
+		_sessionManager->UnregisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 		_sessionManager = nullptr;
 	}
 
 	void MpPacketSerializer::Serialize(LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet) {
-		Il2CppReflectionType* packetType = reinterpret_cast<Il2CppObject*>(packet)->GetType()/*il2cpp_utils::GetSystemType(il2cpp_functions::object_get_class(reinterpret_cast<Il2CppObject*>(packet)))*/;
-		getLogger().debug("Serialize packetType is: %s", to_utf8(csstrtostr(packetType->ToString())).c_str());
-		getLogger().debug("Registered types check: %s", registeredTypes[packetType].c_str());
+		System::Type* packetType = reinterpret_cast<Il2CppObject*>(packet)->GetType()/*il2cpp_utils::GetSystemType(il2cpp_functions::object_get_class(reinterpret_cast<Il2CppObject*>(packet)))*/;
+		getLogger().debug("Serialize packetType is: %s", static_cast<std::string>(packetType->ToString()).c_str());
+		//getLogger().debug("Registered types check: %s", registeredTypes[packetType].c_str());
 		//writer->Put(il2cpp_utils::newcsstr(registeredTypes[packetType])); // TODO: Go back to sending actual PacketType, namespace issue should be fixed
 		writer->Put(packetType->ToString());
 		getLogger().debug("Writer Put");
@@ -79,7 +79,8 @@ namespace MultiplayerCore::Networking {
 	}
 
 	bool MpPacketSerializer::HandlesType(Il2CppReflectionType* type) {
-		return registeredTypes.find(type) != registeredTypes.end();
+		return packetHandlers.find(static_cast<std::string>(type->ToString())) != packetHandlers.end();
+		//return registeredTypes.find(type) != registeredTypes.end();
 		//auto it = registeredTypes.find(type);
 		//if (it != registeredTypes.end()) {
 		//	getLogger().debug("HandlesType: %s", it->second.c_str());
@@ -88,17 +89,17 @@ namespace MultiplayerCore::Networking {
 		//return false;
 	}
 
-	void MpPacketSerializer::UnregisterCallback(std::string identifier) {
-		getLogger().debug("UnregisterCallback called");
+	//void MpPacketSerializer::UnregisterCallback(std::string identifier) {
+	//	getLogger().debug("UnregisterCallback called");
 
-		for (auto it = registeredTypes.begin(); it != registeredTypes.end(); it++) {
-			if (it->second == identifier) registeredTypes.erase(it);
-		}
+	//	//for (auto it = registeredTypes.begin(); it != registeredTypes.end(); it++) {
+	//	//	if (it->second == identifier) registeredTypes.erase(it);
+	//	//}
 
-		auto itr = packetHandlers.find(identifier);
-		if (itr != packetHandlers.end()) {
-			delete itr->second;
-			packetHandlers.erase(itr);
-		}
-	}
+	//	auto itr = packetHandlers.find(identifier);
+	//	if (itr != packetHandlers.end()) {
+	//		delete itr->second;
+	//		packetHandlers.erase(itr);
+	//	}
+	//}
 }

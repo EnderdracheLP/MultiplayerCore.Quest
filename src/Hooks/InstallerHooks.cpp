@@ -10,7 +10,7 @@
 #include "GlobalNamespace/ColorScheme.hpp"
 using namespace GlobalNamespace;
 
-namespace MultiQuestensions {
+namespace MultiplayerCore {
     MAKE_HOOK_MATCH(MultiplayerConnectedPlayerInstaller_InstallBindings, &MultiplayerConnectedPlayerInstaller::InstallBindings, void, MultiplayerConnectedPlayerInstaller* self) {
         //getLogger().debug("LagReducer set to '%s'", getConfig().config["LagReducer"].GetBool() ? "true" : "false");
         //self->dyn__sceneSetupData()->dyn_gameplayModifiers()->dyn__zenMode() |= getConfig().config["LagReducer"].GetBool();

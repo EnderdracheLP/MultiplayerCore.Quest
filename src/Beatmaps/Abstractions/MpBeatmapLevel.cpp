@@ -1,15 +1,23 @@
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
+
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
-#include "System/Threading/Tasks/TaskStatus.hpp"
-#include "UnityEngine/ImageConversion.hpp"
-#include "GlobalNamespace/MediaAsyncLoader.hpp"
 #include "songdownloader/shared/BeatSaverAPI.hpp"
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
+
+#include "System/Threading/Tasks/Task_1.hpp"
+#include "System/Threading/Tasks/TaskStatus.hpp"
+
+#include "UnityEngine/ImageConversion.hpp"
+
+#include "GlobalNamespace/MediaAsyncLoader.hpp"
+
 #include <vector>
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Abstractions, MpBeatmapLevel);
 
 namespace MultiplayerCore::Beatmaps::Abstractions {
+
+	void MpBeatmapLevel::New() {}
 
 	System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* MpBeatmapLevel::GetCoverImageAsync(System::Threading::CancellationToken cancellationToken) {
 		return System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));

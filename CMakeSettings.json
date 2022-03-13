@@ -5,7 +5,7 @@
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
       "inheritEnvironments": [ "linux_arm" ],
-      "buildRoot": "${projectDir}\\build\\${name}",
+      "buildRoot": "${projectDir}\\build",
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeExecutable": "C:\\Program Files\\CMake\\bin\\cmake.exe",
       "cmakeCommandArgs": "",

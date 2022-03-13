@@ -42,7 +42,7 @@ Logger& getLogger();
 // Utilities
 Il2CppString* LevelIdToHash(Il2CppString*);
 
-extern std::string GetHash(const std::string& levelId);
+//extern std::string GetHash(const std::string& levelId);
 
 extern ModInfo modInfo;
 
@@ -52,7 +52,7 @@ extern bool gotSongPackOverrides;
 
 extern std::string missingLevelText;
 
-namespace MultiQuestensions {
+namespace MultiplayerCore {
     extern bool AllPlayersHaveNE();
     extern bool AllPlayersHaveME();
     extern bool AllPlayersHaveChroma();
