@@ -20,6 +20,7 @@
 #include "GlobalNamespace/IConnectedPlayer.hpp"
 #include "GlobalNamespace/ConnectedPlayerManager_ConnectedPlayer.hpp"
 #include "GlobalNamespace/AvatarPoseRestrictions.hpp"
+#include "GlobalNamespace/GameplayServerConfiguration.hpp"
 
 #include "System/Collections/Generic/List_1.hpp"
 
@@ -146,7 +147,7 @@ namespace MultiplayerCore {
         innerCircleRadius = _placeManager->dyn__innerCircleRadius();
         minOuterCircleRadius = _placeManager->dyn__minOuterCircleRadius();
         //getLogger().debug("innerCircleRadius %f, minOuterCircleRadius %f", innerCircleRadius, minOuterCircleRadius);
-        angleBetweenPlayersWithEvenAdjustment = MultiplayerPlayerPlacement::GetAngleBetweenPlayersWithEvenAdjustment(_lobbyStateDataModel->get_maxPartySize(), MultiplayerPlayerLayout::Circle);
+        angleBetweenPlayersWithEvenAdjustment = MultiplayerPlayerPlacement::GetAngleBetweenPlayersWithEvenAdjustment(_lobbyStateDataModel->get_configuration().maxPlayerCount, MultiplayerPlayerLayout::Circle);
         outerCircleRadius = fmax(MultiplayerPlayerPlacement::GetOuterCircleRadius(angleBetweenPlayersWithEvenAdjustment, innerCircleRadius), minOuterCircleRadius);
         //getLogger().debug("angleBetweenPlayersWithEvenAdjustment %f, outerCircleRadius %f", angleBetweenPlayersWithEvenAdjustment, outerCircleRadius);
 

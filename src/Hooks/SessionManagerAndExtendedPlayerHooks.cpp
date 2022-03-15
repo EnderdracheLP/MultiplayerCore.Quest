@@ -17,6 +17,8 @@
 #include "GlobalNamespace/LocalNetworkPlayerModel.hpp"
 #include "UnityEngine/Resources.hpp"
 #include "GlobalNamespace/UserInfo.hpp"
+#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
+#include "GlobalNamespace/MultiplayerSessionManager_SessionType.hpp"
 
 #include "CodegenExtensions/ColorUtility.hpp"
 
@@ -32,7 +34,7 @@ static void HandleMpexBeatmapPacket(Beatmaps::Packets::MpBeatmapPacket* packet, 
     getLogger().debug("Player '%s' selected song '%s'", static_cast<std::string>(player->get_userId()).c_str(), static_cast<std::string>(packet->levelHash).c_str());
     BeatmapCharacteristicSO* characteristic = lobbyPlayersDataModel->dyn__beatmapCharacteristicCollection()->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
     Beatmaps::Abstractions::MpBeatmapLevel* preview = Beatmaps::NetworkBeatmapLevel::New_ctor(packet);
-    lobbyPlayersDataModel->SetPlayerBeatmapLevel(player->get_userId(), reinterpret_cast<IPreviewBeatmapLevel*>(preview), packet->difficulty, characteristic);
+    lobbyPlayersDataModel->SetPlayerBeatmapLevel(player->get_userId(), GlobalNamespace::PreviewDifficultyBeatmap::New_ctor(reinterpret_cast<IPreviewBeatmapLevel*>(preview), characteristic, packet->difficulty));
    // IPreviewBeatmapLevel* localPreview = lobbyPlayersDataModel->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(packet->levelId);
    // MultiQuestensions::Beatmaps::PreviewBeatmapStub* preview;
    // try {
@@ -194,8 +196,8 @@ MAKE_HOOK_MATCH(SessionManagerStart, &MultiplayerSessionManager::Start, void, Mu
     //mpPacketSerializer->RegisterCallback<Extensions::ExtendedPlayerPacket*>("MultiplayerExtensions.Extensions.ExtendedPlayerPacket", HandleExtendedPlayerPacket);
 }
 
-MAKE_HOOK_FIND_VERBOSE(SessionManager_StartSession, il2cpp_utils::FindMethodUnsafe("", "MultiplayerSessionManager", "StartSession", 1), void, MultiplayerSessionManager* self, ConnectedPlayerManager* connectedPlayerManager) {
-    SessionManager_StartSession(self, connectedPlayerManager);
+MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSession, void, MultiplayerSessionManager* self, MultiplayerSessionManager_SessionType sessionType, ConnectedPlayerManager* connectedPlayerManager) {
+    SessionManager_StartSession(self, sessionType, connectedPlayerManager);
     getLogger().debug("MultiplayerSessionManager.StartSession, creating localPlayer");
     //try {
         
@@ -210,8 +212,11 @@ MAKE_HOOK_FIND_VERBOSE(SessionManager_StartSession, il2cpp_utils::FindMethodUnsa
         static auto action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
             auto userInfo = userInfoTask->get_Result();
             if (userInfo) {
-                localPlayer->platformId = userInfo->dyn_platformUserId();
-                localPlayer->platform = (Players::Platform)userInfo->dyn_platform().value;
+                if (!localPlayer) localPlayer = Players::MpPlayerData::Init(userInfo->dyn_platformUserId(), (Players::Platform)userInfo->dyn_platform().value);
+                else {
+                    localPlayer->platformId = userInfo->dyn_platformUserId();
+                    localPlayer->platform = (Players::Platform)userInfo->dyn_platform().value;
+                }
             }
             else getLogger().error("Failed to get local network player!");
             }
@@ -223,8 +228,6 @@ MAKE_HOOK_FIND_VERBOSE(SessionManager_StartSession, il2cpp_utils::FindMethodUnsa
         self->SetLocalPlayerState(getMEStateStr(), MatchesVersion("MappingExtensions", "*"));
         self->SetLocalPlayerState(getNEStateStr(), MatchesVersion("NoodleExtensions", "*"));
         self->SetLocalPlayerState(getChromaStateStr(), MatchesVersion(ChromaID, ChromaVersionRange));
-        // TODO: Do this check correctly once Chroma got an Update for Multiplayer
-
     //}
     //catch (const std::runtime_error& e) {
     //    getLogger().error("%s", e.what());

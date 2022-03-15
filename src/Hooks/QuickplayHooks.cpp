@@ -2,11 +2,11 @@
 #include "Hooks/Hooks.hpp"
 #include "GlobalFields.hpp"
 
-#include "GlobalNamespace/MasterServerQuickPlaySetupData_QuickPlaySongPacksOverride_PredefinedPack.hpp"
-#include "GlobalNamespace/MasterServerQuickPlaySetupData_QuickPlaySongPacksOverride_LocalizedCustomPack.hpp"
-#include "GlobalNamespace/MasterServerQuickPlaySetupData_QuickPlaySongPacksOverride_LocalizedCustomPackName.hpp"
-#include "GlobalNamespace/MasterServerQuickPlaySetupData_QuickPlaySongPacksOverride.hpp"
-#include "GlobalNamespace/MasterServerQuickPlaySetupData.hpp"
+#include "GlobalNamespace/QuickPlaySetupData_QuickPlaySongPacksOverride_PredefinedPack.hpp"
+#include "GlobalNamespace/QuickPlaySetupData_QuickPlaySongPacksOverride_LocalizedCustomPack.hpp"
+#include "GlobalNamespace/QuickPlaySetupData_QuickPlaySongPacksOverride_LocalizedCustomPackName.hpp"
+#include "GlobalNamespace/QuickPlaySetupData_QuickPlaySongPacksOverride.hpp"
+#include "GlobalNamespace/QuickPlaySetupData.hpp"
 
 #include "CodegenExtensions/TempBloomFilterUtil.hpp"
 
@@ -28,9 +28,9 @@
 
 using namespace GlobalNamespace;
 
-using MSQSD_QPSPO_PredefinedPack = MasterServerQuickPlaySetupData::QuickPlaySongPacksOverride::PredefinedPack;
-using MSQSD_QPSPO_LocalizedCustomPack = MasterServerQuickPlaySetupData::QuickPlaySongPacksOverride::LocalizedCustomPack;
-using MSQD_QPSPO_LocalizedCustomPackName = MasterServerQuickPlaySetupData::QuickPlaySongPacksOverride::LocalizedCustomPackName;
+using MSQSD_QPSPO_PredefinedPack = QuickPlaySetupData::QuickPlaySongPacksOverride::PredefinedPack;
+using MSQSD_QPSPO_LocalizedCustomPack = QuickPlaySetupData::QuickPlaySongPacksOverride::LocalizedCustomPack;
+using MSQD_QPSPO_LocalizedCustomPackName = QuickPlaySetupData::QuickPlaySongPacksOverride::LocalizedCustomPackName;
 
 bool gotSongPackOverrides = false;
 
@@ -73,21 +73,21 @@ namespace MultiplayerCore {
         } else MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish(self, success);
     }
 
-    //MAKE_HOOK_MATCH(MasterServerQuickPlaySetupModel_GetQuickPlaySetupInternal, &MasterServerQuickPlaySetupModel::GetQuickPlaySetupInternal, System::Threading::Tasks::Task_1<GlobalNamespace::MasterServerQuickPlaySetupData*>*, MasterServerQuickPlaySetupModel* self) {
+    //MAKE_HOOK_MATCH(MasterServerQuickPlaySetupModel_GetQuickPlaySetupInternal, &MasterServerQuickPlaySetupModel::GetQuickPlaySetupInternal, System::Threading::Tasks::Task_1<GlobalNamespace::QuickPlaySetupData*>*, MasterServerQuickPlaySetupModel* self) {
     //    getLogger().debug("MasterServerQuickPlaySetupModel::GetQuickPlaySetupInternal");
-    //    using T1_MasterServerQuickplaySetupData = System::Threading::Tasks::Task_1<GlobalNamespace::MasterServerQuickPlaySetupData*>*;
+    //    using T1_MasterServerQuickplaySetupData = System::Threading::Tasks::Task_1<GlobalNamespace::QuickPlaySetupData*>*;
     //    T1_MasterServerQuickplaySetupData result = MasterServerQuickPlaySetupModel_GetQuickPlaySetupInternal(self);
     //    auto action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void()>)[result] {
-    //        MasterServerQuickPlaySetupData* data = result->get_ResultOnSuccess();
+    //        QuickPlaySetupData* data = result->get_ResultOnSuccess();
     //        if (data) {
-    //            MasterServerQuickPlaySetupData::QuickPlaySongPacksOverride* overrides = data->dyn_quickPlayAvailablePacksOverride();
+    //            QuickPlaySetupData::QuickPlaySongPacksOverride* overrides = data->dyn_quickPlayAvailablePacksOverride();
     //            getLogger().debug("MasterServerQuickplaySetupData: hasOverride: '%s', Check _quickPlayAvailablePacksOverride Pointer: '%p'", data->get_hasOverride() ? "true" : "false", overrides);
-    //            using PredefinedPack = MasterServerQuickPlaySetupData::QuickPlaySongPacksOverride::PredefinedPack;
+    //            using PredefinedPack = QuickPlaySetupData::QuickPlaySongPacksOverride::PredefinedPack;
     //            for (int i = 0; i < overrides->dyn_predefinedPackIds()->get_Count(); i++) {
     //                PredefinedPack* pack = overrides->dyn_predefinedPackIds()->get_Item(i);
     //                getLogger().debug("predefinedPackIds: order: '%d', packId: '%s'", pack->dyn_order(), to_utf8(csstrtostr(pack->dyn_packId())).c_str());
     //            }
-    //            using LocalizedCustomPack = MasterServerQuickPlaySetupData::QuickPlaySongPacksOverride::LocalizedCustomPack;
+    //            using LocalizedCustomPack = QuickPlaySetupData::QuickPlaySongPacksOverride::LocalizedCustomPack;
     //            for (int i = 0; i < overrides->dyn_localizedCustomPacks()->get_Count(); i++) {
     //                LocalizedCustomPack* pack = overrides->dyn_localizedCustomPacks()->get_Item(i);
     //                getLogger().debug("predefinedPackIds: order: '%d', serializedName: '%s'", pack->dyn_order(), to_utf8(csstrtostr(pack->dyn_serializedName())).c_str());

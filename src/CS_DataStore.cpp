@@ -4,11 +4,9 @@
 DEFINE_TYPE(MultiplayerCore, DataStore);
 
 namespace MultiplayerCore {
-    void DataStore::New(GlobalNamespace::IPreviewBeatmapLevel* previewBeatmap, GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::GameplayModifiers* gameplayModifiers) {
-        loadingPreviewBeatmapLevel = previewBeatmap;
-        loadingBeatmapCharacteristic = beatmapCharacteristic;
+    void DataStore::New(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap) {
+        loadingGameplaySetupData = gameplaySetupData;
         loadingDifficultyBeatmap = difficultyBeatmap;
-        loadingGameplayModifiers = gameplayModifiers;
     }
 
     DataStore* DataStore::instance;
@@ -17,19 +15,15 @@ namespace MultiplayerCore {
         return instance;
     }
 
-    DataStore* DataStore::CS_Ctor(GlobalNamespace::IPreviewBeatmapLevel* previewBeatmap, GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::BeatmapDifficulty beatmapDifficulty) {
-        instance = THROW_UNLESS(il2cpp_utils::New<MultiplayerCore::DataStore*, il2cpp_utils::CreationType::Manual>(previewBeatmap, beatmapCharacteristic, difficultyBeatmap, gameplayModifiers));
-        instance->loadingBeatmapDifficulty = beatmapDifficulty;
+    DataStore* DataStore::CS_Ctor(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap) {
+        instance = THROW_UNLESS(il2cpp_utils::New<MultiplayerCore::DataStore*, il2cpp_utils::CreationType::Manual>(gameplaySetupData, difficultyBeatmap));
         return instance;
     }
 
     void DataStore::Clear() {
         if (instance) {
-            instance->loadingPreviewBeatmapLevel = nullptr;
-            instance->loadingBeatmapCharacteristic = nullptr;
+            instance->loadingGameplaySetupData = nullptr;
             instance->loadingDifficultyBeatmap = nullptr;
-            instance->loadingGameplayModifiers = nullptr;
-            instance->loadingBeatmapDifficulty = std::nullopt;
         }
     }
 }

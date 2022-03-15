@@ -21,7 +21,7 @@
 using CallbackDictionary = std::map<std::string, MultiplayerCore::CallbackBase*>;
 //using TypeDictionary = std::map<Il2CppReflectionType*, std::string>;
 
-DECLARE_CLASS_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, "System", "Object", sizeof(Il2CppObject),
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, Il2CppObject,
     classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*),
     DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::FindMethodUnsafe(classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*), "Serialize", 2), LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet);
     DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::FindMethodUnsafe(classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*), "Deserialize", 3), LiteNetLib::Utils::NetDataReader* reader, int length, GlobalNamespace::IConnectedPlayer* data);
@@ -35,8 +35,6 @@ DECLARE_CLASS_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, "Syste
 
     DECLARE_CTOR(Construct, GlobalNamespace::MultiplayerSessionManager* sessionManager);
     DECLARE_DTOR(Deconstruct);
-
-
 
     private:
         const int Packet_ID = 100;

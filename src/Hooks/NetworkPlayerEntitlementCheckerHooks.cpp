@@ -67,18 +67,22 @@ namespace MultiplayerCore {
         entitlementDictionary[cUserId][cLevelId] = entitlement.value;
         if (lobbyGameStateController != nullptr && lobbyGameStateController->get_state() == MultiplayerLobbyState::GameStarting) {
             DataStore* instance = MultiplayerCore::DataStore::get_Instance();
-            if (instance && instance->loadingPreviewBeatmapLevel && instance->loadingBeatmapCharacteristic && instance->loadingDifficultyBeatmap && instance->loadingGameplayModifiers && instance->loadingBeatmapDifficulty) {
+            if (instance && instance->loadingDifficultyBeatmap && instance->loadingGameplaySetupData) {
                 getLogger().debug("[HandleEntitlementReceived] GameStarting, running 'HandleMultiplayerLevelLoaderCountdownFinished'");
-                lobbyGameStateController->HandleMultiplayerLevelLoaderCountdownFinished(instance->loadingPreviewBeatmapLevel, instance->loadingBeatmapDifficulty.value(), instance->loadingBeatmapCharacteristic, instance->loadingDifficultyBeatmap, instance->loadingGameplayModifiers);
+                lobbyGameStateController->HandleMultiplayerLevelLoaderCountdownFinished(instance->loadingGameplaySetupData, instance->loadingDifficultyBeatmap);
                 return;
             }
             else if (lobbyGameStateController->dyn__multiplayerLevelLoader()) {
                 getLogger().debug("[HandleEntitlementReceived] GameStarting, DataStore empty trying to run 'HandleMultiplayerLevelLoaderCountdownFinished' with lvlLoader Data");
                 MultiplayerLevelLoader* lvlLoader = lobbyGameStateController->dyn__multiplayerLevelLoader();
-                if (lvlLoader->dyn__previewBeatmapLevel() && lvlLoader->dyn__beatmapId() && lvlLoader->dyn__beatmapCharacteristic() && lvlLoader->dyn__difficultyBeatmap() && lvlLoader->dyn__gameplayModifiers()) {
-                    lobbyGameStateController->HandleMultiplayerLevelLoaderCountdownFinished(lvlLoader->dyn__previewBeatmapLevel(), lvlLoader->dyn__beatmapId()->get_difficulty(), lvlLoader->dyn__beatmapCharacteristic(), lvlLoader->dyn__difficultyBeatmap(), lvlLoader->dyn__gameplayModifiers());
+                if (lvlLoader->dyn__gameplaySetupData() && lvlLoader->dyn__difficultyBeatmap()) {
+                    lobbyGameStateController->HandleMultiplayerLevelLoaderCountdownFinished(lvlLoader->dyn__gameplaySetupData(), lvlLoader->dyn__difficultyBeatmap());
                     return;
                 }
+                //if (lvlLoader->dyn__previewBeatmapLevel() && lvlLoader->dyn__beatmapId() && lvlLoader->dyn__beatmapCharacteristic() && lvlLoader->dyn__difficultyBeatmap() && lvlLoader->dyn__gameplayModifiers()) {
+                //    lobbyGameStateController->HandleMultiplayerLevelLoaderCountdownFinished(lvlLoader->dyn__previewBeatmapLevel(), lvlLoader->dyn__beatmapId()->get_difficulty(), lvlLoader->dyn__beatmapCharacteristic(), lvlLoader->dyn__difficultyBeatmap(), lvlLoader->dyn__gameplayModifiers());
+                //    return;
+                //}
             }
             getLogger().error("[HandleEntitlementReceived] GameStarting but level data not available");
             //getLogger().debug("[HandleEntitlementReceived] checking pointers: loadingPreviewBeatmapLevel='%p', loadingBeatmapDifficulty set to '%d', loadingBeatmapCharacteristic='%p', loadingDifficultyBeatmap='%p', loadingGameplayModifiers='%p'", loadingPreviewBeatmapLevel, static_cast<int>(loadingBeatmapDifficulty), loadingBeatmapCharacteristic, loadingDifficultyBeatmap, loadingGameplayModifiers);

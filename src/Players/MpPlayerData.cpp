@@ -10,7 +10,7 @@ namespace MultiplayerCore::Players {
     //    return protocol;
     //}
 
-#pragma region ExtendedPlayer
+#pragma region MpPlayerData
     void MpPlayerData::New() {
         getLogger().debug("Creating MpPlayerData");
     }

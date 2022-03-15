@@ -10,7 +10,7 @@ namespace MultiplayerCore::Networking {
 		//registeredTypes = std::move(TypeDictionary());
 		packetHandlers = std::move(CallbackDictionary());
 		getLogger().debug("Registering MpPacketSerializer");
-		_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
+		_sessionManager->RegisterSerializer(GlobalNamespace::MultiplayerSessionManager_MessageType(Packet_ID), reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 	}
 
 	void MpPacketSerializer::Deconstruct() {
@@ -20,7 +20,7 @@ namespace MultiplayerCore::Networking {
 		}
 		packetHandlers.clear();
 		getLogger().debug("Unregistering MpPacketSerializer");
-		_sessionManager->UnregisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
+		_sessionManager->UnregisterSerializer(GlobalNamespace::MultiplayerSessionManager_MessageType(Packet_ID), reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 		_sessionManager = nullptr;
 	}
 
@@ -39,39 +39,79 @@ namespace MultiplayerCore::Networking {
 	void MpPacketSerializer::Deserialize(LiteNetLib::Utils::NetDataReader* reader, int length, GlobalNamespace::IConnectedPlayer* data) {
 		getLogger().debug("PacketSerializer::Deserialize");
 		int prevPosition = reader->get_Position();
-		std::string packetType = to_utf8(csstrtostr(reader->GetString()));
-		getLogger().debug("packetType: %s", packetType.c_str());
-		length -= reader->get_Position() - prevPosition;
-		getLogger().debug("length: %d", length);
-		prevPosition = reader->get_Position();
-		if (packetHandlers.find(packetType) != packetHandlers.end()) {
-			getLogger().debug("packetHandlers found PacketType, try Invoke");
-			try {
-				packetHandlers[packetType]->Invoke(reader, length, data);
-			}
-			catch (const std::exception& e) {
-				std::string user;
-				if (data) {
-					if (data->get_userName())
-						user += to_utf8(csstrtostr(data->get_userName()));
-					if (!user.empty() && data->get_userId()) user += "|";
-					if (data->get_userId())
-						user += to_utf8(csstrtostr(data->get_userId()));
+		getLogger().debug("reader prevPosition: %d", prevPosition);
+		//if (prevPosition == 9) return;
+		try {
+			std::string packetType = static_cast<std::string>(reader->GetString());
+			getLogger().debug("packetType: %s", packetType.c_str());
+			length -= reader->get_Position() - prevPosition;
+			getLogger().debug("length: %d", length);
+			prevPosition = reader->get_Position();
+			if (packetHandlers.find(packetType) != packetHandlers.end()) {
+				getLogger().debug("packetHandlers found PacketType, try Invoke");
+				try {
+					packetHandlers[packetType]->Invoke(reader, length, data);
 				}
-				getLogger().warning("An exception was thrown processing custom packet '%s' from player '%s'", packetType.c_str(), user.c_str());
-				getLogger().error("REPORT TO ENDER: %s", e.what());
-			}
-			catch (...) {
-				std::string user;
-				if (data) {
-					if (data->get_userName())
-						user += to_utf8(csstrtostr(data->get_userName()));
-					if (!user.empty() && data->get_userId()) user += "|";
-					if (data->get_userId())
-						user += to_utf8(csstrtostr(data->get_userId()));
+				catch (const std::exception& e) {
+					std::string user;
+					if (data) {
+						if (data->get_userName())
+							user += to_utf8(csstrtostr(data->get_userName()));
+						if (!user.empty() && data->get_userId()) user += "|";
+						if (data->get_userId())
+							user += to_utf8(csstrtostr(data->get_userId()));
+					}
+					getLogger().warning("An exception was thrown processing custom packet '%s' from player '%s'", packetType.c_str(), user.c_str());
+					getLogger().error("REPORT TO ENDER: %s", e.what());
 				}
-				getLogger().warning("REPORT TO ENDER: An Unknown exception was thrown processing custom packet '%s' from player '%s'", packetType.c_str(), user.c_str());
+				catch (...) {
+					std::string user;
+					if (data) {
+						if (data->get_userName())
+							user += to_utf8(csstrtostr(data->get_userName()));
+						if (!user.empty() && data->get_userId()) user += "|";
+						if (data->get_userId())
+							user += to_utf8(csstrtostr(data->get_userId()));
+					}
+					getLogger().warning("REPORT TO ENDER: An Unknown exception was thrown processing custom packet '%s' from player '%s'", packetType.c_str(), user.c_str());
+				}
 			}
+		}
+		catch (il2cpp_utils::RunMethodException const& e) {
+			getLogger().Backtrace(20);
+			std::string user;
+			if (data) {
+				if (data->get_userName())
+					user += to_utf8(csstrtostr(data->get_userName()));
+				if (!user.empty() && data->get_userId()) user += "|";
+				if (data->get_userId())
+					user += to_utf8(csstrtostr(data->get_userId()));
+			}
+			getLogger().warning("An exception was thrown processing packet from player '%s'", user.c_str());
+			getLogger().error("REPORT TO ENDER: %s", e.what());
+		}
+		catch (const std::exception& e) {
+			std::string user;
+			if (data) {
+				if (data->get_userName())
+					user += to_utf8(csstrtostr(data->get_userName()));
+				if (!user.empty() && data->get_userId()) user += "|";
+				if (data->get_userId())
+					user += to_utf8(csstrtostr(data->get_userId()));
+			}
+			getLogger().warning("An exception was thrown processing packet from player '%s'", user.c_str());
+			getLogger().error("REPORT TO ENDER: %s", e.what());
+		}
+		catch (...) {
+			std::string user;
+			if (data) {
+				if (data->get_userName())
+					user += to_utf8(csstrtostr(data->get_userName()));
+				if (!user.empty() && data->get_userId()) user += "|";
+				if (data->get_userId())
+					user += to_utf8(csstrtostr(data->get_userId()));
+			}
+			getLogger().warning("REPORT TO ENDER: An Unknown exception was thrown processing packet from player '%s'", user.c_str());
 		}
 		// skip any unprocessed bytes (or rewind the reader if too many bytes were read)
 		int processedBytes = reader->get_Position() - prevPosition;
