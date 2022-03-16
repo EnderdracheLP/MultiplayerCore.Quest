@@ -26,10 +26,10 @@ namespace MultiplayerCore::Networking {
 
 	void MpPacketSerializer::Serialize(LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet) {
 		System::Type* packetType = reinterpret_cast<Il2CppObject*>(packet)->GetType()/*il2cpp_utils::GetSystemType(il2cpp_functions::object_get_class(reinterpret_cast<Il2CppObject*>(packet)))*/;
-		getLogger().debug("Serialize packetType is: %s", static_cast<std::string>(packetType->ToString()).c_str());
+		getLogger().debug("Serialize packetType is: %s", static_cast<std::string>(packetType->get_Name()).c_str());
 		//getLogger().debug("Registered types check: %s", registeredTypes[packetType].c_str());
 		//writer->Put(il2cpp_utils::newcsstr(registeredTypes[packetType])); // TODO: Go back to sending actual PacketType, namespace issue should be fixed
-		writer->Put(packetType->ToString());
+		writer->Put(packetType->get_Name());
 		getLogger().debug("Writer Put");
 		getLogger().debug("Nullptr checking: packet: %p, writer: %p", packet, writer);
 		packet->Serialize(writer);
@@ -119,7 +119,7 @@ namespace MultiplayerCore::Networking {
 	}
 
 	bool MpPacketSerializer::HandlesType(Il2CppReflectionType* type) {
-		return packetHandlers.find(static_cast<std::string>(type->ToString())) != packetHandlers.end();
+		return packetHandlers.find(static_cast<std::string>(type->get_Name())) != packetHandlers.end();
 		//return registeredTypes.find(type) != registeredTypes.end();
 		//auto it = registeredTypes.find(type);
 		//if (it != registeredTypes.end()) {

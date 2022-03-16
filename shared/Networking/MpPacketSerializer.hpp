@@ -47,7 +47,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
         void RegisterCallback(CallbackWrapper<TPacket>* callback) {
             static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
             //registeredTypes[csTypeOf(TPacket)] = identifier;
-            packetHandlers[static_cast<std::string>(csTypeOf(TPacket)->ToString())] = callback;
+            packetHandlers[static_cast<std::string>(csTypeOf(TPacket)->get_Name())] = callback;
         }
 
         template <class TPacket>
@@ -58,7 +58,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
             //auto it = registeredTypes.find(csTypeOf(TPacket));
             //if (it != registeredTypes.end()) registeredTypes.erase(it);
 
-            auto itr = packetHandlers.find(static_cast<std::string>(csTypeOf(TPacket)->ToString()));
+            auto itr = packetHandlers.find(static_cast<std::string>(csTypeOf(TPacket)->get_Name()));
             if (itr != packetHandlers.end()) {
                 delete itr->second;
                 packetHandlers.erase(itr);
