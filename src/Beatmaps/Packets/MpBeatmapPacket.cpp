@@ -13,17 +13,20 @@ namespace MultiplayerCore::Beatmaps::Packets {
 
 	//void PreviewBeatmapPacket::New_ctor() {}
 	//PreviewBeatmapPacket::PreviewBeatmapPacket() {}
-	void MpBeatmapPacket::New(GlobalNamespace::IPreviewBeatmapLevel* preview, StringW characteristic, GlobalNamespace::BeatmapDifficulty difficulty) {
-		levelHash = Utilities::HashForLevelID(preview->get_levelID());
-		songName = preview->get_songName();
-		songSubName = preview->get_songSubName();
-		songAuthorName = preview->get_songAuthorName();
-		levelAuthorName = preview->get_levelAuthorName();
-		beatsPerMinute = preview->get_beatsPerMinute();
-		songDuration = preview->get_songDuration();
+	void MpBeatmapPacket::New() {}
 
-		this->characteristic = characteristic;
-		this->difficulty = difficulty;
+	void MpBeatmapPacket::CS_Ctor(GlobalNamespace::PreviewDifficultyBeatmap* beatmap) {
+		MpBeatmapPacket* packet = MpBeatmapPacket::New_ctor();
+		packet->levelHash = Utilities::HashForLevelID(beatmap->get_beatmapLevel()->get_levelID());
+		packet->songName = beatmap->get_beatmapLevel()->get_songName();
+		packet->songSubName = beatmap->get_beatmapLevel()->get_songSubName();
+		packet->songAuthorName = beatmap->get_beatmapLevel()->get_songAuthorName();
+		packet->levelAuthorName = beatmap->get_beatmapLevel()->get_levelAuthorName();
+		packet->beatsPerMinute = beatmap->get_beatmapLevel()->get_beatsPerMinute();
+		packet->songDuration = beatmap->get_beatmapLevel()->get_songDuration();
+
+		packet->characteristic = beatmap->get_beatmapCharacteristic()->get_serializedName();
+		packet->difficulty = beatmap->get_beatmapDifficulty();
 	}
 
 	void MpBeatmapPacket::Serialize(LiteNetLib::Utils::NetDataWriter* writer) {

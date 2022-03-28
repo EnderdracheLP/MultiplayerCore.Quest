@@ -1,6 +1,8 @@
 #include "Networking/MpPacketSerializer.hpp"
 #include "GlobalNamespace/BeatmapIdentifierNetSerializable.hpp"
 
+#include "System/Array.hpp"
+
 DEFINE_TYPE(MultiplayerCore::Networking, MpPacketSerializer);
 
 namespace MultiplayerCore::Networking {
@@ -10,7 +12,7 @@ namespace MultiplayerCore::Networking {
 		//registeredTypes = std::move(TypeDictionary());
 		packetHandlers = std::move(CallbackDictionary());
 		getLogger().debug("Registering MpPacketSerializer");
-		_sessionManager->RegisterSerializer(GlobalNamespace::MultiplayerSessionManager_MessageType(Packet_ID), reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
+		_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 	}
 
 	void MpPacketSerializer::Deconstruct() {
@@ -20,7 +22,7 @@ namespace MultiplayerCore::Networking {
 		}
 		packetHandlers.clear();
 		getLogger().debug("Unregistering MpPacketSerializer");
-		_sessionManager->UnregisterSerializer(GlobalNamespace::MultiplayerSessionManager_MessageType(Packet_ID), reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
+		_sessionManager->UnregisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 		_sessionManager = nullptr;
 	}
 
@@ -40,7 +42,6 @@ namespace MultiplayerCore::Networking {
 		getLogger().debug("PacketSerializer::Deserialize");
 		int prevPosition = reader->get_Position();
 		getLogger().debug("reader prevPosition: %d", prevPosition);
-		//if (prevPosition == 9) return;
 		try {
 			std::string packetType = static_cast<std::string>(reader->GetString());
 			getLogger().debug("packetType: %s", packetType.c_str());
@@ -78,7 +79,6 @@ namespace MultiplayerCore::Networking {
 			}
 		}
 		catch (il2cpp_utils::RunMethodException const& e) {
-			getLogger().Backtrace(20);
 			std::string user;
 			if (data) {
 				if (data->get_userName())
@@ -120,13 +120,6 @@ namespace MultiplayerCore::Networking {
 
 	bool MpPacketSerializer::HandlesType(Il2CppReflectionType* type) {
 		return packetHandlers.find(static_cast<std::string>(type->get_Name())) != packetHandlers.end();
-		//return registeredTypes.find(type) != registeredTypes.end();
-		//auto it = registeredTypes.find(type);
-		//if (it != registeredTypes.end()) {
-		//	getLogger().debug("HandlesType: %s", it->second.c_str());
-		//	return true;
-		//}
-		//return false;
 	}
 
 	//void MpPacketSerializer::UnregisterCallback(std::string identifier) {

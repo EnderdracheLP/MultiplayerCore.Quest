@@ -6,16 +6,7 @@ DEFINE_TYPE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel);
 
 namespace MultiplayerCore::Beatmaps {
 	void NetworkBeatmapLevel::New(Packets::MpBeatmapPacket* packet) {
-		//levelHash = packet->levelHash;
-
 		_packet = packet;
-
-		//songName = packet->songName;
-		//songSubName = packet->songSubName;
-		//songAuthorName = packet->songAuthorName;
-		//levelAuthorName = packet->levelAuthorName;
-		//beatsPerMinute = packet->beatsPerMinute;
-		//songDuration = packet->songDuration;
 	}
 
 #pragma region All the pain in form of getter functions

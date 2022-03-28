@@ -465,28 +465,6 @@ MAKE_HOOK_MATCH(LobbyGameStateController_Activate, &LobbyGameStateController::Ac
     LobbyGameStateController_Activate(self);
 }
 
-//MAKE_HOOK_MATCH(MenuRpcManager_InvokeSetCountdownEndTime, &MenuRpcManager::InvokeSetCountdownEndTime, void, MenuRpcManager* self, ::Il2CppString* userId, float newTime) {
-//    getLogger().debug("InvokeSetCountdownEndTime: newTime: %f", newTime);
-//    MenuRpcManager_InvokeSetCountdownEndTime(self, userId, newTime);
-//}
-
-//MAKE_HOOK_MATCH(MenuRpcManager_InvokeStartLevel, &MenuRpcManager::InvokeStartLevel, void, MenuRpcManager* self, ::Il2CppString* userId, GlobalNamespace::BeatmapIdentifierNetSerializable* beatmapId, GlobalNamespace::GameplayModifiers* gameplayModifiers, float startTime) {
-//    getLogger().debug("StartLevel: startTime: %f", startTime);
-//    MenuRpcManager_InvokeStartLevel(self, userId, beatmapId, gameplayModifiers, startTime);
-//}
-//
-//MAKE_HOOK_MATCH(LobbyGameStateController_HandleMenuRpcManagerSetCountdownEndTime, &LobbyGameStateController::HandleMenuRpcManagerSetCountdownEndTime, void, LobbyGameStateController* self, ::Il2CppString* userId, float countdownTime) {
-//    getLogger().debug("SetCountdownEndTime: raw=%f, synctime=%f, r-s=%f", countdownTime, self->multiplayerSessionManager->get_syncTime(), countdownTime - self->multiplayerSessionManager->get_syncTime());
-//    LobbyGameStateController_HandleMenuRpcManagerSetCountdownEndTime(self, userId, countdownTime);
-//}
-
-//MAKE_HOOK_MATCH(ConnectedPlayerManager_HandleSyncTimePacket, &ConnectedPlayerManager::HandleSyncTimePacket, void, ConnectedPlayerManager* self, GlobalNamespace::ConnectedPlayerManager::SyncTimePacket* packet, GlobalNamespace::IConnectedPlayer* player) {
-//    //getLogger().debug("SetCountdownEndTime: raw=%f, synctime=%f, r-s=%f", countdownTime, self->multiplayerSessionManager->get_syncTime(), countdownTime - self->multiplayerSessionManager->get_syncTime());
-//    getLogger().debug("HandleSyncTimePacket: syncTime=%f", packet->syncTime);
-//
-//    ConnectedPlayerManager_HandleSyncTimePacket(self, packet, player);
-//}
-
 // TODO: This allows for overwriting entitlement as it doesn't check entitlement for other players selection
 MAKE_HOOK_MATCH(GameServerPlayerTableCell_SetData, &GameServerPlayerTableCell::SetData, void, GameServerPlayerTableCell* self, IConnectedPlayer* connectedPlayer, ILobbyPlayerData* playerData, bool hasKickPermissions, bool allowSelection, System::Threading::Tasks::Task_1<AdditionalContentModel::EntitlementStatus>* getLevelEntitlementTask) {
     getLogger().debug("GameServerPlayerTableCell_SetData Set Entitlement Owned");
@@ -531,11 +509,6 @@ void saveDefaultConfig() {
         config.AddMember("autoDelete", false, allocator);
     if (!(config.HasMember("color") && config["color"].IsString()))
         config.AddMember("color", "#08C0FF", allocator);
-
-    //config.AddMember("freemod", false, allocator);
-    //config.AddMember("hostpick", true, allocator);
-    //config["customsongs"].SetBool(true);
-    //config["enforcemods"].SetBool(true);
 
     getConfig().Write();
     getLogger().info("Config file created.");
