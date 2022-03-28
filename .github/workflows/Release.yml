@@ -1,0 +1,152 @@
+name: Release Mod
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+    - '*' # Push events with tag
+
+env:
+     module_id: MultiplayerCore
+     BSVersion: 1.20.0
+     ndkname: android-ndk-r24
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout
+      with:
+        submodules: true
+        lfs: true
+
+    - uses: seanmiddleditch/gha-setup-ninja@v3
+
+    #- name: Install Powershell
+    #  run: sudo apt-get install -y powershell
+
+    - name: Get the tag name
+      run: echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+
+    #- name: Cache Android NDK
+    #  id: cache-ndk
+    #  uses: actions/cache@v2
+    #  env:
+    #    cache-name: cache-ndk
+    #  with:
+    #    path: ndk
+    #    key: ${{ runner.os }}-${{ env.cache-name }}-${{ env.ndkname }}
+    #    restore-keys: |
+    #      ${{ runner.os }}-${{ env.cache-name }}-${{ env.ndkname }}
+    
+    #- name: Install Android NDK
+    #  if: steps.cache-ndk.outputs.cache-hit != 'true'
+    #  run: |
+    #    wget -q -O ndk.zip https://dl.google.com/android/repository/${ndkname}-linux-x86_64.zip
+    #    unzip -q ndk.zip
+    #    mv ${ndkname} ndk
+      
+    #- name: Create ndkpath.txt
+    #  run: |
+    #    cd ndk
+    #    pwd > ${GITHUB_WORKSPACE}/ndkpath.txt
+
+    - name: Create ndkpath.txt
+      run: |
+        echo "$ANDROID_NDK_LATEST_HOME" > ${GITHUB_WORKSPACE}/ndkpath.txt
+
+    - name: Get QPM
+      if: steps.cache-qpm.outputs.cache-hit != 'true'
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        workflow: cargo-build.yml
+        name: linux-qpm-rust
+        path: QPM
+        repo: RedBrumbler/QuestPackageManager-Rust
+        
+    - name: QPM Collapse
+      run: |
+        chmod +x ./QPM/qpm-rust
+        ./QPM/qpm-rust collapse
+        
+    - name: QPM Dependencies Cache
+      id: cache-qpm-deps
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-qpm-deps
+      with:
+        path: /home/runner/.local/share/QPM-Rust/cache
+        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.json', '.github/BuildQSounds.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ env.cache-name }}-
+          ${{ runner.os }}-${{ env.cache-name }}
+      
+    - name: QPM Restore
+      run: |
+        ./QPM/qpm-rust restore
+
+    - name: Check dependency Folders
+      run: |
+        echo "Checking extern includes"
+        ls -lh ${GITHUB_WORKSPACE}/extern/includes
+        echo ""
+        echo "Checking libs"
+        ls -lh ${GITHUB_WORKSPACE}/extern/libs
+        echo ""
+        echo "Checking QPM-Rust/cache Folder"
+        ls -lh $HOME/.local/share/QPM-Rust/cache
+        echo ""
+
+    - name: Build
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        ./QPM/qpm-rust package edit --version ${{ env.version }}
+        ./QPM/qpm-rust qmod build
+        pwsh -Command ./build.ps1 --actions
+
+    - name: Get Library Name
+      id: libname
+      run: |
+        cd ./build/
+        pattern="lib${module_id}*.so"
+        files=( $pattern )
+        echo ::set-output name=NAME::"${files[0]}"
+
+    - name: Package QMOD
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        pwsh -Command ./buildQMOD.ps1 -package
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+          name: ${{ env.module_id }} ${{ env.version }} for Beat Saber ${{ env.BSVersion }}
+          files: |
+            ./${{ env.module_id }}.qmod
+          body_path: ./rl-notes.md
+          draft: true
+
+    #- name: Create Release
+    #  id: create_release
+    #  uses: actions/create-release@v1
+    #  env:
+    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #  with:
+    #    tag_name: ${{ github.ref }}
+    #    release_name: ${{ env.module_id }} ${{ github.ref }} for Beat Saber ${{ env.BSVersion }}
+    #    body_path: ./rl-notes.md
+    #    draft: true
+    #    prerelease: false
+    #- name: Upload QMOD Release Asset
+    #  id: upload-release-QMOD 
+    #  uses: actions/upload-release-asset@v1
+    #  env:
+    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #  with:
+    #    upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #    asset_path: ./${{ env.module_id }}.qmod
+    #    asset_name: ${{ env.module_id }}.qmod
+    #    asset_content_type: application/qmod

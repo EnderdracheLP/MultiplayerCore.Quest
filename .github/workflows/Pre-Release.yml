@@ -1,0 +1,125 @@
+name: Pre-Release Mod
+
+on:
+  workflow_dispatch:
+
+env:
+     module_id: MultiplayerCore
+     version: 0.1.0-rc.1
+     ndkname: android-ndk-r24
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout
+      with:
+        submodules: true
+        lfs: true
+    - name: Install Powershell
+      run: sudo apt-get install -y powershell
+
+    - name: Cache Android NDK
+      id: cache-ndk
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-ndk
+      with:
+        path: ndk
+        key: ${{ runner.os }}-${{ env.cache-name }}-${{ env.ndkname }}
+        restore-keys: |
+          ${{ runner.os }}-${{ env.cache-name }}-${{ env.ndkname }}
+    
+    - name: Install Android NDK
+      if: steps.cache-ndk.outputs.cache-hit != 'true'
+      run: |
+        wget -q -O ndk.zip https://dl.google.com/android/repository/${ndkname}-linux-x86_64.zip
+        unzip -q ndk.zip
+        mv ${ndkname} ndk
+      
+    - name: Create ndkpath.txt
+      run: |
+        cd ndk
+        pwd > ${GITHUB_WORKSPACE}/ndkpath.txt
+    - name: Get QPM
+      if: steps.cache-qpm.outputs.cache-hit != 'true'
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        workflow: main.yml
+        name: QPM-ubuntu-x64
+        path: QPM
+        repo: sc2ad/QuestPackageManager
+      
+    - name: QPM Dependencies Cache
+      id: cache-qpm-deps
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-qpm-deps
+      with:
+        path: QPM_Temp
+        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm_${{ env.BSVersion }}.json', '.github/BuildMod.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ env.cache-name }}-
+          ${{ runner.os }}-${{ env.cache-name }}
+      
+    - name: QPM Restore
+      run: |
+        chmod +x ./QPM/QPM
+        ./QPM/QPM restore
+
+    - name: Check dependency Folders
+      run: |
+        echo "Checking extern Folder"
+        ls -lh ${GITHUB_WORKSPACE}/extern/
+        echo ""
+        echo "Checking QPM_Temp Folders"
+        ls -lh QPM_Temp/
+        echo ""
+        echo "Listing beatsaber-hook folder"
+        ls QPM_Temp/beatsaber-hook/
+        echo ""
+        echo "Listing all .so files in QPM_Temp"
+        find QPM_Temp -type f -name "*.so"
+
+    - name: Build
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        ./QPM/qpm-rust package edit --version ${{ env.version }}
+        ./QPM/qpm-rust qmod build
+        pwsh -Command ./build.ps1 --actions
+    - name: Get Library Name
+      id: libname
+      run: |
+        cd ./libs/arm64-v8a/
+        pattern="lib${module_id}*.so"
+        files=( $pattern )
+        echo ::set-output name=NAME::"${files[0]}"
+    - name: Package QMOD
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        pwsh -Command ./buildQMOD.ps1 -package
+    - name: Create Release
+      id: create_pre-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.version }}
+        release_name: ${{ env.module_id }} ${{ env.version }} for Beat Saber ${{ env.BSVersion }}
+        body_path: ./pre-rl-notes.md
+        draft: false
+        prerelease: true
+    - name: Upload QMOD Pre-Release Asset
+      id: upload-prerelease-QMOD 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_pre-release.outputs.upload_url }}
+        asset_path: ./${{ env.module_id }}.qmod
+        asset_name: ${{ env.module_id }}.qmod
+        asset_content_type: application/qmod
