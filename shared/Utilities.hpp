@@ -1,6 +1,6 @@
 #pragma once
 #include "main.hpp"
-#include "SongLoader/shared/API.hpp"
+#include "songloader/shared/API.hpp"
 
 namespace MultiplayerCore {
     class Utilities {
