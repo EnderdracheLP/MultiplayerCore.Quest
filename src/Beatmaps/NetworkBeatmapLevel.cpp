@@ -1,6 +1,7 @@
 #include "Beatmaps/NetworkBeatmapLevel.hpp"
 #include "custom-types/shared/register.hpp"
 #include "GlobalNamespace/VarIntExtensions.hpp"
+#include "songloader/shared/API.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel);
 
@@ -10,6 +11,10 @@ namespace MultiplayerCore::Beatmaps {
 	}
 
 #pragma region All the pain in form of getter functions
+
+	StringW NetworkBeatmapLevel::get_levelID() {
+		return StringW(RuntimeSongLoader::API::GetCustomLevelsPrefix().c_str()) + _packet->levelHash;
+	}
 
 	StringW NetworkBeatmapLevel::get_levelHash() {
 		return _packet->levelHash;

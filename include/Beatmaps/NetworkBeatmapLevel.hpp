@@ -11,18 +11,13 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Abstrac
 //	{ classof(MpBeatmapPacket) }, 0, nullptr,
 	DECLARE_CTOR(New, Packets::MpBeatmapPacket* packet);
 
-	//DECLARE_INSTANCE_FIELD(StringW, songName);
-	//DECLARE_INSTANCE_FIELD(StringW, songSubName);
-	//DECLARE_INSTANCE_FIELD(StringW, songAuthorName);
-	//DECLARE_INSTANCE_FIELD(StringW, levelAuthorName);
-	//DECLARE_INSTANCE_FIELD(float, beatsPerMinute);
-	//DECLARE_INSTANCE_FIELD(float, songDuration);
-
 	//// Packet
 	DECLARE_INSTANCE_FIELD(Packets::MpBeatmapPacket*, _packet);
 
 	// Getter overrides
 	DECLARE_OVERRIDE_METHOD(StringW, get_levelHash, il2cpp_utils::il2cpp_type_check::MetadataGetter<&Abstractions::MpBeatmapLevel::get_levelHash>::get());
+
+	DECLARE_OVERRIDE_METHOD(StringW, get_levelID, il2cpp_utils::il2cpp_type_check::MetadataGetter<&Abstractions::MpBeatmapLevel::get_levelID>::get());
 
 	//DECLARE_OVERRIDE_METHOD(StringW, get_levelID, il2cpp_utils::il2cpp_type_check::MetadataGetter<&Abstractions::MpBeatmapLevel::get_levelHash>::get());
 	DECLARE_OVERRIDE_METHOD(StringW, get_songName, il2cpp_utils::il2cpp_type_check::MetadataGetter<&Abstractions::MpBeatmapLevel::get_levelHash>::get());
