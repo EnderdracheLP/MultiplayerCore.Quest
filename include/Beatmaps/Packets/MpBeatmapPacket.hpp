@@ -24,5 +24,5 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, Mu
     DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&LiteNetLib::Utils::INetSerializable::Deserialize>::get(), LiteNetLib::Utils::NetDataReader* reader);
 
     public:
-        void CS_Ctor(GlobalNamespace::PreviewDifficultyBeatmap* beatmap);
+        static MpBeatmapPacket* CS_Ctor(GlobalNamespace::PreviewDifficultyBeatmap* beatmap);
 )

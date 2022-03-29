@@ -54,7 +54,7 @@ Logger& getLogger() {
 
 namespace MultiplayerCore {
     // Plugin setup stuff
-    GlobalNamespace::MultiplayerSessionManager* sessionManager;
+    GlobalNamespace::MultiplayerSessionManager* _multiplayerSessionManager;
     GlobalNamespace::LobbyPlayersDataModel* lobbyPlayersDataModel;
     //MultiQuestensions::PacketManager* packetManager;
     SafePtr<Networking::MpPacketSerializer> mpPacketSerializer;
@@ -92,29 +92,29 @@ namespace MultiplayerCore {
     }
 
     bool AllPlayersModded() {
-        for (int i = 0; i < sessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!sessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getModdedStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
+            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getModdedStateStr())) return false;
         }
         return true;
     }
 
     bool AllPlayersHaveNE() {
-        for (int i = 0; i < sessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!sessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getNEStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
+            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getNEStateStr())) return false;
         }
         return true;
     }
 
     bool AllPlayersHaveME() {
-        for (int i = 0; i < sessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!sessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getMEStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
+            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getMEStateStr())) return false;
         }
         return true;
     }
 
     bool AllPlayersHaveChroma() {
-        for (int i = 0; i < sessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!sessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getChromaStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
+            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getChromaStateStr())) return false;
         }
         return true;
     }
@@ -249,7 +249,7 @@ MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController:
         }
     }
     if (firstActivation) {
-        MultiQuestensions::UI::LobbySetupPanel::AddSetupPanel(self->get_rectTransform(), sessionManager);
+        MultiQuestensions::UI::LobbySetupPanel::AddSetupPanel(self->get_rectTransform(), _multiplayerSessionManager);
     }
 }
 
@@ -441,8 +441,8 @@ MAKE_HOOK_MATCH(LobbyGameStateController_HandleMultiplayerLevelLoaderCountdownFi
     std::string LevelID = static_cast<std::string>(gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
     // Checks each player, to see if they're in the lobby, and if they are, checks their entitlement status.
     MultiplayerCore::UI::CenterScreenLoading::playersReady = 0;
-    for (int i = 0; i < sessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-        StringW csUserID = sessionManager->dyn__connectedPlayers()->get_Item(i)->get_userId();
+    for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
+        StringW csUserID = _multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->get_userId();
         std::string UserID =  static_cast<std::string>(csUserID);
         if (reinterpret_cast<::System::Collections::Generic::IReadOnlyDictionary_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>*>(self->dyn__lobbyPlayersDataModel())->get_Item(csUserID)->get_isInLobby()) {
             if (entitlementDictionary[UserID][LevelID] != EntitlementsStatus::Ok) entitlementStatusOK = false;

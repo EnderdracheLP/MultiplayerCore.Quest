@@ -6,6 +6,7 @@
 #include "Players/MpPlayerData.hpp"
 #include "UI/CenterScreenLoading.hpp"
 #include "Utils/SemVerChecker.hpp"
+#include "Utilities.hpp"
 
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
@@ -19,6 +20,7 @@
 #include "GlobalNamespace/UserInfo.hpp"
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 #include "GlobalNamespace/MultiplayerSessionManager_SessionType.hpp"
+#include "GlobalNamespace/LobbyPlayerData.hpp"
 
 #include "CodegenExtensions/ColorUtility.hpp"
 
@@ -42,13 +44,13 @@ static void HandleMpexBeatmapPacket(Beatmaps::Packets::MpBeatmapPacket* packet, 
 }
 
 SafePtr<MultiplayerCore::Players::MpPlayerData> localPlayer;
-std::map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _players;
+std::map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerData;
 IPlatformUserModel* platformUserModel;
 
 static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData, IConnectedPlayer* player) {
     const std::string userId = static_cast<std::string>(player->get_userId());
-    if (_players.contains(userId)) {
-        _players.at(userId) = playerData;
+    if (_playerData.contains(userId)) {
+        _playerData.at(userId) = playerData;
     }
     else {
         getLogger().info("Received 'MpPlayerData' from '%s' with platformID: '%s' platform: '%d'",
@@ -57,7 +59,7 @@ static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData,
             (int)playerData->platform
         );
 
-        _players.emplace(userId, playerData);
+        _playerData.emplace(userId, playerData);
         getLogger().debug("MpPlayerData done");
     }
 }
@@ -82,7 +84,7 @@ void HandlePlayerConnected(IConnectedPlayer* player) {
 
 void HandlePlayerDisconnected(IConnectedPlayer* player) {
     getLogger().info("Player '%s' left", static_cast<std::string>(player->get_userId()).c_str());
-    _players.erase(static_cast<std::string>(player->get_userId()));
+    _playerData.erase(static_cast<std::string>(player->get_userId()));
 }
 
 //void HandleDisconnect(DisconnectedReason* reason) {
@@ -90,9 +92,9 @@ void HandlePlayerDisconnected(IConnectedPlayer* player) {
 
 MAKE_HOOK_MATCH(SessionManagerStart, &MultiplayerSessionManager::Start, void, MultiplayerSessionManager* self) {
 
-    sessionManager = self;
-    SessionManagerStart(sessionManager);
-    mpPacketSerializer = Networking::MpPacketSerializer::New_ctor(sessionManager);
+    _multiplayerSessionManager = self;
+    SessionManagerStart(_multiplayerSessionManager);
+    mpPacketSerializer = Networking::MpPacketSerializer::New_ctor(_multiplayerSessionManager);
 
 
     mpPacketSerializer->RegisterCallback<Beatmaps::Packets::MpBeatmapPacket*>(HandleMpexBeatmapPacket);
@@ -130,8 +132,39 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
     //self->add_disconnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<GlobalNamespace::DisconnectedReason>*>*>(classof(System::Action_1<GlobalNamespace::DisconnectedReason>*>*), static_cast<Il2CppObject*>(nullptr), HandleDisconnect));
 }
 
+MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap, &LobbyPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap, void, LobbyPlayersDataModel* self, StringW userId) {
+    LobbyPlayerData* localPlayerData = self->dyn__playersData()->get_Item(self->get_localUserId());
+    if (localPlayerData->get_beatmapLevel() && 
+        il2cpp_utils::AssignableFrom<Beatmaps::Packets::MpBeatmapPacket*>(
+            reinterpret_cast<Il2CppObject*>(localPlayerData->get_beatmapLevel())->klass
+            )
+        )
+        mpPacketSerializer->Send(Beatmaps::Packets::MpBeatmapPacket::CS_Ctor(localPlayerData->get_beatmapLevel()));
+    
+    LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap(self, userId);
+}
+
+MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap, &LobbyPlayersDataModel::HandleMenuRpcManagerRecommendBeatmap, void, LobbyPlayersDataModel* self, StringW userId, BeatmapIdentifierNetSerializable* beatmapId) {
+    if (!Il2CppString::IsNullOrEmpty(Utilities::HashForLevelID(beatmapId->get_levelID())))
+        return;
+
+    LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap(self, userId, beatmapId);
+}
+
+MAKE_HOOK_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &LobbyPlayersDataModel::SetLocalPlayerBeatmapLevel, void, LobbyPlayersDataModel* self, PreviewDifficultyBeatmap* beatmapLevel) {
+    getLogger().debug("Local player selected song '%s'", static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_levelID()).c_str());
+    StringW levelHash = Utilities::HashForLevelID(beatmapLevel->get_beatmapLevel()->get_levelID());
+    if (!Il2CppString::IsNullOrEmpty(levelHash))
+        mpPacketSerializer->Send(Beatmaps::Packets::MpBeatmapPacket::CS_Ctor(beatmapLevel));
+
+    LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, beatmapLevel);
+}
 
 void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
     INSTALL_HOOK(getLogger(), SessionManagerStart);
     INSTALL_HOOK(getLogger(), SessionManager_StartSession);
+
+    INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap);
+    INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap);
+    INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel);
 }

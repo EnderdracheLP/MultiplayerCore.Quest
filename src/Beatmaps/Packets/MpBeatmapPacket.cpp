@@ -15,7 +15,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
 	//PreviewBeatmapPacket::PreviewBeatmapPacket() {}
 	void MpBeatmapPacket::New() {}
 
-	void MpBeatmapPacket::CS_Ctor(GlobalNamespace::PreviewDifficultyBeatmap* beatmap) {
+	MpBeatmapPacket* MpBeatmapPacket::CS_Ctor(GlobalNamespace::PreviewDifficultyBeatmap* beatmap) {
 		MpBeatmapPacket* packet = MpBeatmapPacket::New_ctor();
 		packet->levelHash = Utilities::HashForLevelID(beatmap->get_beatmapLevel()->get_levelID());
 		packet->songName = beatmap->get_beatmapLevel()->get_songName();
@@ -27,6 +27,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
 
 		packet->characteristic = beatmap->get_beatmapCharacteristic()->get_serializedName();
 		packet->difficulty = beatmap->get_beatmapDifficulty();
+		return packet;
 	}
 
 	void MpBeatmapPacket::Serialize(LiteNetLib::Utils::NetDataWriter* writer) {

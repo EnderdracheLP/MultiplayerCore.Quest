@@ -151,7 +151,7 @@ namespace MultiplayerCore {
         outerCircleRadius = fmax(MultiplayerPlayerPlacement::GetOuterCircleRadius(angleBetweenPlayersWithEvenAdjustment, innerCircleRadius), minOuterCircleRadius);
         //getLogger().debug("angleBetweenPlayersWithEvenAdjustment %f, outerCircleRadius %f", angleBetweenPlayersWithEvenAdjustment, outerCircleRadius);
 
-        bool buildingsEnabled = (sessionManager->dyn__maxPlayerCount() <= 18);
+        bool buildingsEnabled = (_multiplayerSessionManager->dyn__maxPlayerCount() <= 18);
         auto* Construction_tr = _menuEnvironmentManager->get_transform()->Find(il2cpp_utils::newcsstr("Construction"));
         if (Construction_tr && Construction_tr->get_gameObject()) {
             Construction_tr->get_gameObject()->SetActive(buildingsEnabled);

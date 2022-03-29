@@ -10,7 +10,7 @@
 //#include "System/Collections/Generic/Dictionary_2.hpp"
 namespace MultiplayerCore {
     // Plugin setup stuff
-    extern GlobalNamespace::MultiplayerSessionManager* sessionManager;
+    extern GlobalNamespace::MultiplayerSessionManager* _multiplayerSessionManager;
     extern GlobalNamespace::LobbyPlayersDataModel* lobbyPlayersDataModel;
     extern GlobalNamespace::LobbyGameStateController* lobbyGameStateController;
 

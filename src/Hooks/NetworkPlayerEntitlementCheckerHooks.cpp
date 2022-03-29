@@ -51,7 +51,7 @@ namespace MultiplayerCore {
             );
 
         if (entitlement == EntitlementsStatus::NotOwned && MultiplayerCore::Utils::HasRequirement(RuntimeSongLoader::API::GetLevelById(cLevelId))) {
-            IConnectedPlayer* player = sessionManager->GetPlayerByUserId(userId);
+            IConnectedPlayer* player = _multiplayerSessionManager->GetPlayerByUserId(userId);
             if (player) {
                 if (!player->HasState(getMEStateStr()))
                     missingLevelText = "One or more players are missing the following Requirement: Mapping Extensions";
