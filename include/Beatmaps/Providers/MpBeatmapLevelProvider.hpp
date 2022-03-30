@@ -37,7 +37,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         /// </summary>
         /// <param name="packet">The packet to get preview data from</param>
         /// <returns>An <see cref="GlobalNamespace::IPreviewBeatmapLevel*"/> with a cover from BeatSaver.</returns>
-        public GlobalNamespace::IPreviewBeatmapLevel* GetBeatmapFromPacket(MultiplayerCore::Beatmaps::Packets::MpBeatmapPacket* packet);
+        static GlobalNamespace::IPreviewBeatmapLevel* GetBeatmapFromPacket(MultiplayerCore::Beatmaps::Packets::MpBeatmapPacket* packet);
             //= > new NetworkBeatmapLevel(packet, _beatsaver);
     };
 }

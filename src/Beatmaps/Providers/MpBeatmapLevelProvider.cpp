@@ -7,7 +7,7 @@ using namespace MultiplayerCore::Beatmaps;
 using namespace GlobalNamespace;
 
 #include "songloader/shared/API.hpp"
-using namespace RuntimeSongloader::API;
+using namespace RuntimeSongLoader::API;
 
 #include "songdownloader/shared/BeatSaverAPI.hpp"
 using namespace BeatSaver::API;
@@ -62,7 +62,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         /// </summary>
         /// <param name="packet">The packet to get preview data from</param>
         /// <returns>An <see cref="GlobalNamespace::IPreviewBeatmapLevel*"/> with a cover from BeatSaver.</returns>
-        public IPreviewBeatmapLevel* GetBeatmapFromPacket(MultiplayerCore::Beatmaps::Packets::MpBeatmapPacket* packet) {
+        static IPreviewBeatmapLevel* GetBeatmapFromPacket(MultiplayerCore::Beatmaps::Packets::MpBeatmapPacket* packet) {
             return NetworkBeatmapLevel::New_ctor(packet);
         }
         //= > new NetworkBeatmapLevel(packet, _beatsaver);
