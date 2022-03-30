@@ -5,14 +5,13 @@
 #include "custom-types/shared/types.hpp"
 #include "custom-types/shared/macros.hpp"
 
-DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, LocalBeatmapLevel, Abstractions::MpBeatmapLevel, "MultiplayerCore.Beatmaps",
+// TODO: Still work in progress CT
+DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, BeatSaverBeatmapLevel, Abstractions::MpBeatmapLevel, "MultiplayerCore.Beatmaps",
 //___DECLARE_TYPE_WRAPPER_INHERITANCE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Il2CppTypeEnum::IL2CPP_TYPE_CLASS,
 //	Il2CppObject, "MultiplayerCore.Beatmaps",
 //	{ classof(MpBeatmapPacket) }, 0, nullptr,
 	DECLARE_CTOR(New, StringW hash, GlobalNamespace::IPreviewBeatmapLevel* preview);
 
-	// IPreviewBeatmapLevel
-	DECLARE_INSTANCE_FIELD(GlobalNamespace::IPreviewBeatmapLevel*, _preview);
 	DECLARE_INSTANCE_FIELD(StringW, levelHash);
 
 	// Getter overrides
@@ -33,7 +32,7 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, LocalBeatmapLevel, Abstracti
 		template <class TPreview>
 		static LocalBeatmapLevel* CS_Ctor(StringW hash, TPreview* preview) {
 			static_assert(std::is_convertible_v<std::remove_pointer_t<TPreview>, GlobalNamespace::IPreviewBeatmapLevel>, "Make sure your Type Implements and is Convertible to IPreviewBeatmapLevel*");
-			return LocalBeatmapLevel::New_ctor(hash, reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(preview));
+			return BeatSaverBeatmapLevel::New_ctor(hash, reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(preview));
 		}
 
 		// Conversion operators to BaseType MpBeatmapLevel

@@ -14,6 +14,8 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Abstrac
 	//// Packet
 	DECLARE_INSTANCE_FIELD(Packets::MpBeatmapPacket*, _packet);
 
+	DECLARE_INSTANCE_FIELD(System::Threading::Tasks::Task_1<UnityEngine::Sprite*>*, coverImageTask);
+
 	// Getter overrides
 	DECLARE_OVERRIDE_METHOD(StringW, get_levelHash, il2cpp_utils::il2cpp_type_check::MetadataGetter<&Abstractions::MpBeatmapLevel::get_levelHash>::get());
 
@@ -26,6 +28,8 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Abstrac
 	DECLARE_OVERRIDE_METHOD(StringW, get_levelAuthorName, il2cpp_utils::il2cpp_type_check::MetadataGetter<&Abstractions::MpBeatmapLevel::get_levelHash>::get());
 	DECLARE_OVERRIDE_METHOD(float, get_beatsPerMinute, il2cpp_utils::il2cpp_type_check::MetadataGetter<&Abstractions::MpBeatmapLevel::get_levelHash>::get());
 	DECLARE_OVERRIDE_METHOD(float, get_songDuration, il2cpp_utils::il2cpp_type_check::MetadataGetter<&Abstractions::MpBeatmapLevel::get_levelHash>::get());
+
+	DECLARE_OVERRIDE_METHOD(System::Threading::Tasks::Task_1<UnityEngine::Sprite*>*, GetCoverImageAsync, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::GetCoverImageAsync>::get(), System::Threading::CancellationToken cancellationToken);
 
 
 	public:
