@@ -45,4 +45,8 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, BeatSaverBeatmapLevel, Abstr
 			return reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(this);
 		}
 
+		// Converter
+		GlobalNamespace::IPreviewBeatmapLevel* get_preview() {
+			return reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(this);
+		}
 )

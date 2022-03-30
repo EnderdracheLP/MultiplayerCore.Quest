@@ -19,7 +19,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         /// <param name="levelHash">The hash of the level to get</param>
         /// <returns>An <see cref="GlobalNamespace::IPreviewBeatmapLevel*"/> with a matching level hash</returns>
         IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmap(StringW levelHash) {
-            auto* beatmap GetBeatmapFromLocalBeatmaps(levelHash);
+            auto* beatmap = GetBeatmapFromLocalBeatmaps(levelHash);
             if (beatmap)
                 return beatmap;
             else {
@@ -35,7 +35,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromLocalBeatmaps(StringW levelHash) {
             std::optional<GlobalNamespace::CustomPreviewBeatmapLevel*> previewOpt = GetLevelByHash(levelHash);
             if (!previewOpt) return nullptr;
-            return LocalBeatmapLevel::CS_Ctor(levelHash, previewOpt.value())
+            return LocalBeatmapLevel::CS_Ctor(levelHash, previewOpt.value())->get_preview();
         }
 
         /// <summary>
@@ -62,8 +62,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         /// <param name="packet">The packet to get preview data from</param>
         /// <returns>An <see cref="GlobalNamespace::IPreviewBeatmapLevel*"/> with a cover from BeatSaver.</returns>
         IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(MultiplayerCore::Beatmaps::Packets::MpBeatmapPacket* packet) {
-            return NetworkBeatmapLevel::New_ctor(packet);
+            return NetworkBeatmapLevel::New_ctor(packet)->get_preview();
         }
         //= > new NetworkBeatmapLevel(packet, _beatsaver);
-    };
 }

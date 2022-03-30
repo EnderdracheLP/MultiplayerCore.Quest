@@ -41,8 +41,13 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, LocalBeatmapLevel, Abstracti
 			return reinterpret_cast<Abstractions::MpBeatmapLevel*>(this);
 		}
 
-		// Conversion operators to BaseType MpBeatmapLevel
+		// Conversion operators to IPreviewBeatmapLevel
 		operator GlobalNamespace::IPreviewBeatmapLevel* () noexcept {
+			return reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(this);
+		}
+
+		// Converter
+		GlobalNamespace::IPreviewBeatmapLevel* get_preview() {
 			return reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(this);
 		}
 
