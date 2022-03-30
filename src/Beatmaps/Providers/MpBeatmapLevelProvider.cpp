@@ -18,7 +18,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         /// </summary>
         /// <param name="levelHash">The hash of the level to get</param>
         /// <returns>An <see cref="GlobalNamespace::IPreviewBeatmapLevel*"/> with a matching level hash</returns>
-        static IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmap(StringW levelHash) {
+        IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmap(StringW levelHash) {
             auto* beatmap GetBeatmapFromLocalBeatmaps(levelHash);
             if (beatmap)
                 return beatmap;
@@ -32,7 +32,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         /// </summary>
         /// <param name="levelHash">The hash of the level to get</param>
         /// <returns>An <see cref="GlobalNamespace::IPreviewBeatmapLevel*"/> with a matching level hash</returns>
-        static IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromLocalBeatmaps(StringW levelHash) {
+        IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromLocalBeatmaps(StringW levelHash) {
             std::optional<GlobalNamespace::CustomPreviewBeatmapLevel*> previewOpt = GetLevelByHash(levelHash);
             if (!previewOpt) return nullptr;
             return LocalBeatmapLevel::CS_Ctor(levelHash, previewOpt.value())
@@ -43,7 +43,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         /// </summary>
         /// <param name="levelHash">The hash of the level to get</param>
         /// <returns>An <see cref="GlobalNamespace::IPreviewBeatmapLevel*"/> with a matching level hash, or null if none was found.</returns>
-        static IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromBeatSaver(StringW levelHash) {
+        IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromBeatSaver(StringW levelHash) {
             //std::optional<BeatSaver::Beatmap> beatmap = GetBeatmapByHash(static_cast<std::string>(levelHash));
             //if (!beatmap) return nullptr;
             //return BeatSaverBeatmapLevel(levelHash, beatmap.value());
@@ -61,7 +61,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         /// </summary>
         /// <param name="packet">The packet to get preview data from</param>
         /// <returns>An <see cref="GlobalNamespace::IPreviewBeatmapLevel*"/> with a cover from BeatSaver.</returns>
-        static IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(MultiplayerCore::Beatmaps::Packets::MpBeatmapPacket* packet) {
+        IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(MultiplayerCore::Beatmaps::Packets::MpBeatmapPacket* packet) {
             return NetworkBeatmapLevel::New_ctor(packet);
         }
         //= > new NetworkBeatmapLevel(packet, _beatsaver);
