@@ -35,10 +35,15 @@ using namespace GlobalNamespace;
 static void HandleMpexBeatmapPacket(Beatmaps::Packets::MpBeatmapPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
     getLogger().debug("Player '%s' selected song '%s'", static_cast<std::string>(player->get_userId()).c_str(), static_cast<std::string>(packet->levelHash).c_str());
     BeatmapCharacteristicSO* characteristic = lobbyPlayersDataModel->dyn__beatmapCharacteristicCollection()->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
-    Beatmaps::Abstractions::MpBeatmapLevel* preview = Beatmaps::NetworkBeatmapLevel::New_ctor(packet);
+    Beatmaps::NetworkBeatmapLevel* preview = Beatmaps::NetworkBeatmapLevel::New_ctor(packet);
 
     IPreviewBeatmapLevel* sendResponse = reinterpret_cast<IPreviewBeatmapLevel*>(preview);
-    getLogger().debug("levelId: '%s'", static_cast<std::string>(sendResponse->get_levelID()).c_str());
+    getLogger().debug("levelId: '%s', songName: '%s', songSubName: '%s', songAuthorName: '%s'", 
+        static_cast<std::string>(sendResponse->get_levelID()).c_str(),
+        static_cast<std::string>(sendResponse->get_songName()).c_str(),
+        static_cast<std::string>(sendResponse->get_songSubName()).c_str(),
+        static_cast<std::string>(sendResponse->get_songAuthorName()).c_str()
+    );
 
     lobbyPlayersDataModel->SetPlayerBeatmapLevel(player->get_userId(), GlobalNamespace::PreviewDifficultyBeatmap::New_ctor(reinterpret_cast<IPreviewBeatmapLevel*>(preview), characteristic, packet->difficulty));
 }
@@ -160,6 +165,18 @@ MAKE_HOOK_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &LobbyPlayersD
     LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, beatmapLevel);
 }
 
+MAKE_HOOK_MATCH(LobbyPlayersDataModel_SetPlayerBeatmapLevel, &LobbyPlayersDataModel::SetPlayerBeatmapLevel, void, LobbyPlayersDataModel* self, ::StringW userId, ::GlobalNamespace::PreviewDifficultyBeatmap* beatmapLevel) {
+    if (beatmapLevel && beatmapLevel->get_beatmapLevel())
+        getLogger().debug("LobbyPlayersDataModel_SetPlayerBeatmapLevel: levelId: '%s', songName: '%s', songSubName: '%s', songAuthorName: '%s'",
+            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_levelID()).c_str(),
+            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songName()).c_str(),
+            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songSubName()).c_str(),
+            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songAuthorName()).c_str()
+        );
+
+    LobbyPlayersDataModel_SetPlayerBeatmapLevel(self, userId, beatmapLevel);
+}
+
 void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
     INSTALL_HOOK(getLogger(), SessionManagerStart);
     INSTALL_HOOK(getLogger(), SessionManager_StartSession);
@@ -167,4 +184,5 @@ void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap);
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap);
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel);
+    INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_SetPlayerBeatmapLevel);
 }

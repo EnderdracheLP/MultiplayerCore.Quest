@@ -323,106 +323,124 @@ namespace MultiplayerCore {
 std::vector<std::string> DownloadedSongIds;
 
 MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadLevel, void, MultiplayerLevelLoader* self, ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
-    std::string levelId = static_cast<std::string>(gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
-    getLogger().info("MultiplayerLevelLoader_LoadLevel: %s", levelId.c_str());
-    MultiplayerCore::UI::CenterScreenLoading* cslInstance = MultiplayerCore::UI::CenterScreenLoading::get_Instance();
-    if (IsCustomLevel(levelId)) {
-        if (HasSong(levelId)) {
-            getLogger().debug("MultiplayerLevelLoader_LoadLevel, HasSong, calling original");
-            MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
-            return;
+    try {
+        if (gameplaySetupData && gameplaySetupData->get_beatmapLevel()) {
+            getLogger().debug("LoadLevel PreviewDifficultyBeatmap type: %s", il2cpp_utils::ClassStandardName(reinterpret_cast<Il2CppObject*>(gameplaySetupData->get_beatmapLevel())->klass).c_str());
+            if (gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()) {
+                getLogger().debug("LoadLevel IPreviewBeatmapLevel type: %s", il2cpp_utils::ClassStandardName(reinterpret_cast<Il2CppObject*>(gameplaySetupData->get_beatmapLevel()->get_beatmapLevel())->klass).c_str());
+            }
         }
-        else {
-            std::string hash = Utilities::GetHash(levelId);
-            BeatSaver::API::GetBeatmapByHashAsync(hash,
-                [self, gameplaySetupData, initialStartTime, hash, cslInstance](std::optional<BeatSaver::Beatmap> beatmapOpt) {
-                    if (beatmapOpt.has_value()) {
-                        auto beatmap = beatmapOpt.value();
-                        auto beatmapName = beatmap.GetName();
-                        getLogger().info("Downloading map: %s", beatmap.GetName().c_str());
-                        BeatSaver::API::DownloadBeatmapAsync(beatmap,
-                            [self, gameplaySetupData, initialStartTime, beatmapName, hash, beatmap, cslInstance](bool error) {
-                                if (error) {
-                                    getLogger().info("Failed downloading map retrying: %s", beatmapName.c_str());
-                                    BeatSaver::API::DownloadBeatmapAsync(beatmap,
-                                        [self, gameplaySetupData, initialStartTime, beatmapName, hash](bool error) {
-                                            if (error) {
-                                                getLogger().info("Failed downloading map: %s", beatmapName.c_str());
-                                            }
-                                            else {
-                                                getLogger().info("Downloaded map: %s", beatmapName.c_str());
-                                                DownloadedSongIds.emplace_back(hash);
-                                                QuestUI::MainThreadScheduler::Schedule(
-                                                    [self, gameplaySetupData, initialStartTime, hash] {
-                                                        RuntimeSongLoader::API::RefreshSongs(false,
-                                                            [self, gameplaySetupData, initialStartTime, hash](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
-                                                                auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
-                                                                if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
-                                                                else {
-                                                                    getLogger().warning("DownloadedSongsGSM was null, adding to queue");
-                                                                    MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
+        std::string levelId = static_cast<std::string>(gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
+        getLogger().info("MultiplayerLevelLoader_LoadLevel: %s", levelId.c_str());
+        MultiplayerCore::UI::CenterScreenLoading* cslInstance = MultiplayerCore::UI::CenterScreenLoading::get_Instance();
+        if (IsCustomLevel(levelId)) {
+            if (HasSong(levelId)) {
+                getLogger().debug("MultiplayerLevelLoader_LoadLevel, HasSong, calling original");
+                MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
+                return;
+            }
+            else {
+                std::string hash = Utilities::GetHash(levelId);
+                BeatSaver::API::GetBeatmapByHashAsync(hash,
+                    [self, gameplaySetupData, initialStartTime, hash, cslInstance](std::optional<BeatSaver::Beatmap> beatmapOpt) {
+                        if (beatmapOpt.has_value()) {
+                            auto beatmap = beatmapOpt.value();
+                            auto beatmapName = beatmap.GetName();
+                            getLogger().info("Downloading map: %s", beatmap.GetName().c_str());
+                            BeatSaver::API::DownloadBeatmapAsync(beatmap,
+                                [self, gameplaySetupData, initialStartTime, beatmapName, hash, beatmap, cslInstance](bool error) {
+                                    if (error) {
+                                        getLogger().info("Failed downloading map retrying: %s", beatmapName.c_str());
+                                        BeatSaver::API::DownloadBeatmapAsync(beatmap,
+                                            [self, gameplaySetupData, initialStartTime, beatmapName, hash](bool error) {
+                                                if (error) {
+                                                    getLogger().info("Failed downloading map: %s", beatmapName.c_str());
+                                                }
+                                                else {
+                                                    getLogger().info("Downloaded map: %s", beatmapName.c_str());
+                                                    DownloadedSongIds.emplace_back(hash);
+                                                    QuestUI::MainThreadScheduler::Schedule(
+                                                        [self, gameplaySetupData, initialStartTime, hash] {
+                                                            RuntimeSongLoader::API::RefreshSongs(false,
+                                                                [self, gameplaySetupData, initialStartTime, hash](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
+                                                                    auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
+                                                                    if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
+                                                                    else {
+                                                                        getLogger().warning("DownloadedSongsGSM was null, adding to queue");
+                                                                        MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
+                                                                    }
+                                                                    getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
+                                                                    self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
+                                                                    //getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
+                                                                    MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
+                                                                    return;
                                                                 }
-                                                                getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
-                                                                self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
-                                                                //getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
-                                                                MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
-                                                                return;
-                                                            }
-                                                        );
+                                                            );
+                                                        }
+                                                    );
+                                                }
+                                            }, [cslInstance](float downloadProgress) {
+                                                if (cslInstance) {
+                                                    QuestUI::MainThreadScheduler::Schedule(
+                                                        [cslInstance, downloadProgress] {
+                                                            cslInstance->ShowDownloadingProgress(downloadProgress);
+                                                        });
+                                                }
+                                            }
+                                            );
+                                    }
+                                    else {
+                                        getLogger().info("Downloaded map: %s", beatmapName.c_str());
+                                        DownloadedSongIds.emplace_back(hash);
+                                        QuestUI::MainThreadScheduler::Schedule(
+                                            [self, gameplaySetupData, initialStartTime, hash] {
+                                                RuntimeSongLoader::API::RefreshSongs(false,
+                                                    [self, gameplaySetupData, initialStartTime, hash](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
+                                                        auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
+                                                        if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
+                                                        else {
+                                                            getLogger().warning("DownloadedSongsGSM was null, adding to queue");
+                                                            MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
+                                                        }
+                                                        getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
+                                                        self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
+                                                        //getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
+                                                        MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
+                                                        return;
                                                     }
                                                 );
                                             }
-                                        }, [cslInstance](float downloadProgress) {
-                                            if (cslInstance) {
-                                                QuestUI::MainThreadScheduler::Schedule(
-                                                    [cslInstance, downloadProgress] {
-                                                        cslInstance->ShowDownloadingProgress(downloadProgress);
-                                                    });
-                                            }
-                                        }
                                         );
+                                    }
+                                }, [cslInstance](float downloadProgress) {
+                                    if (cslInstance) {
+                                        QuestUI::MainThreadScheduler::Schedule(
+                                            [cslInstance, downloadProgress] {
+                                                cslInstance->ShowDownloadingProgress(downloadProgress);
+                                            });
+                                    }
                                 }
-                                else {
-                                    getLogger().info("Downloaded map: %s", beatmapName.c_str());
-                                    DownloadedSongIds.emplace_back(hash);
-                                    QuestUI::MainThreadScheduler::Schedule(
-                                        [self, gameplaySetupData, initialStartTime, hash] {
-                                            RuntimeSongLoader::API::RefreshSongs(false,
-                                                [self, gameplaySetupData, initialStartTime, hash](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
-                                                    auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
-                                                    if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
-                                                    else {
-                                                        getLogger().warning("DownloadedSongsGSM was null, adding to queue");
-                                                        MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
-                                                    }
-                                                    getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
-                                                    self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
-                                                    //getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
-                                                    MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
-                                                    return;
-                                                }
-                                            );
-                                        }
-                                    );
-                                }
-                            }, [cslInstance](float downloadProgress) {
-                                if (cslInstance) {
-                                    QuestUI::MainThreadScheduler::Schedule(
-                                        [cslInstance, downloadProgress] {
-                                            cslInstance->ShowDownloadingProgress(downloadProgress);
-                                        });
-                                }
-                            }
-                            );
+                                );
+                        }
                     }
-                }
-            );
+                );
+            }
+        }
+        else {
+            getLogger().debug("MultiplayerLevelLoader_LoadLevel, calling original");
+            MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
         }
     }
-    else {
-        getLogger().debug("MultiplayerLevelLoader_LoadLevel, calling original");
-        MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
+    catch (il2cpp_utils::RunMethodException const& e) {
+        getLogger().error("REPORT TO ENDER: %s", e.what());
     }
+    catch (const std::exception& e) {
+        getLogger().error("REPORT TO ENDER: %s", e.what());
+    }
+    catch (...) {
+        getLogger().warning("REPORT TO ENDER: An Unknown exception was thrown");
+    }
+
 }
 
 // Checks entitlement and stalls lobby until fullfilled, unless a game is already in progress.
@@ -488,7 +506,7 @@ void saveDefaultConfig() {
     getLogger().info("Creating config file...");
     ConfigDocument& config = getConfig().config;
 
-    if (config.HasMember("color") && config["color"].IsString() &&
+    if (/*config.HasMember("color") && config["color"].IsString() &&*/
         config.HasMember("autoDelete") && config["autoDelete"].IsBool() &&
         config.HasMember("LagReducer") && config["LagReducer"].IsBool() &&
         config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt()) {
@@ -507,8 +525,8 @@ void saveDefaultConfig() {
         config.AddMember("LagReducer", false, allocator);
     if (!(config.HasMember("autoDelete") && config["autoDelete"].IsBool()))
         config.AddMember("autoDelete", false, allocator);
-    if (!(config.HasMember("color") && config["color"].IsString()))
-        config.AddMember("color", "#08C0FF", allocator);
+    //if (!(config.HasMember("color") && config["color"].IsString()))
+    //    config.AddMember("color", "#08C0FF", allocator);
 
     getConfig().Write();
     getLogger().info("Config file created.");

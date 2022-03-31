@@ -15,11 +15,11 @@ namespace MultiplayerCore {
 
     //static std::multimap<std::string, std::string, int> entitlementDictionary;
 
-    GlobalNamespace::IPreviewBeatmapLevel* loadingPreviewBeatmapLevel;
-    GlobalNamespace::BeatmapDifficulty loadingBeatmapDifficulty;
-    GlobalNamespace::BeatmapCharacteristicSO* loadingBeatmapCharacteristic;
-    GlobalNamespace::IDifficultyBeatmap* loadingDifficultyBeatmap;
-    GlobalNamespace::GameplayModifiers* loadingGameplayModifiers;
+    //GlobalNamespace::IPreviewBeatmapLevel* loadingPreviewBeatmapLevel;
+    //GlobalNamespace::BeatmapDifficulty loadingBeatmapDifficulty;
+    //GlobalNamespace::BeatmapCharacteristicSO* loadingBeatmapCharacteristic;
+    //GlobalNamespace::IDifficultyBeatmap* loadingDifficultyBeatmap;
+    //GlobalNamespace::GameplayModifiers* loadingGameplayModifiers;
 
     //System::Action_3<::Il2CppString*, ::Il2CppString*, EntitlementsStatus>* entitlementAction;
 #pragma endregion
@@ -84,7 +84,7 @@ namespace MultiplayerCore {
                 //    return;
                 //}
             }
-            getLogger().error("[HandleEntitlementReceived] GameStarting but level data not available");
+            getLogger().critical("[HandleEntitlementReceived] GameStarting but level data not available");
             //getLogger().debug("[HandleEntitlementReceived] checking pointers: loadingPreviewBeatmapLevel='%p', loadingBeatmapDifficulty set to '%d', loadingBeatmapCharacteristic='%p', loadingDifficultyBeatmap='%p', loadingGameplayModifiers='%p'", loadingPreviewBeatmapLevel, static_cast<int>(loadingBeatmapDifficulty), loadingBeatmapCharacteristic, loadingDifficultyBeatmap, loadingGameplayModifiers);
         }
     }

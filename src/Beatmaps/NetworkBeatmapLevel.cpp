@@ -11,26 +11,30 @@ DEFINE_TYPE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel);
 namespace MultiplayerCore::Beatmaps {
 	void NetworkBeatmapLevel::New(Packets::MpBeatmapPacket* packet) {
 		_packet = packet;
-		coverImageTask = System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor();
-		reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->dyn_m_stateFlags() = System::Threading::Tasks::Task::TASK_STATE_STARTED;
-
-		BeatSaver::API::GetBeatmapByHashAsync(_packet->levelHash,
-			[this](std::optional<BeatSaver::Beatmap> beatmap) {
-				if (beatmap.has_value()) {
-					BeatSaver::API::GetCoverImageAsync(*beatmap, [this](std::vector<uint8_t> bytes) {
-						QuestUI::MainThreadScheduler::Schedule([this, bytes] {
-							coverImageTask->TrySetResult(QuestUI::BeatSaberUI::VectorToSprite(bytes));
-							reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->dyn_m_stateFlags() = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
-							}
-						);
-						}
-					);
-				}
-			}
-		);
+		this->levelID = StringW(RuntimeSongLoader::API::GetCustomLevelsPrefix().c_str()) + _packet->levelHash;
 	}
 
 	System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* NetworkBeatmapLevel::GetCoverImageAsync(System::Threading::CancellationToken cancellationToken) {
+		if (!coverImageTask) {
+			coverImageTask = System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));
+			reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->dyn_m_stateFlags() = System::Threading::Tasks::Task::TASK_STATE_STARTED;
+
+			BeatSaver::API::GetBeatmapByHashAsync(_packet->levelHash,
+				[this](std::optional<BeatSaver::Beatmap> beatmap) {
+					if (beatmap.has_value()) {
+						BeatSaver::API::GetCoverImageAsync(*beatmap, [this](std::vector<uint8_t> bytes) {
+							QuestUI::MainThreadScheduler::Schedule([this, bytes] {
+								getLogger().debug("Got coverImage from BeatSaver");
+								coverImageTask->TrySetResult(QuestUI::BeatSaberUI::VectorToSprite(bytes));
+								reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->dyn_m_stateFlags() = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+								}
+							);
+							}
+						);
+					}
+				}
+			);
+		}
 		if (coverImageTask)
 			return coverImageTask;
 		return System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));
@@ -70,5 +74,38 @@ namespace MultiplayerCore::Beatmaps {
 	float NetworkBeatmapLevel::get_songDuration() {
 		return _packet->songDuration;
 	}
+
+	float NetworkBeatmapLevel::get_songTimeOffset() {
+		return 0;
+	}
+
+	float NetworkBeatmapLevel::get_previewDuration() {
+		return 0;
+	}
+
+	float NetworkBeatmapLevel::get_previewStartTime() {
+		return 0;
+	}
+
+	float NetworkBeatmapLevel::get_shuffle() {
+		return 0;
+	}
+
+	float NetworkBeatmapLevel::get_shufflePeriod() {
+		return 0;
+	}
+
+	GlobalNamespace::EnvironmentInfoSO* NetworkBeatmapLevel::get_allDirectionsEnvironmentInfo() {
+		return nullptr;
+	}
+
+	GlobalNamespace::EnvironmentInfoSO* NetworkBeatmapLevel::get_environmentInfo() {
+		return nullptr;
+	}
+
+	::System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::PreviewDifficultyBeatmapSet*>* NetworkBeatmapLevel::get_previewDifficultyBeatmapSets() {
+		return nullptr;
+	}
+
 #pragma endregion
 }

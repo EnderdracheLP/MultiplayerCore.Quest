@@ -16,7 +16,8 @@ namespace MultiplayerCore {
     }
 
     DataStore* DataStore::CS_Ctor(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap) {
-        instance = THROW_UNLESS(il2cpp_utils::New<MultiplayerCore::DataStore*, il2cpp_utils::CreationType::Manual>(gameplaySetupData, difficultyBeatmap));
+        //instance = THROW_UNLESS(il2cpp_utils::New<MultiplayerCore::DataStore*, il2cpp_utils::CreationType::Manual>(gameplaySetupData, difficultyBeatmap));
+        instance = MultiplayerCore::DataStore::New_ctor<il2cpp_utils::CreationType::Manual>(gameplaySetupData, difficultyBeatmap));
         return instance;
     }
 
