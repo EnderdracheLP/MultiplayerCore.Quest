@@ -231,26 +231,38 @@ MAKE_HOOK_MATCH(LobbyPlayersActivate, &LobbyPlayersDataModel::Activate, void, Lo
 //}
 
 MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController::DidActivate, void, LobbySetupViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
-    lobbySetupView = self;
-    LobbySetupViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
-    if (getConfig().config["autoDelete"].GetBool() && !DownloadedSongIds.empty()) {
-        using namespace RuntimeSongLoader::API;
-        std::string hash = DownloadedSongIds.back();
-        getLogger().debug("AutoDelete Song with Hash '%s'", hash.c_str());
-        std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash);
-        if (levelOpt.has_value()) {
-            std::string songPath = to_utf8(csstrtostr(levelOpt.value()->get_customLevelPath()));
-            getLogger().info("Deleting Song: %s", songPath.c_str());
-            DeleteSong(songPath, [&] {
-                RefreshSongs(false);
-                DownloadedSongIds.pop_back();
-            });
-            if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotOwned);
+    try {
+        lobbySetupView = self;
+        LobbySetupViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+        if (getConfig().config["autoDelete"].GetBool() && !DownloadedSongIds.empty()) {
+            using namespace RuntimeSongLoader::API;
+            std::string hash = DownloadedSongIds.back();
+            getLogger().debug("AutoDelete Song with Hash '%s'", hash.c_str());
+            std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash);
+            if (levelOpt.has_value()) {
+                std::string songPath = to_utf8(csstrtostr(levelOpt.value()->get_customLevelPath()));
+                getLogger().info("Deleting Song: %s", songPath.c_str());
+                DeleteSong(songPath, [&] {
+                    RefreshSongs(false);
+                    DownloadedSongIds.pop_back();
+                    });
+                if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotOwned);
+            }
+        }
+        if (firstActivation && _multiplayerSessionManager) {
+            MultiplayerCore::UI::LobbySetupPanel::AddSetupPanel(self->get_rectTransform(), _multiplayerSessionManager);
         }
     }
-    if (firstActivation) {
-        MultiQuestensions::UI::LobbySetupPanel::AddSetupPanel(self->get_rectTransform(), _multiplayerSessionManager);
+    catch (il2cpp_utils::RunMethodException const& e) {
+        getLogger().error("REPORT TO ENDER RunMethodException in LobbySetupViewController_DidActivate: %s", e.what());
     }
+    catch (const std::exception& e) {
+        getLogger().error("REPORT TO ENDER exception in LobbySetupViewController_DidActivate: %s", e.what());
+    }
+    catch (...) {
+        getLogger().warning("REPORT TO ENDER: An Unknown exception was thrown in LobbySetupViewController_DidActivate");
+    }
+
 }
 
 MAKE_HOOK_MATCH(MultiplayerLobbyConnectionController_CreateParty, &MultiplayerLobbyConnectionController::CreateParty, void, MultiplayerLobbyConnectionController* self, CreateServerFormData data) {
@@ -513,8 +525,7 @@ void saveDefaultConfig() {
     getLogger().info("Creating config file...");
     ConfigDocument& config = getConfig().config;
 
-    if (/*config.HasMember("color") && config["color"].IsString() &&*/
-        config.HasMember("autoDelete") && config["autoDelete"].IsBool() &&
+    if (config.HasMember("autoDelete") && config["autoDelete"].IsBool() &&
         config.HasMember("LagReducer") && config["LagReducer"].IsBool() &&
         config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt()) {
         getLogger().info("Config file already exists.");
@@ -532,8 +543,6 @@ void saveDefaultConfig() {
         config.AddMember("LagReducer", false, allocator);
     if (!(config.HasMember("autoDelete") && config["autoDelete"].IsBool()))
         config.AddMember("autoDelete", false, allocator);
-    //if (!(config.HasMember("color") && config["color"].IsString()))
-    //    config.AddMember("color", "#08C0FF", allocator);
 
     getConfig().Write();
     getLogger().info("Config file created.");

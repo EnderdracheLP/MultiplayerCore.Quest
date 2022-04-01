@@ -14,7 +14,7 @@
 #include "Utils/SemVerChecker.hpp"
 using namespace UnityEngine::UI;
 
-namespace MultiQuestensions::UI {
+namespace MultiplayerCore::UI {
 
 	UnityEngine::UI::Toggle* LobbySetupPanel::lagReducerToggle;
 	bool LobbySetupPanel::needRefresh;
@@ -70,8 +70,8 @@ namespace MultiQuestensions::UI {
 		lagReducerToggle = QuestUI::BeatSaberUI::CreateToggle(vertical4->get_transform(), "Lag Reducer", getConfig().config["LagReducer"].GetBool(), SetLagReducer);
 		QuestUI::BeatSaberUI::AddHoverHint(lagReducerToggle->get_gameObject(), "Makes multiplayer easier for the quest to handle.");
 
-		UnityEngine::Color playerColor;
-		UnityEngine::ColorUtility::TryParseHtmlString(getConfig().config["color"].GetString(), playerColor);
+		//UnityEngine::Color playerColor;
+		//UnityEngine::ColorUtility::TryParseHtmlString(getConfig().config["color"].GetString(), playerColor);
 
 		//QuestUI::BeatSaberUI::CreateColorPickerModal(parent->get_transform(), "Player Color Selection", playerColor);
 

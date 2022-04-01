@@ -4,7 +4,7 @@
 #include "UnityEngine/UI/Toggle.hpp"
 #include "UnityEngine/RectTransform.hpp"
 
-namespace MultiQuestensions::UI {
+namespace MultiplayerCore::UI {
 	class LobbySetupPanel {
 	private:
 		//static GlobalNamespace::IMultiplayerSessionManager* sessionManager;
