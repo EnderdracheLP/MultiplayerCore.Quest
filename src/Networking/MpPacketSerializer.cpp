@@ -12,7 +12,8 @@ namespace MultiplayerCore::Networking {
 		//registeredTypes = std::move(TypeDictionary());
 		packetHandlers = std::move(CallbackDictionary());
 		getLogger().debug("Registering MpPacketSerializer");
-		_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
+        GlobalNamespace::MultiplayerSessionManager_MessageType messageType = (GlobalNamespace::MultiplayerSessionManager_MessageType)100;
+		_sessionManager->RegisterSerializer(messageType, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 		getLogger().debug("MpPacketSerializer Registered Successfully");
 	}
 
