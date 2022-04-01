@@ -75,37 +75,37 @@ namespace MultiplayerCore::Beatmaps {
 		return _packet->songDuration;
 	}
 
-	float NetworkBeatmapLevel::get_songTimeOffset() {
-		return 0;
-	}
+	//float NetworkBeatmapLevel::get_songTimeOffset() {
+	//	return 0;
+	//}
 
-	float NetworkBeatmapLevel::get_previewDuration() {
-		return 0;
-	}
+	//float NetworkBeatmapLevel::get_previewDuration() {
+	//	return 0;
+	//}
 
-	float NetworkBeatmapLevel::get_previewStartTime() {
-		return 0;
-	}
+	//float NetworkBeatmapLevel::get_previewStartTime() {
+	//	return 0;
+	//}
 
-	float NetworkBeatmapLevel::get_shuffle() {
-		return 0;
-	}
+	//float NetworkBeatmapLevel::get_shuffle() {
+	//	return 0;
+	//}
 
-	float NetworkBeatmapLevel::get_shufflePeriod() {
-		return 0;
-	}
+	//float NetworkBeatmapLevel::get_shufflePeriod() {
+	//	return 0;
+	//}
 
-	GlobalNamespace::EnvironmentInfoSO* NetworkBeatmapLevel::get_allDirectionsEnvironmentInfo() {
-		return nullptr;
-	}
+	//GlobalNamespace::EnvironmentInfoSO* NetworkBeatmapLevel::get_allDirectionsEnvironmentInfo() {
+	//	return nullptr;
+	//}
 
-	GlobalNamespace::EnvironmentInfoSO* NetworkBeatmapLevel::get_environmentInfo() {
-		return nullptr;
-	}
+	//GlobalNamespace::EnvironmentInfoSO* NetworkBeatmapLevel::get_environmentInfo() {
+	//	return nullptr;
+	//}
 
-	::System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::PreviewDifficultyBeatmapSet*>* NetworkBeatmapLevel::get_previewDifficultyBeatmapSets() {
-		return nullptr;
-	}
+	//::System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::PreviewDifficultyBeatmapSet*>* NetworkBeatmapLevel::get_previewDifficultyBeatmapSets() {
+	//	return nullptr;
+	//}
 
 #pragma endregion
 }

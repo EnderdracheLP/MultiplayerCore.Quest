@@ -322,6 +322,9 @@ namespace MultiplayerCore {
 
 std::vector<std::string> DownloadedSongIds;
 
+#include "System/Threading/CancellationTokenSource.hpp"
+#include "GlobalNamespace/LevelGameplaySetupData.hpp"
+
 MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadLevel, void, MultiplayerLevelLoader* self, ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
     try {
         if (gameplaySetupData && gameplaySetupData->get_beatmapLevel()) {
@@ -342,17 +345,17 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
             else {
                 std::string hash = Utilities::GetHash(levelId);
                 BeatSaver::API::GetBeatmapByHashAsync(hash,
-                    [self, gameplaySetupData, initialStartTime, hash, cslInstance](std::optional<BeatSaver::Beatmap> beatmapOpt) {
+                    [self, gameplaySetupData, initialStartTime, hash, levelId, cslInstance](std::optional<BeatSaver::Beatmap> beatmapOpt) {
                         if (beatmapOpt.has_value()) {
                             auto beatmap = beatmapOpt.value();
                             auto beatmapName = beatmap.GetName();
                             getLogger().info("Downloading map: %s", beatmap.GetName().c_str());
                             BeatSaver::API::DownloadBeatmapAsync(beatmap,
-                                [self, gameplaySetupData, initialStartTime, beatmapName, hash, beatmap, cslInstance](bool error) {
+                                [self, gameplaySetupData, initialStartTime, beatmapName, hash, levelId, beatmap, cslInstance](bool error) {
                                     if (error) {
                                         getLogger().info("Failed downloading map retrying: %s", beatmapName.c_str());
                                         BeatSaver::API::DownloadBeatmapAsync(beatmap,
-                                            [self, gameplaySetupData, initialStartTime, beatmapName, hash](bool error) {
+                                            [self, gameplaySetupData, initialStartTime, beatmapName, hash, levelId](bool error) {
                                                 if (error) {
                                                     getLogger().info("Failed downloading map: %s", beatmapName.c_str());
                                                 }
@@ -360,9 +363,9 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                     getLogger().info("Downloaded map: %s", beatmapName.c_str());
                                                     DownloadedSongIds.emplace_back(hash);
                                                     QuestUI::MainThreadScheduler::Schedule(
-                                                        [self, gameplaySetupData, initialStartTime, hash] {
+                                                        [self, gameplaySetupData, initialStartTime, hash, levelId] {
                                                             RuntimeSongLoader::API::RefreshSongs(false,
-                                                                [self, gameplaySetupData, initialStartTime, hash](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
+                                                                [self, gameplaySetupData, initialStartTime, hash, levelId](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
                                                                     auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
                                                                     if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
                                                                     else {
@@ -371,8 +374,10 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                                     }
                                                                     getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
                                                                     self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
-                                                                    //getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
+                                                                    getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
                                                                     MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
+                                                                    reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
+                                                                    self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                                     return;
                                                                 }
                                                             );
@@ -393,9 +398,9 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                         getLogger().info("Downloaded map: %s", beatmapName.c_str());
                                         DownloadedSongIds.emplace_back(hash);
                                         QuestUI::MainThreadScheduler::Schedule(
-                                            [self, gameplaySetupData, initialStartTime, hash] {
+                                            [self, gameplaySetupData, initialStartTime, hash, levelId] {
                                                 RuntimeSongLoader::API::RefreshSongs(false,
-                                                    [self, gameplaySetupData, initialStartTime, hash](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
+                                                    [self, gameplaySetupData, initialStartTime, hash, levelId](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
                                                         auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
                                                         if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
                                                         else {
@@ -404,8 +409,10 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                         }
                                                         getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
                                                         self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
-                                                        //getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
+                                                        getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
                                                         MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
+                                                        reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
+                                                        self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                         return;
                                                     }
                                                 );

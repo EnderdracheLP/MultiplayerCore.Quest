@@ -11,16 +11,15 @@
 //Il2CppObject,
 //{ classof(GlobalNamespace::IPreviewBeatmapLevel*) },
 //"MultiplayerCore.Beatmaps",
-DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Abstractions::MpBeatmapLevel, "MultiplayerCore.Beatmaps",
+DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, NoInfoBeatmapLevel, Abstractions::MpBeatmapLevel, "MultiplayerCore.Beatmaps",
 //___DECLARE_TYPE_WRAPPER_INHERITANCE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Il2CppTypeEnum::IL2CPP_TYPE_CLASS,
 //	Il2CppObject, "MultiplayerCore.Beatmaps",
 //	{ classof(MpBeatmapPacket) }, 0, nullptr,
-	DECLARE_CTOR(New, Packets::MpBeatmapPacket* packet);
+	DECLARE_CTOR(New, StringW hash);
 
-	//// Packet
-	DECLARE_INSTANCE_FIELD(Packets::MpBeatmapPacket*, _packet);
+	// Level Hash
+	DECLARE_INSTANCE_FIELD(StringW, levelHash);
 
-	DECLARE_INSTANCE_FIELD(StringW, levelID);
 	//DECLARE_INSTANCE_FIELD(StringW, levelHash);
 
 	//DECLARE_INSTANCE_FIELD(StringW, songName);
@@ -42,8 +41,8 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Abstrac
 	DECLARE_OVERRIDE_METHOD(StringW, get_songAuthorName, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_songAuthorName>::get());
 	DECLARE_OVERRIDE_METHOD(StringW, get_levelAuthorName, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_levelAuthorName>::get());
 
-	DECLARE_OVERRIDE_METHOD(float, get_beatsPerMinute, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_beatsPerMinute>::get());
-	DECLARE_OVERRIDE_METHOD(float, get_songDuration, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_songDuration>::get());
+	//DECLARE_OVERRIDE_METHOD(float, get_beatsPerMinute, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_beatsPerMinute>::get());
+	//DECLARE_OVERRIDE_METHOD(float, get_songDuration, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_songDuration>::get());
 	//DECLARE_OVERRIDE_METHOD(float, get_previewStartTime, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_previewStartTime>::get());
 	//DECLARE_OVERRIDE_METHOD(float, get_previewDuration, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_previewDuration>::get());
 	//DECLARE_OVERRIDE_METHOD(::System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::PreviewDifficultyBeatmapSet*>*, get_previewDifficultyBeatmapSets, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_previewDifficultyBeatmapSets>::get());

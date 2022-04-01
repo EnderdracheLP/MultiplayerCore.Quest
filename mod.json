@@ -1,45 +1,45 @@
 {
-  "_QPVersion": "0.1.2",
+  "_QPVersion": "0.1.1",
   "name": "MultiplayerCore",
   "id": "MultiplayerCore",
   "author": "Goobie",
   "porter": "EnderdracheLP",
   "version": "0.1.0",
   "packageId": "com.beatgames.beatsaber",
-  "packageVersion": "1.19.0",
+  "packageVersion": "1.20.0",
   "description": "Port of MultiplayerCore, the PC mod that adds features to BeatTogether Multiplayer.",
   "dependencies": [
     {
-      "version": "^0.8.3",
+      "version": "^0.9.2",
       "id": "songloader",
-      "downloadIfMissing": "https://github.com/darknight1050/SongLoader/releases/download/v0.8.3/SongLoader.qmod"
+      "downloadIfMissing": "https://github.com/darknight1050/SongLoader/releases/download/v0.9.2/SongLoader.qmod"
     },
     {
-      "version": "^0.15.6",
+      "version": "^0.15.8",
       "id": "custom-types",
-      "downloadIfMissing": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.6/CustomTypes.qmod"
+      "downloadIfMissing": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.8/CustomTypes.qmod"
     },
     {
-      "version": "^0.19.3",
-      "id": "codegen",
-      "downloadIfMissing": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.19.3/Codegen.qmod"
-    },
-    {
-      "version": "^0.4.0",
+      "version": "^0.4.3",
       "id": "songdownloader",
-      "downloadIfMissing": "https://github.com/darknight1050/SongDownloader/releases/download/v0.4.0/SongDownloader.qmod"
+      "downloadIfMissing": "https://github.com/darknight1050/SongDownloader/releases/download/v0.4.3/SongDownloader.qmod"
     },
     {
-      "version": "^0.13.1",
+      "version": "^0.21.0",
+      "id": "codegen",
+      "downloadIfMissing": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.21.0/Codegen.qmod"
+    },
+    {
+      "version": "^0.13.4",
       "id": "questui",
-      "downloadIfMissing": "https://github.com/darknight1050/questui/releases/download/v0.13.1/QuestUI.qmod"
+      "downloadIfMissing": "https://github.com/darknight1050/questui/releases/download/v0.13.4/QuestUI.qmod"
     }
   ],
   "modFiles": [
     "libMultiplayerCore.so"
   ],
   "libraryFiles": [
-    "libbeatsaber-hook_3_6_7.so"
+    "libbeatsaber-hook_3_6_8.so"
   ],
   "fileCopies": [],
   "copyExtensions": []

@@ -165,17 +165,26 @@ MAKE_HOOK_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &LobbyPlayersD
     LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, beatmapLevel);
 }
 
-MAKE_HOOK_MATCH(LobbyPlayersDataModel_SetPlayerBeatmapLevel, &LobbyPlayersDataModel::SetPlayerBeatmapLevel, void, LobbyPlayersDataModel* self, ::StringW userId, ::GlobalNamespace::PreviewDifficultyBeatmap* beatmapLevel) {
-    if (beatmapLevel && beatmapLevel->get_beatmapLevel())
-        getLogger().debug("LobbyPlayersDataModel_SetPlayerBeatmapLevel: levelId: '%s', songName: '%s', songSubName: '%s', songAuthorName: '%s'",
-            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_levelID()).c_str(),
-            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songName()).c_str(),
-            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songSubName()).c_str(),
-            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songAuthorName()).c_str()
-        );
-
-    LobbyPlayersDataModel_SetPlayerBeatmapLevel(self, userId, beatmapLevel);
+#include "GlobalNamespace/BeatmapIdentifierNetSerializableHelper.hpp"
+#include "Beatmaps/NoInfoBeatmapLevel.hpp"
+using namespace MultiplayerCore::Beatmaps;
+MAKE_HOOK_MATCH(BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap, &BeatmapIdentifierNetSerializableHelper::ToPreviewDifficultyBeatmap, PreviewDifficultyBeatmap*, BeatmapIdentifierNetSerializable* beatmapId, BeatmapLevelsModel* beatmapLevelsModel, BeatmapCharacteristicCollectionSO* beatmapCharacteristicCollection) {
+    PreviewDifficultyBeatmap* beatmap = BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap(beatmapId, beatmapLevelsModel, beatmapCharacteristicCollection);
+    if (!beatmap->get_beatmapLevel()) beatmap->set_beatmapLevel(reinterpret_cast<IPreviewBeatmapLevel*>(NoInfoBeatmapLevel::New_ctor(Utilities::HashForLevelID(beatmapId->get_levelID()))));
+    return beatmap;
 }
+
+//MAKE_HOOK_MATCH(LobbyPlayersDataModel_SetPlayerBeatmapLevel, &LobbyPlayersDataModel::SetPlayerBeatmapLevel, void, LobbyPlayersDataModel* self, ::StringW userId, ::GlobalNamespace::PreviewDifficultyBeatmap* beatmapLevel) {
+//    if (beatmapLevel && beatmapLevel->get_beatmapLevel())
+//        getLogger().debug("LobbyPlayersDataModel_SetPlayerBeatmapLevel: levelId: '%s', songName: '%s', songSubName: '%s', songAuthorName: '%s'",
+//            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_levelID()).c_str(),
+//            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songName()).c_str(),
+//            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songSubName()).c_str(),
+//            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songAuthorName()).c_str()
+//        );
+//
+//    LobbyPlayersDataModel_SetPlayerBeatmapLevel(self, userId, beatmapLevel);
+//}
 
 void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
     INSTALL_HOOK(getLogger(), SessionManagerStart);
@@ -184,5 +193,7 @@ void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap);
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap);
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel);
-    INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_SetPlayerBeatmapLevel);
+    //INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_SetPlayerBeatmapLevel);
+
+    INSTALL_HOOK_ORIG(getLogger(), BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap);
 }

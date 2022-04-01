@@ -1,8 +1,3 @@
-/*  
-*   DownloadedSongsGameplaySetupMenu
-*   Copyright (c) EnderdracheLP
-*/
-
 #include "main.hpp"
 #include "UI/DownloadedSongsGSM.hpp"
 
@@ -71,6 +66,9 @@ namespace MultiQuestensions::UI {
                     }
                     });
                 if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(level.value()->get_levelID(), EntitlementsStatus::NotOwned);
+            }
+            else {
+                getLogger().debug("Level to Delete not found");
             }
             needSongRefresh = true;
             DownloadedSongIds.erase(DownloadedSongIds.begin() + selectedIdx);
