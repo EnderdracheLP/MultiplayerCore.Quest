@@ -346,12 +346,14 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
             }
         }
         std::string levelId = static_cast<std::string>(gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
-        getLogger().info("MultiplayerLevelLoader_LoadLevel: %s", levelId.c_str());
+        getLogger().info("Loading Level: %s", levelId.c_str());
         MultiplayerCore::UI::CenterScreenLoading* cslInstance = MultiplayerCore::UI::CenterScreenLoading::get_Instance();
         if (IsCustomLevel(levelId)) {
             if (HasSong(levelId)) {
                 getLogger().debug("MultiplayerLevelLoader_LoadLevel, HasSong, calling original");
                 MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
+                reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
+                //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                 return;
             }
             else {
@@ -389,7 +391,7 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                                     getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
                                                                     MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
                                                                     reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
-                                                                    self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
+                                                                    //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                                     return;
                                                                 }
                                                             );
@@ -424,7 +426,7 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                         getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
                                                         MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
                                                         reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
-                                                        self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
+                                                        //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                         return;
                                                     }
                                                 );

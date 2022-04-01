@@ -138,14 +138,19 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
 }
 
 MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap, &LobbyPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap, void, LobbyPlayersDataModel* self, StringW userId) {
+    getLogger().debug("LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap Start");
     LobbyPlayerData* localPlayerData = self->dyn__playersData()->get_Item(self->get_localUserId());
-    if (localPlayerData->get_beatmapLevel() && 
-        il2cpp_utils::AssignableFrom<Beatmaps::Packets::MpBeatmapPacket*>(
-            reinterpret_cast<Il2CppObject*>(localPlayerData->get_beatmapLevel())->klass
-            )
-        )
-        mpPacketSerializer->Send(Beatmaps::Packets::MpBeatmapPacket::CS_Ctor(localPlayerData->get_beatmapLevel()));
-    
+    if (localPlayerData->get_beatmapLevel() && localPlayerData->get_beatmapLevel()->get_beatmapLevel()) {
+        getLogger().debug("LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap Get LevelID");
+        StringW levelId = localPlayerData->get_beatmapLevel()->get_beatmapLevel()->get_levelID();
+        if (Il2CppString::IsNullOrEmpty(levelId))
+            return;
+        StringW levelHash = Utilities::HashForLevelID(levelId);
+        if (Il2CppString::IsNullOrEmpty(levelHash))
+            mpPacketSerializer->Send(Beatmaps::Packets::MpBeatmapPacket::CS_Ctor(localPlayerData->get_beatmapLevel()));
+    }
+    getLogger().debug("LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap Finished");
+
     LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap(self, userId);
 }
 
