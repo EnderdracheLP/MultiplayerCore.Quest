@@ -32,7 +32,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
     DECLARE_DTOR(Deconstruct);
 
     private:
-        static const int Packet_ID = 100;
+        static const uint8_t Packet_ID = 100u;
 
         CallbackDictionary packetHandlers;
 

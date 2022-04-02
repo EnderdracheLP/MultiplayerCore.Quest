@@ -9,11 +9,24 @@ namespace MultiplayerCore::Networking {
 	void MpPacketSerializer::Construct(GlobalNamespace::MultiplayerSessionManager* sessionManager) {
 		getLogger().debug("Constructing MpPacketSerializer");
 		_sessionManager = sessionManager;
-		//registeredTypes = std::move(TypeDictionary());
 		packetHandlers = std::move(CallbackDictionary());
 		getLogger().debug("Registering MpPacketSerializer");
-		_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
-		getLogger().debug("MpPacketSerializer Registered Successfully");
+		try {
+			_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
+			getLogger().debug("MpPacketSerializer Registered Successfully");
+		}
+		catch (il2cpp_utils::RunMethodException const& e) {
+			getLogger().error("REPORT TO ENDER in MpPacketSerializer: %s", e.what());
+			getLogger().Backtrace(20);
+		}
+		catch (const std::exception& e) {
+			getLogger().error("REPORT TO ENDER in MpPacketSerializer: %s", e.what());
+			getLogger().Backtrace(20);
+		}
+		catch (...) {
+			getLogger().warning("REPORT TO ENDER in MpPacketSerializer: An Unknown exception was thrown");
+			getLogger().Backtrace(20);
+		}
 	}
 
 	void MpPacketSerializer::Deconstruct() {
