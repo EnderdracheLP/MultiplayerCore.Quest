@@ -8,7 +8,7 @@ DEFINE_TYPE(MultiplayerCore::Networking, MpPacketSerializer);
 namespace MultiplayerCore::Networking {
 	void MpPacketSerializer::Construct(GlobalNamespace::MultiplayerSessionManager* sessionManager) {
 		getLogger().debug("Constructing MpPacketSerializer");
-		_sessionManager = sessionManager;
+		this->_sessionManager = sessionManager;
 		packetHandlers = std::move(CallbackDictionary());
 		getLogger().debug("Registering MpPacketSerializer");
 		try {
