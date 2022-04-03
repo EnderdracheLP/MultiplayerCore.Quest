@@ -98,17 +98,23 @@ void HandlePlayerDisconnected(IConnectedPlayer* player) {
 MAKE_HOOK_MATCH(SessionManagerStart, &MultiplayerSessionManager::Start, void, MultiplayerSessionManager* self) {
     _multiplayerSessionManager = self;
     SessionManagerStart(_multiplayerSessionManager);
-    mpPacketSerializer = Networking::MpPacketSerializer::New_ctor(_multiplayerSessionManager);
-
-    getLogger().debug("Registering Callback");
-    mpPacketSerializer->RegisterCallback<Beatmaps::Packets::MpBeatmapPacket*>(HandleMpexBeatmapPacket);
-    getLogger().debug("Callback HandleMpexBeatmapPacket Registered");
-    mpPacketSerializer->RegisterCallback<Players::MpPlayerData*>(HandlePlayerData);
-    getLogger().debug("Callback HandlePlayerData Registered");
 }
+
+//bool packetSerializer_Init = false;
 
 MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSession, void, MultiplayerSessionManager* self, MultiplayerSessionManager_SessionType sessionType, ConnectedPlayerManager* connectedPlayerManager) {
     SessionManager_StartSession(self, sessionType, connectedPlayerManager);
+    if (!mpPacketSerializer) {
+        getLogger().debug("Creating MpPacketSerializer");
+        mpPacketSerializer = Networking::MpPacketSerializer::New_ctor(_multiplayerSessionManager);
+
+        getLogger().debug("Registering Callback");
+        mpPacketSerializer->RegisterCallback<Beatmaps::Packets::MpBeatmapPacket*>(HandleMpexBeatmapPacket);
+        getLogger().debug("Callback HandleMpexBeatmapPacket Registered");
+        mpPacketSerializer->RegisterCallback<Players::MpPlayerData*>(HandlePlayerData);
+        getLogger().debug("Callback HandlePlayerData Registered");
+    }
+
     getLogger().debug("MultiplayerSessionManager.StartSession, creating localPlayer");
 
         static auto localNetworkPlayerModel = UnityEngine::Resources::FindObjectsOfTypeAll<LocalNetworkPlayerModel*>().get(0);

@@ -38,6 +38,7 @@ namespace MultiplayerCore::Networking {
 		getLogger().debug("Unregistering MpPacketSerializer");
 		_sessionManager->UnregisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 		_sessionManager = nullptr;
+		mpPacketSerializer.~SafePtr();
 	}
 
 	void MpPacketSerializer::Serialize(LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet) {

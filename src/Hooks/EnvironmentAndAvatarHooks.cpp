@@ -171,10 +171,10 @@ namespace MultiplayerCore {
     }
 
     MAKE_HOOK_MATCH(MultiplayerLobbyController_ActivateMultiplayerLobby, &MultiplayerLobbyController::ActivateMultiplayerLobby, void, MultiplayerLobbyController* self) {
-        if (!_placeManager) _placeManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyAvatarPlaceManager*>()[0];
-        if (!_menuEnvironmentManager) _menuEnvironmentManager = Resources::FindObjectsOfTypeAll<MenuEnvironmentManager*>()[0];
-        if (!_stageManager) _stageManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyCenterStageManager*>()[0];
-        if (!_lobbyStateDataModel)  _lobbyStateDataModel = _placeManager->dyn__lobbyStateDataModel();
+        _placeManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyAvatarPlaceManager*>()[0];
+        _menuEnvironmentManager = Resources::FindObjectsOfTypeAll<MenuEnvironmentManager*>()[0];
+        _stageManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyCenterStageManager*>()[0];
+        _lobbyStateDataModel = _placeManager->dyn__lobbyStateDataModel();
 
         self->dyn__innerCircleRadius() = 1;
         self->dyn__minOuterCircleRadius() = 4.4f;
