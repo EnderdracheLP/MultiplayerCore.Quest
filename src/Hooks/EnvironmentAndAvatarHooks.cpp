@@ -183,18 +183,22 @@ namespace MultiplayerCore {
         HandleLobbyEnvironmentLoaded();
     }
 
-    MAKE_HOOK_MATCH(LightWithIdMonoBehaviour_RegisterLight, &LightWithIdMonoBehaviour::RegisterLight, void, LightWithIdMonoBehaviour* self) {
-        getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Starting");
-        if (self && self->get_transform() && 
-        self->get_transform()->get_parent() && 
-        self->get_transform()->get_parent()->get_name() && 
-        self->get_transform()->get_parent()->get_name()->Contains("LobbyAvatarPlace")) {
-            getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Skipped");
-            return;
-        }
-        LightWithIdMonoBehaviour_RegisterLight(self);
-        getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Done");
-    }
+    // MAKE_HOOK_MATCH(LightWithIdMonoBehaviour_RegisterLight, &LightWithIdMonoBehaviour::RegisterLight, void, LightWithIdMonoBehaviour* self) {
+    //     getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Starting");
+    //     if (_multiplayerSessionManager) {
+    //         if (self && self->get_transform() && 
+    //         self->get_transform()->get_parent() && 
+    //         self->get_transform()->get_parent()->get_name() && 
+    //         self->get_transform()->get_parent()->get_name()->Contains("LobbyAvatarPlace")) {
+    //             getLogger().debug("LightWithIdMonoBehaviour_RegisterLight '%s' Skipped", static_cast<std::string>(self->get_transform()->get_parent()->get_name()).c_str());
+    //             return;
+    //         }
+    //     } else {
+    //         getLogger().debug("LightWithIdMonoBehaviour_RegisterLight not MP, ignoring");
+    //     }
+    //     LightWithIdMonoBehaviour_RegisterLight(self);
+    //     getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Done");
+    // }
 
 #pragma endregion
 
@@ -288,7 +292,7 @@ namespace MultiplayerCore {
 
     void Hooks::EnvironmentHooks() {
         INSTALL_HOOK(getLogger(), MultiplayerLobbyController_ActivateMultiplayerLobby);
-        INSTALL_HOOK(getLogger(), LightWithIdMonoBehaviour_RegisterLight);
+        // INSTALL_HOOK_ORIG(getLogger(), LightWithIdMonoBehaviour_RegisterLight);
         INSTALL_HOOK(getLogger(), MultiplayerLobbyAvatarManager_AddPlayer);
         INSTALL_HOOK_ORIG(getLogger(), AvatarPoseRestrictions_HandleAvatarPoseControllerPositionsWillBeSet);
     }
