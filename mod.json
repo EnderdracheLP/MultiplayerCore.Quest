@@ -39,7 +39,7 @@
     "libMultiplayerCore.so"
   ],
   "libraryFiles": [
-    "libbeatsaber-hook_3_7_4.so"
+    "libbeatsaber-hook_3_8_0.so"
   ],
   "fileCopies": [],
   "copyExtensions": []

@@ -184,8 +184,16 @@ namespace MultiplayerCore {
     }
 
     MAKE_HOOK_MATCH(LightWithIdMonoBehaviour_RegisterLight, &LightWithIdMonoBehaviour::RegisterLight, void, LightWithIdMonoBehaviour* self) {
-        if (!(self->get_transform()->get_parent() != nullptr && self->get_transform()->get_parent()->get_name()->Contains(il2cpp_utils::newcsstr("LobbyAvatarPlace")))) 
-            LightWithIdMonoBehaviour_RegisterLight(self);
+        getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Starting");
+        if (self && self->get_transform() && 
+        self->get_transform()->get_parent() && 
+        self->get_transform()->get_parent()->get_name() && 
+        self->get_transform()->get_parent()->get_name()->Contains("LobbyAvatarPlace")) {
+            getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Skipped");
+            return;
+        }
+        LightWithIdMonoBehaviour_RegisterLight(self);
+        getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Done");
     }
 
 #pragma endregion
@@ -265,7 +273,7 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(MultiplayerLobbyAvatarManager_AddPlayer, &MultiplayerLobbyAvatarManager::AddPlayer, void, MultiplayerLobbyAvatarManager* self, IConnectedPlayer* connectedPlayer) {
         MultiplayerLobbyAvatarManager_AddPlayer(self, connectedPlayer);
-        if (!_avatarManager) _avatarManager = self;
+        _avatarManager = self;
         //HandleLobbyAvatarCreated(connectedPlayer);
     }
 
