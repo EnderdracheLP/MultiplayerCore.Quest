@@ -151,8 +151,10 @@ namespace MultiplayerCore {
 
 // LobbyPlayersDataModel Activate
 MAKE_HOOK_MATCH(LobbyPlayersActivate, &LobbyPlayersDataModel::Activate, void, LobbyPlayersDataModel* self) {
+    getLogger().debug("LobbyPlayersActivate Start");
     lobbyPlayersDataModel = self;
     LobbyPlayersActivate(lobbyPlayersDataModel);
+    getLogger().debug("LobbyPlayersActivate Done");
 }
 
 // LobbyPlayersDataModel SetLocalPlayerBeatmapLevel
@@ -500,8 +502,10 @@ MAKE_HOOK_MATCH(LobbyGameStateController_HandleMultiplayerLevelLoaderCountdownFi
 }
 
 MAKE_HOOK_MATCH(LobbyGameStateController_Activate, &LobbyGameStateController::Activate, void, LobbyGameStateController* self) {
+    getLogger().debug("LobbyGameStateController_Activate Start");
     lobbyGameStateController = self;
     LobbyGameStateController_Activate(self);
+    getLogger().debug("LobbyGameStateController_Activate Done");
 }
 
 // TODO: This allows for overwriting entitlement as it doesn't check entitlement for other players selection

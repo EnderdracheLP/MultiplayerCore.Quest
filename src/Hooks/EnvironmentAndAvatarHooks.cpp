@@ -131,7 +131,7 @@ namespace MultiplayerCore {
 
     void HandleLobbyEnvironmentLoaded() {
         initialized = false;
-        //getLogger().debug("HandleLobbyEnvironmentLoaded Started");
+        getLogger().debug("HandleLobbyEnvironmentLoaded Started");
         //auto nativeAvatarPlaces = Resources::FindObjectsOfTypeAll<MultiplayerLobbyAvatarPlace*>();
         //for (int i = 0; i < nativeAvatarPlaces.Length(); i++)
         //{
@@ -152,12 +152,12 @@ namespace MultiplayerCore {
         //getLogger().debug("angleBetweenPlayersWithEvenAdjustment %f, outerCircleRadius %f", angleBetweenPlayersWithEvenAdjustment, outerCircleRadius);
 
         bool buildingsEnabled = (_multiplayerSessionManager->dyn__maxPlayerCount() <= 18);
-        auto* Construction_tr = _menuEnvironmentManager->get_transform()->Find(il2cpp_utils::newcsstr("Construction"));
+        auto* Construction_tr = _menuEnvironmentManager->get_transform()->Find("Construction");
         if (Construction_tr && Construction_tr->get_gameObject()) {
             Construction_tr->get_gameObject()->SetActive(buildingsEnabled);
         }
 
-        auto* Construction_1_tr = _menuEnvironmentManager->get_transform()->Find(il2cpp_utils::newcsstr("Construction (1)"));
+        auto* Construction_1_tr = _menuEnvironmentManager->get_transform()->Find("Construction (1)");
         if (Construction_1_tr && Construction_1_tr->get_gameObject()) {
             Construction_1_tr->get_gameObject()->SetActive(buildingsEnabled);
         }
@@ -167,10 +167,11 @@ namespace MultiplayerCore {
 
         initialized = true;
         //SetDefaultPlayerPlaceColors();
-        //getLogger().debug("HandleLobbyEnvironmentLoaded Finished");
+        getLogger().debug("HandleLobbyEnvironmentLoaded Finished");
     }
 
     MAKE_HOOK_MATCH(MultiplayerLobbyController_ActivateMultiplayerLobby, &MultiplayerLobbyController::ActivateMultiplayerLobby, void, MultiplayerLobbyController* self) {
+        getLogger().debug("ActivateMultiplayerLobby Start");
         _placeManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyAvatarPlaceManager*>()[0];
         _menuEnvironmentManager = Resources::FindObjectsOfTypeAll<MenuEnvironmentManager*>()[0];
         _stageManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyCenterStageManager*>()[0];
@@ -181,6 +182,7 @@ namespace MultiplayerCore {
         MultiplayerLobbyController_ActivateMultiplayerLobby(self);
 
         HandleLobbyEnvironmentLoaded();
+        getLogger().debug("ActivateMultiplayerLobby Done");
     }
 
     // MAKE_HOOK_MATCH(LightWithIdMonoBehaviour_RegisterLight, &LightWithIdMonoBehaviour::RegisterLight, void, LightWithIdMonoBehaviour* self) {
