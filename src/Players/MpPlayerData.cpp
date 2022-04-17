@@ -1,5 +1,5 @@
+#include "main.hpp"
 #include "Players/MpPlayerData.hpp"
-#include "CodegenExtensions/ColorUtility.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Players, MpPlayerData)
 
