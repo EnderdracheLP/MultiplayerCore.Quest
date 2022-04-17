@@ -126,7 +126,8 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
                 if (!localPlayer) localPlayer = Players::MpPlayerData::Init(userInfo->dyn_platformUserId(), (Players::Platform)userInfo->dyn_platform().value);
                 else {
                     localPlayer->platformId = userInfo->dyn_platformUserId();
-                    localPlayer->platform = (Players::Platform)userInfo->dyn_platform().value;
+                    Players::Platform platform = userInfo->dyn_platform().value == UserInfo::Platform::Oculus ? Players::Platform::OculusQuest : (Players::Platform)userInfo->dyn_platform().value;
+                    localPlayer->platform = platform;
                 }
             }
             else getLogger().error("Failed to get local network player!");
