@@ -34,7 +34,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
     private:
         static const uint8_t Packet_ID = 100u;
 
-        CallbackDictionary packetHandlers;
+        static CallbackDictionary packetHandlers;
 
     public:
         template <class TPacket>
@@ -85,6 +85,23 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
             CallbackWrapper<TPacket>* newCallback = new CallbackWrapper<TPacket>(callback);
             this->RegisterCallback(newCallback);
         }
+
+        template <class TPacket>
+        static void RegisterCallbackStatic(PacketCallback<TPacket> callback) {
+            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
+            CallbackWrapper<TPacket>* newCallback = new CallbackWrapper<TPacket>(callback);
+            RegisterCallbackStatic(newCallback);
+        }
+
+        template <class TPacket>
+        static void RegisterCallbackStatic(CallbackWrapper<TPacket>* callback) {
+            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
+            if (packetHandlers.find(static_cast<std::string>(csTypeOf(TPacket)->get_Name())) != packetHandlers.end()) {
+                delete packetHandlers[static_cast<std::string>(csTypeOf(TPacket)->get_Name())];
+            }
+            packetHandlers[static_cast<std::string>(csTypeOf(TPacket)->get_Name())] = callback;
+        }
+        
 )
 namespace MultiplayerCore {
     extern SafePtr<MultiplayerCore::Networking::MpPacketSerializer> mpPacketSerializer;
