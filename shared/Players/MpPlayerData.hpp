@@ -1,7 +1,7 @@
 #pragma once
 #include "custom-types/shared/macros.hpp"
 #include "GlobalNamespace/IConnectedPlayer.hpp"
-#include "Networking/Abstractions/MpPacket.hpp"
+#include "../Networking/Abstractions/MpPacket.hpp"
 
 namespace MultiplayerCore::Players {
     enum class Platform
