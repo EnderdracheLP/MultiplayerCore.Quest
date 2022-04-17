@@ -8,6 +8,9 @@
 #include "System/Threading/Tasks/Task.hpp"
 #include "System/Action_1.hpp"
 
+#include "UnityEngine/UI/ContentSizeFitter.hpp"
+#include "UnityEngine/UI/LayoutElement.hpp"
+
 #include "GlobalFields.hpp"
 using namespace GlobalNamespace;
 using namespace QuestUI;
@@ -87,6 +90,21 @@ namespace MultiQuestensions::UI {
         if (firstActivation) {
             instance = this;
 
+            // auto vertical = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(get_transform());
+            // auto vertical2 = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(vertical->get_transform());
+            // vertical2->set_childAlignment(UnityEngine::TextAnchor::UpperCenter);
+            // auto vert2CSF = vertical2->get_gameObject()->AddComponent<UnityEngine::UI::ContentSizeFitter*>();
+            // vert2CSF->set_horizontalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
+            // vert2CSF->set_verticalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
+            // // vertical2->get_gameObject()->AddComponent<UnityEngine::UI::LayoutElement*>()
+            // //     ->set_preferredHeight(1);
+            // auto vertical3 = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(vertical->get_transform());
+            // auto vert3CSF = vertical2->get_gameObject()->AddComponent<UnityEngine::UI::ContentSizeFitter*>();
+            // vert3CSF->set_horizontalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
+            // vert3CSF->set_verticalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
+            // // vertical2->get_gameObject()->AddComponent<LayoutElement*>()
+            // //     ->set_minWidth(45);
+
             modal = BeatSaberUI::CreateModal(get_transform(), { 55, 25 }, [this](HMUI::ModalView* self) {
                 list->tableView->ClearSelection();
                 });
@@ -111,13 +129,25 @@ namespace MultiQuestensions::UI {
                 cellIsSelected = false;
                 });
 
-            list = BeatSaberUI::CreateScrollableList(get_transform(), { 80, 60 }, [this](int idx) {
+            auto vertical = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(get_transform());
+            vertical->get_gameObject()->AddComponent<UnityEngine::UI::ContentSizeFitter*>()
+                ->set_verticalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
+
+
+            list = BeatSaberUI::CreateScrollableList(vertical->get_transform(), { 80, 60 }, [this](int idx) {
                 getLogger().debug("Cell with idx %d clicked", idx);
                 cellIsSelected = true;
                 selectedIdx = idx;
                 modal->Show(true, true, nullptr);
                 });
+
+            auto autoDelete = QuestUI::BeatSaberUI::CreateToggle(vertical->get_transform(), "Auto-Delete Songs", getConfig().config["autoDelete"].GetBool(), [](bool value) {
+                getConfig().config["autoDelete"].SetBool(value);
+                getConfig().Write();
+                });
+            QuestUI::BeatSaberUI::AddHoverHint(autoDelete->get_gameObject(), "Automatically deletes downloaded songs after playing them.");
         }
+
         getLogger().debug("DownloadedSongsGSM::DidActivate");
         Refresh();
     }
