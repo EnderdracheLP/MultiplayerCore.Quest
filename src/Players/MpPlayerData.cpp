@@ -4,12 +4,6 @@
 DEFINE_TYPE(MultiplayerCore::Players, MpPlayerData)
 
 namespace MultiplayerCore::Players {
-
-    //static Il2CppString* MQE_Protocol() {
-    //    static Il2CppString* protocol = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>(MPEX_PROTOCOL);
-    //    return protocol;
-    //}
-
 #pragma region MpPlayerData
     void MpPlayerData::New() {
         getLogger().debug("Creating MpPlayerData");
@@ -20,7 +14,7 @@ namespace MultiplayerCore::Players {
         auto mpPlayerData = THROW_UNLESS(il2cpp_utils::New<MpPlayerData*>());
 
         mpPlayerData->platformId = platformID;
-        mpPlayerData->platform = (Platform)platform;
+        mpPlayerData->platform = platform;
         getLogger().debug("Creating MpPlayerData finished");
         return mpPlayerData;
     }

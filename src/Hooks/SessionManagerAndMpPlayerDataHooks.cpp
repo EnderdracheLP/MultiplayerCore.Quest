@@ -79,6 +79,10 @@ void HandlePlayerConnected(IConnectedPlayer* player) {
             getLogger().debug("Sending MpPlayerData");
             if (localPlayer->platformId)
             {
+                // getLogger().debug("Sending MpPlayerData with platformID: '%s' platform: '%d'",
+                //     static_cast<std::string>(localPlayer->platformId).c_str(),
+                //     (int)localPlayer->platform
+                // );
                 mpPacketSerializer->Send(localPlayer);
             }
             getLogger().debug("MpPlayerData sent");
@@ -104,6 +108,17 @@ MAKE_HOOK_MATCH(SessionManagerStart, &MultiplayerSessionManager::Start, void, Mu
 
 //bool packetSerializer_Init = false;
 
+Players::Platform getPlatform(UserInfo::Platform platform) {
+    switch (platform.value) {
+    case UserInfo::Platform::Oculus:
+        getLogger().debug("Platform: Oculus = OculusQuest");
+        return Players::Platform::OculusQuest; // If platform is Oculus, we assume the user is using Quest
+    default:
+        getLogger().debug("Platform: %d", platform.value);
+        return (Players::Platform)platform.value;
+    }
+}
+
 MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSession, void, MultiplayerSessionManager* self, MultiplayerSessionManager_SessionType sessionType, ConnectedPlayerManager* connectedPlayerManager) {
     SessionManager_StartSession(self, sessionType, connectedPlayerManager);
     if (!mpPacketSerializer) {
@@ -123,11 +138,10 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
         static auto action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
             auto userInfo = userInfoTask->get_Result();
             if (userInfo) {
-                if (!localPlayer) localPlayer = Players::MpPlayerData::Init(userInfo->dyn_platformUserId(), (Players::Platform)userInfo->dyn_platform().value);
+                if (!localPlayer) localPlayer = Players::MpPlayerData::Init(userInfo->dyn_platformUserId(), getPlatform(userInfo->dyn_platform()));
                 else {
                     localPlayer->platformId = userInfo->dyn_platformUserId();
-                    Players::Platform platform = userInfo->dyn_platform().value == UserInfo::Platform::Oculus ? Players::Platform::OculusQuest : (Players::Platform)userInfo->dyn_platform().value;
-                    localPlayer->platform = platform;
+                    localPlayer->platform = getPlatform(userInfo->dyn_platform());
                 }
             }
             else getLogger().error("Failed to get local network player!");
@@ -136,7 +150,6 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
         reinterpret_cast<System::Threading::Tasks::Task*>(UserInfoTask)->ContinueWith(action);
 
         using namespace MultiQuestensions::Utils;
-        self->SetLocalPlayerState(getModdedStateStr(), true);
         self->SetLocalPlayerState(getMEStateStr(), MatchesVersion("MappingExtensions", "*"));
         self->SetLocalPlayerState(getNEStateStr(), MatchesVersion("NoodleExtensions", "*"));
         self->SetLocalPlayerState(getChromaStateStr(), MatchesVersion(ChromaID, ChromaVersionRange));
