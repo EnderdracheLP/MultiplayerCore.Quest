@@ -2,7 +2,6 @@
 #include "Hooks/Hooks.hpp"
 #include "Hooks/SessionManagerAndExtendedPlayerHooks.hpp"
 #include "Networking/MpPacketSerializer.hpp"
-#include "UI/LobbySetupPanel.hpp"
 #include "UI/DownloadedSongsGSM.hpp"
 #include "UI/CenterScreenLoading.hpp"
 #include "CS_DataStore.hpp"
@@ -251,9 +250,9 @@ MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController:
                 if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotOwned);
             }
         }
-        if (firstActivation && _multiplayerSessionManager) {
-            MultiplayerCore::UI::LobbySetupPanel::AddSetupPanel(self->get_rectTransform(), _multiplayerSessionManager);
-        }
+        // if (firstActivation && _multiplayerSessionManager) {
+        //     MultiplayerCore::UI::LobbySetupPanel::AddSetupPanel(self->get_rectTransform(), _multiplayerSessionManager);
+        // }
     }
     catch (il2cpp_utils::RunMethodException const& e) {
         getLogger().error("REPORT TO ENDER RunMethodException in LobbySetupViewController_DidActivate: %s", e.what());
@@ -567,22 +566,22 @@ extern "C" void setup(ModInfo& info) {
 }
 
 MAKE_HOOK_MATCH(BGNetDebug_Log, &BGNet::Logging::Debug::Log, void, StringW message) {
-    getLogger().WithContext("BGNetDebug::Log").debug("%s", to_utf8(csstrtostr(message)).c_str());
+    message ? getLogger().WithContext("BGNetDebug::Log").debug("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::Log").error("BGNetDebug::Log called with null message");
     BGNetDebug_Log(message);
 }
 
 MAKE_HOOK_MATCH(BGNetDebug_LogError, &BGNet::Logging::Debug::LogError, void, StringW message) {
-    getLogger().WithContext("BGNetDebug::LogError").error("%s", to_utf8(csstrtostr(message)).c_str());
+    message ? getLogger().WithContext("BGNetDebug::LogError").error("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::LogError").error("BGNetDebug::LogError called with null message");
     BGNetDebug_LogError(message);
 }
 
 MAKE_HOOK_MATCH(BGNetDebug_LogException, &BGNet::Logging::Debug::LogException, void, ::System::Exception* exception, StringW message) {
-    getLogger().WithContext("BGNetDebug::LogWarning").critical("%s", to_utf8(csstrtostr(message)).c_str());
+    message ? getLogger().WithContext("BGNetDebug::LogWarning").critical("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::LogException").error("BGNetDebug::LogException called with null message");
     BGNetDebug_LogException(exception, message);
 }
 
 MAKE_HOOK_MATCH(BGNetDebug_LogWarning, &BGNet::Logging::Debug::LogWarning, void, StringW message) {
-    getLogger().WithContext("BGNetDebug::LogWarning").warning("%s", to_utf8(csstrtostr(message)).c_str());
+    message ? getLogger().WithContext("BGNetDebug::LogWarning").warning("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::LogWarning").error("BGNetDebug::LogWarning called with null message");
     BGNetDebug_LogWarning(message);
 }
 
