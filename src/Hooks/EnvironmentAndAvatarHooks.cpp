@@ -52,97 +52,9 @@ namespace MultiplayerCore {
 
     MultiplayerLobbyAvatarManager* _avatarManager;
 
-//    Dictionary_2<Il2CppString*, MultiplayerLobbyAvatarController*>* _refPlayerIdToAvatarMap;
-//#pragma endregion
-//
-//#pragma region LobbyAvatarPlaceLigting
-//    LobbyAvatarPlaceLighting* GetConnectedPlayerPlace(IConnectedPlayer* player)
-//    {
-//        //getLogger().debug("GetConnectedPlayerPlace");
-//        int sortIndex = _lobbyStateDataModel->get_localPlayer()->get_sortIndex();
-//        //getLogger().debug("GetConnectedPlayerPlace sortIndex %d, angleBetweenPlayersWithEvenAdjustment %f", sortIndex, angleBetweenPlayersWithEvenAdjustment);
-//        //static auto* sortIndexMethod = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(IConnectedPlayer*), "get_sortIndex", 0));
-//        //int playerSortIndex = il2cpp_utils::RunMethodThrow<int>(player, sortIndexMethod);
-//        float outerCirclePositionAngleForPlayer = MultiplayerPlayerPlacement::GetOuterCirclePositionAngleForPlayer(player->get_sortIndex(), sortIndex, angleBetweenPlayersWithEvenAdjustment);
-//        //getLogger().debug("GetConnectedPlayerPlace outerCirclePositionAngleForPlayer %f", outerCirclePositionAngleForPlayer);
-//        Vector3 playerWorldPosition = MultiplayerPlayerPlacement::GetPlayerWorldPosition(outerCircleRadius, outerCirclePositionAngleForPlayer, MultiplayerPlayerLayout::Circle);
-//        for (auto* place : avatarPlaces) {
-//            if (place->get_transform()->get_position() == playerWorldPosition && place->get_isActiveAndEnabled()) return place;
-//        }
-//        return nullptr;
-//        //return Array::Find(_avatarPlaces, place => place.transform.position == playerWorldPosition && place.isActiveAndEnabled);
-//    }
-//
-//    void SetPlayerPlaceColor(IConnectedPlayer* player, const Color& color, bool priority)
-//    {
-//        if (!initialized) return;
-//
-//        //if (il2cpp_utils::AssignableFrom<ExtendedPlayer*>(reinterpret_cast<Il2CppObject*>(player)->klass))
-//        //    getLogger().debug("SetPlayerPlaceColor ExtendedPlayer");
-//
-//        //else if (il2cpp_utils::AssignableFrom<ConnectedPlayerManager::ConnectedPlayer*>(reinterpret_cast<Il2CppObject*>(player)->klass)) getLogger().debug("CreateOrUpdateNameTag SimplePlayer");
-//        //else {
-//        //    getLogger().debug("SetPlayerPlaceColor unknown type: %s", il2cpp_utils::ClassStandardName(reinterpret_cast<Il2CppObject*>(player)->klass).c_str());
-//        //    return;
-//        //}
-//        if (!(il2cpp_utils::AssignableFrom<ExtendedPlayer*>(reinterpret_cast<Il2CppObject*>(player)->klass) || il2cpp_utils::AssignableFrom<ConnectedPlayerManager::ConnectedPlayer*>(reinterpret_cast<Il2CppObject*>(player)->klass))) {
-//            getLogger().error("SetPlayerPlaceColor unknown type: %s", il2cpp_utils::ClassStandardName(reinterpret_cast<Il2CppObject*>(player)->klass).c_str());
-//            return;
-//        }
-//
-//        //getLogger().debug("SetPlayerPlaceColor player type: %s", il2cpp_utils::ClassStandardName(reinterpret_cast<Il2CppObject*>(player)->klass).c_str());
-//
-//        //getLogger().debug("SetPlayerPlaceColor");
-//
-//        LobbyAvatarPlaceLighting* place = GetConnectedPlayerPlace(player);
-//
-//        if (place == nullptr)
-//            return;
-//
-//        if (!priority && place->TargetColor != Color::get_black() && place->TargetColor != ExtendedPlayer::DefaultColor)
-//            // Priority colors are always set; non-priority colors can only override default black/blue
-//            return;
-//
-//        place->SetColor(color, false);
-//    }
-//
-//    void SetAllPlayerPlaceColors(Color color, bool immediate = false)
-//    {
-//        for (LobbyAvatarPlaceLighting* place : avatarPlaces)
-//        {
-//            place->SetColor(color, immediate);
-//        }
-//    }
-//
-//    static void SetDefaultPlayerPlaceColors()
-//    {
-//        SetAllPlayerPlaceColors(Color::get_black(), true);
-//        SetPlayerPlaceColor(sessionManager->get_localPlayer(), localExtendedPlayer->get_playerColor(), true);
-//        using System::Collections::Generic::List_1;
-//        for (int i = 0; i < reinterpret_cast<List_1<IConnectedPlayer*>*>(sessionManager->get_connectedPlayers())->get_Count(); i++) {
-//            auto player = sessionManager->get_connectedPlayers()->get_Item(i);
-//            SetPlayerPlaceColor(player, ExtendedPlayer::DefaultColor, false);
-//        }
-//
-//        for (auto& [key, extendedPlayer] : _extendedPlayers) {
-//            SetPlayerPlaceColor(reinterpret_cast<IConnectedPlayer*>(extendedPlayer->get_self()), extendedPlayer->get_playerColor(), true);
-//        }
-//    }
-
     void HandleLobbyEnvironmentLoaded() {
         initialized = false;
         getLogger().debug("HandleLobbyEnvironmentLoaded Started");
-        //auto nativeAvatarPlaces = Resources::FindObjectsOfTypeAll<MultiplayerLobbyAvatarPlace*>();
-        //for (int i = 0; i < nativeAvatarPlaces.Length(); i++)
-        //{
-        //    auto nativeAvatarPlace = nativeAvatarPlaces[i];
-
-        //    auto avatarPlace = nativeAvatarPlace->GetComponent<LobbyAvatarPlaceLighting*>();
-        //    if (avatarPlace == nullptr)
-        //        avatarPlace = nativeAvatarPlace->get_gameObject()->AddComponent<LobbyAvatarPlaceLighting*>();
-
-        //    avatarPlaces.push_back(avatarPlace);
-        //}
 
         innerCircleRadius = _placeManager->dyn__innerCircleRadius();
         minOuterCircleRadius = _placeManager->dyn__minOuterCircleRadius();
@@ -166,7 +78,6 @@ namespace MultiplayerCore {
         _stageManager->get_transform()->set_localScale({ centerScreenScale, centerScreenScale, centerScreenScale });
 
         initialized = true;
-        //SetDefaultPlayerPlaceColors();
         getLogger().debug("HandleLobbyEnvironmentLoaded Finished");
     }
 
@@ -185,97 +96,7 @@ namespace MultiplayerCore {
         getLogger().debug("ActivateMultiplayerLobby Done");
     }
 
-    // MAKE_HOOK_MATCH(LightWithIdMonoBehaviour_RegisterLight, &LightWithIdMonoBehaviour::RegisterLight, void, LightWithIdMonoBehaviour* self) {
-    //     getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Starting");
-    //     if (_multiplayerSessionManager) {
-    //         if (self && self->get_transform() && 
-    //         self->get_transform()->get_parent() && 
-    //         self->get_transform()->get_parent()->get_name() && 
-    //         self->get_transform()->get_parent()->get_name()->Contains("LobbyAvatarPlace")) {
-    //             getLogger().debug("LightWithIdMonoBehaviour_RegisterLight '%s' Skipped", static_cast<std::string>(self->get_transform()->get_parent()->get_name()).c_str());
-    //             return;
-    //         }
-    //     } else {
-    //         getLogger().debug("LightWithIdMonoBehaviour_RegisterLight not MP, ignoring");
-    //     }
-    //     LightWithIdMonoBehaviour_RegisterLight(self);
-    //     getLogger().debug("LightWithIdMonoBehaviour_RegisterLight Done");
-    // }
-
 #pragma endregion
-
-#pragma region LobbyAvatarNameTag
-    //MultiplayerLobbyAvatarController* GetAvatarController(Il2CppString* userId)
-    //{
-    //    //getLogger().debug("Start GetAvatarController: _refPlayerIdToAvatarMap");
-    //    if (_refPlayerIdToAvatarMap == nullptr && _avatarManager)
-    //        _refPlayerIdToAvatarMap = _avatarManager->dyn__playerIdToAvatarMap();
-
-    //    //getLogger().debug("Start GetAvatarController: _refPlayerIdToAvatarMap Done");
-
-    //    if (_refPlayerIdToAvatarMap != nullptr) {
-    //        MultiplayerLobbyAvatarController* value;
-    //        //getLogger().debug("Start GetAvatarController return MultiplayerLobbyAvatarController");
-    //        return _refPlayerIdToAvatarMap->TryGetValue(userId, ByRef(value)) ? value : nullptr;
-    //    }
-
-    //    //getLogger().debug("GetAvatarController return nullptr, this part should never be triggered");
-
-    //    return nullptr;
-    //}
-
-    //GameObject* GetAvatarCaptionObject(Il2CppString* userId)
-    //{
-    //    auto avatarController = GetAvatarController(userId);
-    //    if (avatarController) return avatarController->get_transform()->Find(il2cpp_utils::newcsstr("AvatarCaption"))->get_gameObject();
-    //    else return nullptr;
-    //}
-
-    //void CreateOrUpdateNameTag(IConnectedPlayer* player)
-    //{
-    //    try {
-    //        //getLogger().debug("Start CreateOrUpdateNameTag: GetAvatarCaptionObject");
-    //        //Il2CppString* userId;
-    //        //if (il2cpp_utils::AssignableFrom<ExtendedPlayer*>(reinterpret_cast<Il2CppObject*>(player)->klass))
-    //        //    getLogger().debug("CreateOrUpdateNameTag ExtendedPlayer");
-
-    //        //else if (il2cpp_utils::AssignableFrom<ConnectedPlayerManager::ConnectedPlayer*>(reinterpret_cast<Il2CppObject*>(player)->klass)) getLogger().debug("CreateOrUpdateNameTag SimplePlayer");
-    //        //else {
-    //        //    getLogger().debug("CreateOrUpdateNameTag unknown type: %s", il2cpp_utils::ClassStandardName(reinterpret_cast<Il2CppObject*>(player)->klass).c_str());
-    //        //    return;
-    //        //}
-    //        //getLogger().debug("CreateOrUpdateNameTag player type: %s", il2cpp_utils::ClassStandardName(reinterpret_cast<Il2CppObject*>(player)->klass).c_str());
-
-    //        if (!(il2cpp_utils::AssignableFrom<ExtendedPlayer*>(reinterpret_cast<Il2CppObject*>(player)->klass) || il2cpp_utils::AssignableFrom<ConnectedPlayerManager::ConnectedPlayer*>(reinterpret_cast<Il2CppObject*>(player)->klass))) {
-    //            getLogger().error("CreateOrUpdateNameTag unknown type: %s", il2cpp_utils::ClassStandardName(reinterpret_cast<Il2CppObject*>(player)->klass).c_str());
-    //            return;
-    //        }
-
-    //        auto objAvatarCaption = GetAvatarCaptionObject(player->get_userId()/*userId*/);
-    //        if (objAvatarCaption == nullptr)
-    //            return;
-
-    //        //getLogger().debug("Found GetAvatarCaptionObject");
-    //        LobbyAvatarNameTag* nameTag;
-    //        if (!objAvatarCaption->TryGetComponent<LobbyAvatarNameTag*>(ByRef(nameTag))) {
-    //            //getLogger().debug("Adding new LobbyAvatarNameTag Component");
-    //            nameTag = objAvatarCaption->AddComponent<LobbyAvatarNameTag*>();
-    //        }
-
-    //        //getLogger().debug("SetPlayerInfo");
-    //        nameTag->SetPlayerInfo(player);
-    //    }
-    //    catch (const std::runtime_error& e) {
-    //        getLogger().error("REPORT TO ENDER: CreateOrUpdateNameTag Failed: %s", e.what());
-    //    }
-    //}
-
-    //void HandleLobbyAvatarCreated(IConnectedPlayer* player) {
-    //    const std::string userId = to_utf8(csstrtostr(player->get_userId()));
-    //    if (_extendedPlayers.contains(userId))
-    //        player = reinterpret_cast<IConnectedPlayer*>(_extendedPlayers.at(userId)->get_self());
-    //    CreateOrUpdateNameTag(player);
-    //}
 
     MAKE_HOOK_MATCH(MultiplayerLobbyAvatarManager_AddPlayer, &MultiplayerLobbyAvatarManager::AddPlayer, void, MultiplayerLobbyAvatarManager* self, IConnectedPlayer* connectedPlayer) {
         MultiplayerLobbyAvatarManager_AddPlayer(self, connectedPlayer);
@@ -289,8 +110,6 @@ namespace MultiplayerCore {
         newRightHandPosition.heldRef = self->LimitHandPositionRelativeToHead(rightHandPosition, headPosition);
         //AvatarPoseRestrictions_HandleAvatarPoseControllerPositionsWillBeSet(self, headRotation, headPosition, leftHandPosition, rightHandPosition, newHeadPosition, newLeftHandPosition, newRightHandPosition);
     }
-
-#pragma endregion
 
     void Hooks::EnvironmentHooks() {
         INSTALL_HOOK(getLogger(), MultiplayerLobbyController_ActivateMultiplayerLobby);
