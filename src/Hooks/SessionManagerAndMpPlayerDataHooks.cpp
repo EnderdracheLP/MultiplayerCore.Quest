@@ -4,6 +4,7 @@
 #include "GlobalFields.hpp"
 #include "Hooks/EnvironmentAndAvatarHooks.hpp"
 #include "Players/MpPlayerData.hpp"
+#include "Players/MpPlayerManager.hpp"
 #include "UI/CenterScreenLoading.hpp"
 #include "Utils/SemVerChecker.hpp"
 #include "Utilities.hpp"
@@ -21,8 +22,6 @@
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 #include "GlobalNamespace/MultiplayerSessionManager_SessionType.hpp"
 #include "GlobalNamespace/LobbyPlayerData.hpp"
-
-#include "CodegenExtensions/ColorUtility.hpp"
 
 #include "questui/shared/BeatSaberUI.hpp"
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
@@ -52,6 +51,8 @@ SafePtr<MultiplayerCore::Players::MpPlayerData> localPlayer;
 std::map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerData;
 IPlatformUserModel* platformUserModel;
 
+event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> MultiplayerCore::Players::MpPlayerManager::PlayerConnected;
+
 static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData, IConnectedPlayer* player) {
     const std::string userId = static_cast<std::string>(player->get_userId());
     if (_playerData.contains(userId)) {
@@ -63,10 +64,11 @@ static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData,
             to_utf8(csstrtostr(playerData->platformId)).c_str(),
             (int)playerData->platform
         );
-
         _playerData.emplace(userId, playerData);
-        getLogger().debug("MpPlayerData done");
     }
+    getLogger().debug("MpPlayerData firing event");
+    MultiplayerCore::Players::MpPlayerManager::PlayerConnected(player, playerData);
+    getLogger().debug("MpPlayerData done");
 }
 
 void HandlePlayerConnected(IConnectedPlayer* player) {
@@ -116,7 +118,6 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
     }
 
     getLogger().debug("MultiplayerSessionManager.StartSession, creating localPlayer");
-
         static auto localNetworkPlayerModel = UnityEngine::Resources::FindObjectsOfTypeAll<LocalNetworkPlayerModel*>().get(0);
         static auto UserInfoTask = localNetworkPlayerModel->dyn__platformUserModel()->GetUserInfo();
         static auto action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
@@ -182,7 +183,7 @@ MAKE_HOOK_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &LobbyPlayersD
 using namespace MultiplayerCore::Beatmaps;
 MAKE_HOOK_MATCH(BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap, &BeatmapIdentifierNetSerializableHelper::ToPreviewDifficultyBeatmap, PreviewDifficultyBeatmap*, BeatmapIdentifierNetSerializable* beatmapId, BeatmapLevelsModel* beatmapLevelsModel, BeatmapCharacteristicCollectionSO* beatmapCharacteristicCollection) {
     PreviewDifficultyBeatmap* beatmap = BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap(beatmapId, beatmapLevelsModel, beatmapCharacteristicCollection);
-    if (!beatmap->get_beatmapLevel()) beatmap->set_beatmapLevel(reinterpret_cast<IPreviewBeatmapLevel*>(NoInfoBeatmapLevel::New_ctor(Utilities::HashForLevelID(beatmapId->get_levelID()))));
+    if (!(beatmap && beatmap->get_beatmapLevel())) beatmap->set_beatmapLevel(reinterpret_cast<IPreviewBeatmapLevel*>(NoInfoBeatmapLevel::New_ctor(Utilities::HashForLevelID(beatmapId->get_levelID()))));
     return beatmap;
 }
 
@@ -198,9 +199,24 @@ MAKE_HOOK_MATCH(BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatma
 //    LobbyPlayersDataModel_SetPlayerBeatmapLevel(self, userId, beatmapLevel);
 //}
 
+bool MultiplayerCore::Players::MpPlayerManager::TryGetPlayer(std::string playerId, Players::MpPlayerData*& player) {
+    if (_playerData.find(playerId) != _playerData.end()) {
+        player = static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
+        return true;
+    }
+    return false;
+}
+
+Players::MpPlayerData* MultiplayerCore::Players::MpPlayerManager::GetPlayer(std::string playerId) {
+    if (_playerData.find(playerId) != _playerData.end()) {
+        return static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
+    }
+    return nullptr;
+}
+
 void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
     INSTALL_HOOK(getLogger(), SessionManagerStart);
-    INSTALL_HOOK(getLogger(), SessionManager_StartSession);
+    INSTALL_HOOK_ORIG(getLogger(), SessionManager_StartSession);
 
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap);
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap);
