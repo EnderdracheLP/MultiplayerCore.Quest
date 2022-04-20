@@ -95,11 +95,17 @@ void HandlePlayerConnected(IConnectedPlayer* player) {
 
 void HandlePlayerDisconnected(IConnectedPlayer* player) {
     getLogger().info("Player '%s' left", static_cast<std::string>(player->get_userId()).c_str());
+    _playerData.at(static_cast<std::string>(player->get_userId())).~SafePtr();
     _playerData.erase(static_cast<std::string>(player->get_userId()));
 }
 
-//void HandleDisconnect(DisconnectedReason* reason) {
-//}
+void HandleDisconnect(DisconnectedReason* reason) {
+    getLogger().info("Disconnected from server reason: '%d'", reason->dyn_value__());
+    for (auto& [key, data] : _playerData) {
+        data.~SafePtr();
+    }
+    _playerData.clear();
+}
 
 MAKE_HOOK_MATCH(SessionManagerStart, &MultiplayerSessionManager::Start, void, MultiplayerSessionManager* self) {
     _multiplayerSessionManager = self;
