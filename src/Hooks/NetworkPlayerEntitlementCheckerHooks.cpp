@@ -53,12 +53,14 @@ namespace MultiplayerCore {
         if (entitlement == EntitlementsStatus::NotOwned && MultiplayerCore::Utils::HasRequirement(RuntimeSongLoader::API::GetLevelById(cLevelId))) {
             IConnectedPlayer* player = _multiplayerSessionManager->GetPlayerByUserId(userId);
             if (player) {
-                if (!player->HasState(getMEStateStr()))
-                    missingLevelText = "One or more players are missing the following Requirement: Mapping Extensions";
-                else if (!player->HasState(getNEStateStr()))
-                    missingLevelText = "One or more players are missing the following Requirement: Noodle Extensions";
-                else if (!player->HasState(getChromaStateStr()))
-                    missingLevelText = "One or more players are missing the following Requirement: Chroma";
+                if (!(player->HasState(getMEStateStr()) || player->HasState(getNEStateStr()) || player->HasState(getChromaStateStr())))
+                    missingLevelText = "One or more players might be missing mod Requirements";
+                // if (!player->HasState(getMEStateStr()))
+                //     missingLevelText = "One or more players are missing the following Requirement: Mapping Extensions";
+                // else if (!player->HasState(getNEStateStr()))
+                //     missingLevelText = "One or more players are missing the following Requirement: Noodle Extensions";
+                // else if (!player->HasState(getChromaStateStr()))
+                //     missingLevelText = "One or more players are missing the following Requirement: Chroma";
             }
             else {
                 missingLevelText = "Error Checking Requirement: Player not found";
