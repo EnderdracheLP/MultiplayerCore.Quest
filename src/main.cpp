@@ -412,6 +412,10 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                     else {
                                         getLogger().info("Downloaded map: %s", beatmapName.c_str());
                                         DownloadedSongIds.emplace_back(hash);
+                                        //Might work
+                                        std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash)
+                                        if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::Ok);
+                                        //
                                         QuestUI::MainThreadScheduler::Schedule(
                                             [self, gameplaySetupData, initialStartTime, hash, levelId] {
                                                 RuntimeSongLoader::API::RefreshSongs(false,
