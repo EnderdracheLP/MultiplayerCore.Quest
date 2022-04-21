@@ -476,36 +476,36 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
     isDownloading = false;
 }
 
-// Checks entitlement and stalls lobby until fullfilled, unless a game is already in progress.
-MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void, MultiplayerLevelLoader* self) {
-    if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::LoadingBeatmap) {
-        MultiplayerLevelLoader_Tick(self);
-        if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
-            if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(
-                self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::Ok);
-                getLogger().debug("Loaded Level %s", static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
-        }
-    }
-    else if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
-        bool entitlementStatusOK = true;
-        std::string LevelID = static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
-        MultiplayerCore::UI::CenterScreenLoading::playersReady = 0;
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            StringW csUserID = _multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->get_userId();
-            std::string UserID =  static_cast<std::string>(csUserID);
-            if (lobbyGameStateController && reinterpret_cast<::System::Collections::Generic::IReadOnlyDictionary_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>*>(
-                lobbyGameStateController->dyn__lobbyPlayersDataModel())->get_Item(csUserID)->get_isInLobby()) {
-                if (entitlementDictionary[UserID][LevelID] != EntitlementsStatus::Ok) entitlementStatusOK = false;
-                else MultiplayerCore::UI::CenterScreenLoading::playersReady++;
-            }
-        }
-        if (entitlementStatusOK) getLogger().debug("All players finished loading");
-        MultiplayerLevelLoader_Tick(self);
-    }
-    else {
-        MultiplayerLevelLoader_Tick(self);
-    }
-}
+// // Checks entitlement and stalls lobby until fullfilled, unless a game is already in progress.
+// MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void, MultiplayerLevelLoader* self) {
+//     if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::LoadingBeatmap) {
+//         MultiplayerLevelLoader_Tick(self);
+//         if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
+//             if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(
+//                 self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::Ok);
+//                 getLogger().debug("Loaded Level %s", static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
+//         }
+//     }
+//     else if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
+//         bool entitlementStatusOK = true;
+//         std::string LevelID = static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
+//         MultiplayerCore::UI::CenterScreenLoading::playersReady = 0;
+//         for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
+//             StringW csUserID = _multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->get_userId();
+//             std::string UserID =  static_cast<std::string>(csUserID);
+//             if (lobbyGameStateController && reinterpret_cast<::System::Collections::Generic::IReadOnlyDictionary_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>*>(
+//                 lobbyGameStateController->dyn__lobbyPlayersDataModel())->get_Item(csUserID)->get_isInLobby()) {
+//                 if (entitlementDictionary[UserID][LevelID] != EntitlementsStatus::Ok) entitlementStatusOK = false;
+//                 else MultiplayerCore::UI::CenterScreenLoading::playersReady++;
+//             }
+//         }
+//         if (entitlementStatusOK) getLogger().debug("All players finished loading");
+//         MultiplayerLevelLoader_Tick(self);
+//     }
+//     else {
+//         MultiplayerLevelLoader_Tick(self);
+//     }
+// }
 
 // TODO: Remove the below code once the new version of the loader is confirmed to work.
 // Checks entitlement and stalls lobby until fullfilled, unless a game is already in progress.
@@ -644,7 +644,7 @@ extern "C" void load() {
     //INSTALL_HOOK(getLogger(), LobbyPlayersSelectedBeatmap);
 
     INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_LoadLevel);
-    INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_Tick);
+    // INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_Tick);
     //INSTALL_HOOK(getLogger(), NetworkPlayerEntitlementChecker_GetPlayerLevelEntitlementsAsync);
     if (Modloader::getMods().find("BeatTogether") != Modloader::getMods().end()) {
         getLogger().info("Hello BeatTogether!");
