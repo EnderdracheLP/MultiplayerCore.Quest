@@ -80,7 +80,6 @@ namespace MultiplayerCore {
         static void EnvironmentHooks();
         static void QuickplayHooks();
         static void SessionManagerAndExtendedPlayerHooks();
-        static void InstallerHooks();
 
     public:
         static const void Install_Hooks() {
@@ -89,7 +88,6 @@ namespace MultiplayerCore {
             EnvironmentHooks();
             QuickplayHooks();
             SessionManagerAndExtendedPlayerHooks();
-            InstallerHooks();
         }
     };
 }

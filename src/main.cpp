@@ -654,7 +654,7 @@ extern "C" void load() {
     }
     else getLogger().warning("BeatTogether was not found! Is Multiplayer modded?");
 
-    INSTALL_HOOK_ORIG(getLogger(), LobbyGameStateController_HandleMultiplayerLevelLoaderCountdownFinished);
+    // INSTALL_HOOK_ORIG(getLogger(), LobbyGameStateController_HandleMultiplayerLevelLoaderCountdownFinished);
     INSTALL_HOOK(getLogger(), LobbyGameStateController_Activate);
     INSTALL_HOOK(getLogger(), LobbySetupViewController_SetPlayersMissingLevelText);
     INSTALL_HOOK(getLogger(), LobbySetupViewController_SetStartGameEnabled);
