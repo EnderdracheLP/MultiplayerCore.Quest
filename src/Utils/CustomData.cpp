@@ -16,7 +16,7 @@ namespace MultiplayerCore::Utils {
             }
             else {
                 getLogger().error("Could not find Info.dat or info.dat");
-                return false;
+                return true;
             }
             rapidjson::Document document;
             document.Parse(readfile(infodatPath));
