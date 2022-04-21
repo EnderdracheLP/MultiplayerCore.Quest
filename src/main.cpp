@@ -247,7 +247,7 @@ MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController:
                     RefreshSongs(false);
                     DownloadedSongIds.pop_back();
                     });
-                if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotOwned);
+                if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
             }
         }
         // if (firstActivation && _multiplayerSessionManager) {
