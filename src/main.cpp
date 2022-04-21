@@ -455,7 +455,6 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                 }
                                 );
                         }
-                //send entitlement packet from here?
                     }
                 );
             }
