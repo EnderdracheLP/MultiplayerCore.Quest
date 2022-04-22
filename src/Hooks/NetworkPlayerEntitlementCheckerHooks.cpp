@@ -66,7 +66,9 @@ namespace MultiplayerCore {
                 missingLevelText = "Error Checking Requirement: Player not found";
             }
         }
-        // entitlementDictionary[cUserId][cLevelId] = entitlement.value;
+        entitlementDictionary[cUserId][cLevelId] = entitlement.value;
+        
+
         // if (lobbyGameStateController != nullptr && lobbyGameStateController->get_state() == MultiplayerLobbyState::GameStarting) {
         //     DataStore* instance = MultiplayerCore::DataStore::get_Instance();
         //     if (instance && instance->loadingDifficultyBeatmap && instance->loadingGameplaySetupData) {
