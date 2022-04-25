@@ -9,7 +9,7 @@
 #include "Utilities.hpp"
 
 #include "GlobalNamespace/ConnectedPlayerManager.hpp"
-#include "CodegenExtensions/TempBloomFilterUtil.hpp"
+#include "GlobalNamespace/BloomFilterUtil.hpp"
 
 #include "GlobalNamespace/MultiplayerLevelSelectionFlowCoordinator.hpp"
 #include "GlobalNamespace/CenterStageScreenController.hpp"
@@ -63,11 +63,10 @@ namespace MultiplayerCore {
 
     std::string moddedState = "modded";
 
-    StringW customLevelSongPackMaskStr("custom_levelpack_CustomLevels");
+    ConstString customLevelSongPackMaskStr("custom_levelpack_CustomLevels");
 
     StringW getCustomLevelSongPackMaskStr() {
-        static Il2CppString* songPackMaskStr = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("custom_levelpack_CustomLevels");
-        return songPackMaskStr;
+        return customLevelSongPackMaskStr;
     }
 
     StringW getModdedStateStr() {
@@ -76,18 +75,18 @@ namespace MultiplayerCore {
     }
 
     StringW getMEStateStr() {
-        static Il2CppString* moddedStateStr = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ME_Installed");
-        return moddedStateStr;
+        static ConstString stateStr("ME_Installed");
+        return stateStr;
     }
 
     StringW getNEStateStr() {
-        static Il2CppString* moddedStateStr = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ME_Installed");
-        return moddedStateStr;
+        static ConstString stateStr("NE_Installed");
+        return stateStr;
     }
 
     StringW getChromaStateStr() {
-        static Il2CppString* moddedStateStr = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Chroma_Installed");
-        return moddedStateStr;
+        static ConstString stateStr("Chroma_Installed");
+        return stateStr;
     }
 
     bool AllPlayersModded() {
