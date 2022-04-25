@@ -4,7 +4,7 @@
 
 namespace MultiplayerCore::Utils {
     bool HasRequirement(const std::optional<GlobalNamespace::CustomPreviewBeatmapLevel*>& beatmapOpt) {
-        using namespace MultiQuestensions::Utils;
+        using namespace MultiplayerCore::Utils;
         if (beatmapOpt)
         {
             std::string infodatPath = to_utf8(csstrtostr(beatmapOpt.value()->get_customLevelPath()));

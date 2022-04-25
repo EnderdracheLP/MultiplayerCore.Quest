@@ -2,7 +2,7 @@
 #include "main.hpp"
 #include "cpp-semver/shared/cpp-semver.hpp"
 
-namespace MultiQuestensions::Utils {
+namespace MultiplayerCore::Utils {
     static const std::string ChromaID = "Chroma";
     static const std::string ChromaVersionRange = ">=2.5.7";
 
