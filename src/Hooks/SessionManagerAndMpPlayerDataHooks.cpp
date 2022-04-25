@@ -8,6 +8,7 @@
 #include "UI/CenterScreenLoading.hpp"
 #include "Utils/SemVerChecker.hpp"
 #include "Utilities.hpp"
+#include "CodegenExtensions/EnumUtils.hpp"
 
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
@@ -52,6 +53,10 @@ std::map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerDa
 IPlatformUserModel* platformUserModel;
 
 event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> MultiplayerCore::Players::MpPlayerManager::PlayerConnected;
+
+event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent;
+event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent;
+event<GlobalNamespace::DisconnectedReason> MultiplayerCore::Players::MpPlayerManager::disconnectedEvent;
 
 static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData, IConnectedPlayer* player) {
     const std::string userId = static_cast<std::string>(player->get_userId());
@@ -99,11 +104,8 @@ void HandlePlayerDisconnected(IConnectedPlayer* player) {
     _playerData.erase(static_cast<std::string>(player->get_userId()));
 }
 
-void HandleDisconnect(DisconnectedReason* reason) {
-    getLogger().info("Disconnected from server reason: '%d'", reason->dyn_value__());
-    for (auto& [key, data] : _playerData) {
-        data.~SafePtr();
-    }
+void HandleDisconnect(DisconnectedReason reason) {
+    getLogger().info("Disconnected from server reason: '%s'", EnumUtils::GetEnumName(reason).c_str());
     _playerData.clear();
 }
 
@@ -119,10 +121,52 @@ Players::Platform getPlatform(UserInfo::Platform platform) {
     case UserInfo::Platform::Oculus:
         getLogger().debug("Platform: Oculus = OculusQuest");
         return Players::Platform::OculusQuest; // If platform is Oculus, we assume the user is using Quest
+    case UserInfo::Platform::PS4:
+        getLogger().debug("Platform: PS4");
+        return Players::Platform::PS4;
+    case UserInfo::Platform::Steam:
+        getLogger().debug("Platform: Steam");
+        return Players::Platform::Steam;
+    case UserInfo::Platform::Test:
+        getLogger().debug("Platform: Test = Unknown");
+        return Players::Platform::Unknown;
     default:
-        getLogger().debug("Platform: %d", platform.value);
+        try {
+            getLogger().debug("Platform: %s", EnumUtils::GetEnumName(platform).c_str());
+        }
+        catch (const std::runtime_error& e) {
+            getLogger().error("REPORT TO ENDER: %s", e.what());
+        }
+        catch (const std::exception& e) {
+            getLogger().error("REPORT TO ENDER: %s", e.what());
+        }
+        catch (...) {
+            getLogger().error("REPORT TO ENDER: Unknown exception");
+        }
+        getLogger().debug("Platform: %d", (int)platform.value);
         return (Players::Platform)platform.value;
     }
+}
+
+MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerConnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
+    getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected");
+    LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected(self, player);
+    HandlePlayerConnected(player);
+    MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent(player);
+}
+
+MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerDisconnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
+    getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected");
+    LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected(self, player);
+    HandlePlayerDisconnected(player);
+    MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent(player);
+}
+
+MAKE_HOOK_MATCH(LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected, &LobbyGameStateController::HandleMultiplayerSessionManagerDisconnected, void, LobbyGameStateController* self, DisconnectedReason disconnectedReason) {
+    getLogger().debug("LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected");
+    HandleDisconnect(disconnectedReason);
+    MultiplayerCore::Players::MpPlayerManager::disconnectedEvent(disconnectedReason);
+    LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected(self, disconnectedReason);
 }
 
 MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSession, void, MultiplayerSessionManager* self, MultiplayerSessionManager_SessionType sessionType, ConnectedPlayerManager* connectedPlayerManager) {
@@ -155,14 +199,15 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
         );
         reinterpret_cast<System::Threading::Tasks::Task*>(UserInfoTask)->ContinueWith(action);
 
-        using namespace MultiQuestensions::Utils;
+        using namespace MultiplayerCore::Utils;
+        self->SetLocalPlayerState("modded", true);
         self->SetLocalPlayerState(getMEStateStr(), MatchesVersion("MappingExtensions", "*"));
         self->SetLocalPlayerState(getNEStateStr(), MatchesVersion("NoodleExtensions", "*"));
         self->SetLocalPlayerState(getChromaStateStr(), MatchesVersion(ChromaID, ChromaVersionRange));
 
-    self->add_playerConnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<IConnectedPlayer*>*>(classof(System::Action_1<IConnectedPlayer*>*), static_cast<Il2CppObject*>(nullptr), HandlePlayerConnected));
-    self->add_playerDisconnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<IConnectedPlayer*>*>(classof(System::Action_1<IConnectedPlayer*>*), static_cast<Il2CppObject*>(nullptr), HandlePlayerDisconnected));
-    //self->add_disconnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<GlobalNamespace::DisconnectedReason>*>*>(classof(System::Action_1<GlobalNamespace::DisconnectedReason>*>*), static_cast<Il2CppObject*>(nullptr), HandleDisconnect));
+    // self->add_playerConnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<IConnectedPlayer*>*>(classof(System::Action_1<IConnectedPlayer*>*), static_cast<Il2CppObject*>(nullptr), HandlePlayerConnected));
+    // self->add_playerDisconnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<IConnectedPlayer*>*>(classof(System::Action_1<IConnectedPlayer*>*), static_cast<Il2CppObject*>(nullptr), HandlePlayerDisconnected));
+    self->add_disconnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<DisconnectedReason>*>(classof(System::Action_1<DisconnectedReason>*), static_cast<Il2CppObject*>(nullptr), HandleDisconnect));
 }
 
 MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap, &LobbyPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap, void, LobbyPlayersDataModel* self, StringW userId) {
@@ -207,18 +252,6 @@ MAKE_HOOK_MATCH(BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatma
     return beatmap;
 }
 
-//MAKE_HOOK_MATCH(LobbyPlayersDataModel_SetPlayerBeatmapLevel, &LobbyPlayersDataModel::SetPlayerBeatmapLevel, void, LobbyPlayersDataModel* self, ::StringW userId, ::GlobalNamespace::PreviewDifficultyBeatmap* beatmapLevel) {
-//    if (beatmapLevel && beatmapLevel->get_beatmapLevel())
-//        getLogger().debug("LobbyPlayersDataModel_SetPlayerBeatmapLevel: levelId: '%s', songName: '%s', songSubName: '%s', songAuthorName: '%s'",
-//            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_levelID()).c_str(),
-//            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songName()).c_str(),
-//            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songSubName()).c_str(),
-//            static_cast<std::string>(beatmapLevel->get_beatmapLevel()->get_songAuthorName()).c_str()
-//        );
-//
-//    LobbyPlayersDataModel_SetPlayerBeatmapLevel(self, userId, beatmapLevel);
-//}
-
 bool MultiplayerCore::Players::MpPlayerManager::TryGetPlayer(std::string playerId, Players::MpPlayerData*& player) {
     if (_playerData.find(playerId) != _playerData.end()) {
         player = static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
@@ -236,6 +269,9 @@ Players::MpPlayerData* MultiplayerCore::Players::MpPlayerManager::GetPlayer(std:
 
 void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
     INSTALL_HOOK(getLogger(), SessionManagerStart);
+    INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected);
+    INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected);
+    INSTALL_HOOK(getLogger(), LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected);
     INSTALL_HOOK_ORIG(getLogger(), SessionManager_StartSession);
 
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap);
