@@ -214,9 +214,11 @@ MAKE_HOOK_MATCH(LobbySetupViewController_SetPlayersMissingLevelText , &LobbySetu
     LobbySetupViewController_SetPlayersMissingLevelText(self, playersMissingLevelText);
 }
 
+#include "CodegenExtensions/EnumUtils.hpp"
+
 // Prevent the button becoming shown when we're force disabling it, as pressing it would crash
 MAKE_HOOK_MATCH(LobbySetupViewController_SetStartGameEnabled, &LobbySetupViewController::SetStartGameEnabled, void, LobbySetupViewController* self, CannotStartGameReason cannotStartGameReason) {
-    getLogger().info("LobbySetupViewController_SetStartGameEnabled. Reason: %d", (int)cannotStartGameReason);
+    getLogger().info("LobbySetupViewController_SetStartGameEnabled. Reason: %s", EnumUtils::GetEnumName(cannotStartGameReason).c_str());
     if (isMissingLevel && cannotStartGameReason == CannotStartGameReason::None) {
         getLogger().info("Game attempted to enable the play button when the level was missing, stopping it!");
         cannotStartGameReason = CannotStartGameReason::DoNotOwnSong;
