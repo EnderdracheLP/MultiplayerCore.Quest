@@ -391,7 +391,7 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
             IConnectedPlayer* p = _multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i);
             StringW csUserID = p->get_userId();
             std::string UserID =  static_cast<std::string>(csUserID);
-            static ConstString in_gameplay("in_gameplay")
+            static ConstString in_gameplay("in_gameplay");
             if (!p->HasState(in_gameplay)) {
                 if (entitlementDictionary[UserID][LevelID] != EntitlementsStatus::Ok) entitlementStatusOK = false;
                 else MultiplayerCore::UI::CenterScreenLoading::playersReady++;
