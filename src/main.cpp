@@ -194,7 +194,7 @@ MAKE_HOOK_MATCH(LobbySetupViewController_SetPlayersMissingLevelText , &LobbySetu
     if (!missingLevelText.empty()) {
         getLogger().info("Disabling start game as entitlements missing level text exists . . .");
         isMissingLevel = true;
-        playersMissingLevelText = il2cpp_utils::newcsstr(missingLevelText);
+        playersMissingLevelText = StringW(missingLevelText.c_str());
         self->SetStartGameEnabled(CannotStartGameReason::DoNotOwnSong);
         LobbySetupViewController_SetPlayersMissingLevelText(self, playersMissingLevelText);
         return;
@@ -388,10 +388,11 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
         std::string LevelID = static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
         MultiplayerCore::UI::CenterScreenLoading::playersReady = 0;
         for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            StringW csUserID = _multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->get_userId();
+            IConnectedPlayer* p = _multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i);
+            StringW csUserID = p->get_userId();
             std::string UserID =  static_cast<std::string>(csUserID);
-            if (lobbyGameStateController && reinterpret_cast<::System::Collections::Generic::IReadOnlyDictionary_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>*>(
-                lobbyGameStateController->dyn__lobbyPlayersDataModel())->get_Item(csUserID)->get_isInLobby()) {
+            static ConstString in_gameplay("in_gameplay")
+            if (!p->HasState(in_gameplay)) {
                 if (entitlementDictionary[UserID][LevelID] != EntitlementsStatus::Ok) entitlementStatusOK = false;
                 else MultiplayerCore::UI::CenterScreenLoading::playersReady++;
             }
