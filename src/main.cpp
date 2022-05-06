@@ -384,23 +384,29 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
         if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
             if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(
                 self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::Ok);
-                getLogger().debug("Loaded Level %s", static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
+            getLogger().debug("Loaded Level %s", static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
         }
     }
     else if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
         //bool entitlementStatusOK = true;
         std::string LevelID = static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
-        MultiplayerCore::UI::CenterScreenLoading::playersReady = 0;
+        int ready = 0;
+        getLogger().debug("Checking all players have the map downloaded/OK entitlement");
+        if(HasSong(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()))
+            ready++;
         for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
             IConnectedPlayer* p = _multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i);
             //if (!p->HasState(in_gameplay)) {
                 StringW csUserID = p->get_userId();
                 std::string UserID =  static_cast<std::string>(csUserID);
-                if (entitlementDictionary[UserID][LevelID] == EntitlementsStatus::Ok || p->HasState(in_gameplay)) //entitlementStatusOK = false;
-                /*else*/ MultiplayerCore::UI::CenterScreenLoading::playersReady++;
+                if (entitlementDictionary[UserID][LevelID] == EntitlementsStatus::Ok || p->HasState(in_gameplay)){
+                    //entitlementStatusOK = false;
+                /*else*/ ready++;
+                } 
             //}
         }
-        if (MultiplayerCore::UI::CenterScreenLoading::playersReady == _multiplayerSessionManager->dyn__connectedPlayers()->get_Count()) {
+        MultiplayerCore::UI::CenterScreenLoading::playersReady = ready;
+        if (ready == _multiplayerSessionManager->dyn__connectedPlayers()->get_Count()+1) {
             getLogger().debug("All players finished loading");
             MultiplayerLevelLoader_Tick(self);
         }
@@ -510,7 +516,7 @@ extern "C" void load() {
     //INSTALL_HOOK(getLogger(), LobbyPlayersSelectedBeatmap);
 
     INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_LoadLevel);
-    // INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_Tick);
+    INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_Tick);
     //INSTALL_HOOK(getLogger(), NetworkPlayerEntitlementChecker_GetPlayerLevelEntitlementsAsync);
     if (Modloader::getMods().find("BeatTogether") != Modloader::getMods().end()) {
         getLogger().info("Hello BeatTogether!");
