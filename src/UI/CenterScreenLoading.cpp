@@ -50,7 +50,7 @@ namespace MultiplayerCore::UI{
 
     void CenterScreenLoading::ShowLoading() {
         int maxPlayers = _multiplayerSessionManager ? _multiplayerSessionManager->get_connectedPlayerCount() + 1 : 1;
-        int readyPlayers = std::min(playersReady + 1, maxPlayers);
+        int readyPlayers = std::min(playersReady /*+ 1*/, maxPlayers);
         getLogger().info("CenterScreenLoading::ShowLoading, players ready (%d of %d)", 
             readyPlayers, maxPlayers);
         if (loadingControl) {
@@ -85,7 +85,7 @@ namespace MultiplayerCore::UI{
         {
             if (loadingControl)
                 loadingControl->ShowLoading(il2cpp_utils::newcsstr(string_format("%d of %d players ready...",
-                    playersReady + 1, _multiplayerSessionManager ? _multiplayerSessionManager->get_connectedPlayerCount() + 1 : 1)));
+                    playersReady /*+ 1*/, _multiplayerSessionManager ? _multiplayerSessionManager->get_connectedPlayerCount() + 1 : 1)));
         }
         else
         {
