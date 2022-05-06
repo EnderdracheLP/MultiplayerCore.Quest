@@ -228,7 +228,7 @@ MAKE_HOOK_MATCH(LobbySetupViewController_SetStartGameEnabled, &LobbySetupViewCon
 
 namespace MultiplayerCore {
     bool HasSong(const std::string& levelId) {
-        return static_cast<bool>(RuntimeSongLoader::API::GetLevelById(levelId));
+        return static_cast<bool>(RuntimeSongLoader::API::GetLevelById(levelId)) || !IsCustomLevel(levelId);
     }
 }
 
