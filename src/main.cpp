@@ -388,9 +388,8 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
         }
     }
     else if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
-        //bool entitlementStatusOK = true;
         std::string LevelID = static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
-        int ready = 0;
+        MultiplayerCore::UI::CenterScreenLoading::playersReady = 0;
         getLogger().debug("Checking all players have the map downloaded/OK entitlement");
         if(HasSong(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()))
             ready++;
@@ -400,13 +399,11 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
                 StringW csUserID = p->get_userId();
                 std::string UserID =  static_cast<std::string>(csUserID);
                 if (entitlementDictionary[UserID][LevelID] == EntitlementsStatus::Ok || p->HasState(in_gameplay)){
-                    //entitlementStatusOK = false;
-                /*else*/ ready++;
+                /*else*/ MultiplayerCore::UI::CenterScreenLoading::playersReady++;
                 } 
             //}
         }
-        MultiplayerCore::UI::CenterScreenLoading::playersReady = ready;
-        if (ready == _multiplayerSessionManager->dyn__connectedPlayers()->get_Count()+1) {
+        if (MultiplayerCore::UI::CenterScreenLoading::playersReady == _multiplayerSessionManager->dyn__connectedPlayers()->get_Count()+1) {
             getLogger().debug("All players finished loading");
             MultiplayerLevelLoader_Tick(self);
         }
