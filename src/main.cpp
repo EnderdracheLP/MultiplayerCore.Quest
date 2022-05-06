@@ -297,8 +297,8 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                                     getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
                                                                     self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
                                                                     getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
-                                                                    MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
                                                                     reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(levelId.c_str()));
+                                                                    MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
                                                                     if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
                                                                     //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                                     isDownloading = false;
@@ -334,8 +334,8 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                         getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
                                                         self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
                                                         getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
-                                                        MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
                                                         reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(levelId.c_str()));
+                                                        MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
                                                         if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
                                                         //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                         isDownloading = false;
