@@ -8,6 +8,10 @@
 #include "GlobalNamespace/QuickPlaySetupData_QuickPlaySongPacksOverride.hpp"
 #include "GlobalNamespace/QuickPlaySetupData.hpp"
 
+#include "GlobalNamespace/BeatmapDifficultyDropdown.hpp"
+#include "GlobalNamespace/BeatmapDifficultyMask.hpp"
+#include "HMUI/SimpleTextDropdown.hpp"
+
 #include "CodegenExtensions/TempBloomFilterUtil.hpp"
 
 //#include "GlobalNamespace/MasterServerQuickPlaySetupModel.hpp"
@@ -27,6 +31,7 @@
 #include "GlobalNamespace/QuickPlaySongPacksDropdown.hpp"
 
 using namespace GlobalNamespace;
+using namespace HMUI;
 
 using MSQSD_QPSPO_PredefinedPack = QuickPlaySetupData::QuickPlaySongPacksOverride::PredefinedPack;
 using MSQSD_QPSPO_LocalizedCustomPack = QuickPlaySetupData::QuickPlaySongPacksOverride::LocalizedCustomPack;
@@ -39,6 +44,14 @@ namespace MultiplayerCore {
     MAKE_HOOK_MATCH(QuickPlaySongPacksDropdown_LazyInit, &QuickPlaySongPacksDropdown::LazyInit, void, QuickPlaySongPacksDropdown* self) {
         gotSongPackOverrides = (self->dyn__quickPlaySongPacksOverride() != nullptr);
         QuickPlaySongPacksDropdown_LazyInit(self);
+    }
+
+    //Adds All dificulty to quickplay
+    MAKE_HOOK_MATCH(JoinQuickPlayViewController_setup, &JoinQuickPlayViewController::Setup, void, JoinQuickPlayViewController* self, GlobalNamespace::QuickPlaySetupData* quickPlaySetupData, ::GlobalNamespace::MultiplayerModeSettings* multiplayerModeSettings){
+        auto &Difficulties = self->dyn__beatmapDifficultyDropdown();
+        Difficulties->set_includeAllDifficulties(true);
+        JoinQuickPlayViewController_setup(self, quickPlaySetupData, multiplayerModeSettings);
+        Difficulties->dyn__simpleTextDropdown()->SelectCellWithIdx(0);
     }
 
     MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish, &MultiplayerModeSelectionFlowCoordinator::HandleJoinQuickPlayViewControllerDidFinish, void, MultiplayerModeSelectionFlowCoordinator* self, bool success) {
@@ -109,6 +122,7 @@ namespace MultiplayerCore {
     void Hooks::QuickplayHooks() {
         INSTALL_HOOK(getLogger(), QuickPlaySongPacksDropdown_LazyInit);
         INSTALL_HOOK(getLogger(), MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish);
+        INSTALL_HOOK(getLogger(), JoinQuickPlayViewController_setup);
         //INSTALL_HOOK(getLogger(), MasterServerQuickPlaySetupModel_GetQuickPlaySetupInternal);
     }
 }

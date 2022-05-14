@@ -61,6 +61,7 @@ event<GlobalNamespace::DisconnectedReason> MultiplayerCore::Players::MpPlayerMan
 static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData, IConnectedPlayer* player) {
     const std::string userId = static_cast<std::string>(player->get_userId());
     if (_playerData.contains(userId)) {
+        getLogger().debug("HandlePlayerData, IsLocalClient");
         _playerData.at(userId) = playerData;
     }
     else {
@@ -78,7 +79,7 @@ static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData,
 
 void HandlePlayerConnected(IConnectedPlayer* player) {
     try {
-        getLogger().debug("HandlePlayerConnected");
+        getLogger().debug("MpCore HandlePlayerConnected");
         if (player) {
             getLogger().info("Player '%s' joined", static_cast<std::string>(player->get_userId()).c_str());
             getLogger().debug("Sending MpPlayerData");
@@ -164,10 +165,11 @@ MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisco
 
 MAKE_HOOK_MATCH(LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected, &LobbyGameStateController::HandleMultiplayerSessionManagerDisconnected, void, LobbyGameStateController* self, DisconnectedReason disconnectedReason) {
     getLogger().debug("LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected");
+    LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected(self, disconnectedReason);
     HandleDisconnect(disconnectedReason);
     MultiplayerCore::Players::MpPlayerManager::disconnectedEvent(disconnectedReason);
-    LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected(self, disconnectedReason);
 }
+
 
 MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSession, void, MultiplayerSessionManager* self, MultiplayerSessionManager_SessionType sessionType, ConnectedPlayerManager* connectedPlayerManager) {
     SessionManager_StartSession(self, sessionType, connectedPlayerManager);
@@ -230,7 +232,6 @@ MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap,
 MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap, &LobbyPlayersDataModel::HandleMenuRpcManagerRecommendBeatmap, void, LobbyPlayersDataModel* self, StringW userId, BeatmapIdentifierNetSerializable* beatmapId) {
     if (!Il2CppString::IsNullOrEmpty(Utilities::HashForLevelID(beatmapId->get_levelID())))
         return;
-
     LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap(self, userId, beatmapId);
 }
 
@@ -247,23 +248,30 @@ MAKE_HOOK_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &LobbyPlayersD
 #include "Beatmaps/NoInfoBeatmapLevel.hpp"
 using namespace MultiplayerCore::Beatmaps;
 MAKE_HOOK_MATCH(BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap, &BeatmapIdentifierNetSerializableHelper::ToPreviewDifficultyBeatmap, PreviewDifficultyBeatmap*, BeatmapIdentifierNetSerializable* beatmapId, BeatmapLevelsModel* beatmapLevelsModel, BeatmapCharacteristicCollectionSO* beatmapCharacteristicCollection) {
+    getLogger().debug("BeatmapIdentifierNetSerializableHelper::ToPreviewDifficultyBeatmap");
     PreviewDifficultyBeatmap* beatmap = BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap(beatmapId, beatmapLevelsModel, beatmapCharacteristicCollection);
     if (!(beatmap && beatmap->get_beatmapLevel())) beatmap->set_beatmapLevel(reinterpret_cast<IPreviewBeatmapLevel*>(NoInfoBeatmapLevel::New_ctor(Utilities::HashForLevelID(beatmapId->get_levelID()))));
     return beatmap;
 }
 
 bool MultiplayerCore::Players::MpPlayerManager::TryGetPlayer(std::string playerId, Players::MpPlayerData*& player) {
+    //getLogger().debug("PlayerFound returning true ");
     if (_playerData.find(playerId) != _playerData.end()) {
+        //getLogger().debug("PlayerFound returning true and player");
         player = static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
         return true;
     }
+    //getLogger().debug("PlayerNotFound %s Returning false", playerId.c_str());
     return false;
 }
 
 Players::MpPlayerData* MultiplayerCore::Players::MpPlayerManager::GetPlayer(std::string playerId) {
+    //getLogger().debug("Getting player");
     if (_playerData.find(playerId) != _playerData.end()) {
+        //getLogger().debug("GotPlayer");
         return static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
     }
+    //getLogger().debug("PlayerNotFound %s returning nullptr", playerId.c_str());
     return nullptr;
 }
 
@@ -272,6 +280,8 @@ void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected);
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected);
     INSTALL_HOOK(getLogger(), LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected);
+
+
     INSTALL_HOOK_ORIG(getLogger(), SessionManager_StartSession);
 
     INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap);
