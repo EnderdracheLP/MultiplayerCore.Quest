@@ -101,8 +101,10 @@ void HandlePlayerConnected(IConnectedPlayer* player) {
 
 void HandlePlayerDisconnected(IConnectedPlayer* player) {
     getLogger().info("Player '%s' left", static_cast<std::string>(player->get_userId()).c_str());
-    _playerData.at(static_cast<std::string>(player->get_userId())).~SafePtr();
-    _playerData.erase(static_cast<std::string>(player->get_userId()));
+    if(_playerData.contains(static_cast<std::string>(player->get_userId()))){
+        _playerData.at(static_cast<std::string>(player->get_userId())).~SafePtr();
+        _playerData.erase(static_cast<std::string>(player->get_userId()));
+    }
 }
 
 void HandleDisconnect(DisconnectedReason reason) {
@@ -151,23 +153,27 @@ Players::Platform getPlatform(UserInfo::Platform platform) {
 
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSessionManager::HandlePlayerConnected, void, MultiplayerSessionManager* self, IConnectedPlayer* player) {
     getLogger().debug("MultiplayerSessionManager_HandlePlayerConnected");
+    if(player){
+        HandlePlayerConnected(player);
+        MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent(player);
+    }
     MultiplayerSessionManager_HandlePlayerConnected(self, player);
-    HandlePlayerConnected(player);
-    MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent(player);
 }
 
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &MultiplayerSessionManager::HandlePlayerDisconnected, void, MultiplayerSessionManager* self, IConnectedPlayer* player) {
     getLogger().debug("MultiplayerSessionManager_HandlePlayerDisconnected");
+    if(player){
+        HandlePlayerDisconnected(player);
+        MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent(player);
+    }
     MultiplayerSessionManager_HandlePlayerDisconnected(self, player);
-    HandlePlayerDisconnected(player);
-    MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent(player);
 }
 
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandleDisconnected, &MultiplayerSessionManager::HandleDisconnected, void, MultiplayerSessionManager* self, DisconnectedReason disconnectedReason) {
     getLogger().debug("MultiplayerSessionManager_HandleDisconnected");
-    MultiplayerSessionManager_HandleDisconnected(self, disconnectedReason);
     HandleDisconnect(disconnectedReason);
     MultiplayerCore::Players::MpPlayerManager::disconnectedEvent(disconnectedReason);
+    MultiplayerSessionManager_HandleDisconnected(self, disconnectedReason);
 }
 
 
