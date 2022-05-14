@@ -149,23 +149,23 @@ Players::Platform getPlatform(UserInfo::Platform platform) {
     }
 }
 
-MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerConnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
-    getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected");
-    LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected(self, player);
+MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSessionManager::HandlePlayerConnected, void, MultiplayerSessionManager* self, IConnectedPlayer* player) {
+    getLogger().debug("MultiplayerSessionManager_HandlePlayerConnected");
+    MultiplayerSessionManager_HandlePlayerConnected(self, player);
     HandlePlayerConnected(player);
     MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent(player);
 }
 
-MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerDisconnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
-    getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected");
-    LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected(self, player);
+MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &MultiplayerSessionManager::HandlePlayerDisconnected, void, MultiplayerSessionManager* self, IConnectedPlayer* player) {
+    getLogger().debug("MultiplayerSessionManager_HandlePlayerDisconnected");
+    MultiplayerSessionManager_HandlePlayerDisconnected(self, player);
     HandlePlayerDisconnected(player);
     MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent(player);
 }
 
-MAKE_HOOK_MATCH(LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected, &LobbyGameStateController::HandleMultiplayerSessionManagerDisconnected, void, LobbyGameStateController* self, DisconnectedReason disconnectedReason) {
-    getLogger().debug("LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected");
-    LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected(self, disconnectedReason);
+MAKE_HOOK_MATCH(MultiplayerSessionManager_HandleDisconnected, &MultiplayerSessionManager::HandleDisconnected, void, MultiplayerSessionManager* self, DisconnectedReason disconnectedReason) {
+    getLogger().debug("MultiplayerSessionManager_HandleDisconnected");
+    MultiplayerSessionManager_HandleDisconnected(self, disconnectedReason);
     HandleDisconnect(disconnectedReason);
     MultiplayerCore::Players::MpPlayerManager::disconnectedEvent(disconnectedReason);
 }
@@ -277,9 +277,9 @@ Players::MpPlayerData* MultiplayerCore::Players::MpPlayerManager::GetPlayer(std:
 
 void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
     INSTALL_HOOK(getLogger(), SessionManagerStart);
-    INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected);
-    INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected);
-    INSTALL_HOOK(getLogger(), LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected);
+    INSTALL_HOOK(getLogger(), MultiplayerSessionManager_HandlePlayerConnected);
+    INSTALL_HOOK(getLogger(), MultiplayerSessionManager_HandlePlayerDisconnected);
+    INSTALL_HOOK(getLogger(), MultiplayerSessionManager_HandleDisconnected);
 
 
     INSTALL_HOOK_ORIG(getLogger(), SessionManager_StartSession);
