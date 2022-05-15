@@ -3,8 +3,6 @@
 #include "GlobalFields.hpp"
 #include "Hooks/EnvironmentAndAvatarHooks.hpp"
 #include "Hooks/SessionManagerAndExtendedPlayerHooks.hpp"
-//#include "Environments/LobbyAvatarPlaceLighting.hpp"
-//#include "Environments/LobbyAvatarNameTag.hpp"
 
 #include "GlobalNamespace/MultiplayerLobbyController.hpp"
 #include "GlobalNamespace/LightWithIdMonoBehaviour.hpp"
@@ -29,8 +27,6 @@
 
 using namespace GlobalNamespace;
 using namespace UnityEngine;
-//using namespace MultiQuestensions::Environments;
-//using namespace MultiQuestensions::Extensions;
 using namespace System::Collections::Generic;
 
 namespace MultiplayerCore {
@@ -40,8 +36,6 @@ namespace MultiplayerCore {
     MenuEnvironmentManager* _menuEnvironmentManager;
     MultiplayerLobbyAvatarPlaceManager* _placeManager;
     MultiplayerLobbyCenterStageManager* _stageManager;
-
-    //std::vector<LobbyAvatarPlaceLighting*> avatarPlaces;
 
     float innerCircleRadius;
     float minOuterCircleRadius;
@@ -113,7 +107,7 @@ namespace MultiplayerCore {
 
     void Hooks::EnvironmentHooks() {
         INSTALL_HOOK(getLogger(), MultiplayerLobbyController_ActivateMultiplayerLobby);
-        // INSTALL_HOOK_ORIG(getLogger(), LightWithIdMonoBehaviour_RegisterLight);
+
         INSTALL_HOOK(getLogger(), MultiplayerLobbyAvatarManager_AddPlayer);
         INSTALL_HOOK_ORIG(getLogger(), AvatarPoseRestrictions_HandleAvatarPoseControllerPositionsWillBeSet);
     }

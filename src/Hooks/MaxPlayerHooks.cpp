@@ -35,6 +35,7 @@ namespace MultiplayerCore {
         }
         catch (const std::runtime_error& e) {
             getLogger().critical("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " at Line %d: %s", __LINE__, e.what());
+            getLogger().debug("returning usual results pyramid");
             MultiplayerResultsPyramidPatch(self, resultsData, badgeStartTransform, badgeMidTransform);
         }
     }
@@ -48,6 +49,7 @@ namespace MultiplayerCore {
         try {
             // Run animation one time for each set of 4 players
             if (targetIterations != 1) {
+                getLogger().debug("starter animaton");
                 // Create duplicated animations
                 GameObject* newPlayableGameObject = GameObject::New_ctor();
                 self->dyn__introPlayableDirector() = newPlayableGameObject->AddComponent<PlayableDirector*>();
@@ -77,8 +79,8 @@ namespace MultiplayerCore {
             IntroAnimationPatch(self, maxDesiredIntroAnimationDuration, onCompleted);
             // Reset director to real director
             self->dyn__introPlayableDirector() = realDirector;
-            targetIterations--;
-            if (targetIterations != 0)
+            //targetIterations--;
+            if (targetIterations-1 != 0)
                 self->PlayIntroAnimation(maxDesiredIntroAnimationDuration, onCompleted);
         }
         catch (const std::runtime_error& e) {
@@ -109,6 +111,11 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(MultiplayerPlayersManager_get_allActiveAtGameStartPlayers, &MultiplayerPlayersManager::get_allActiveAtGameStartPlayers, IReadOnlyList_1<GlobalNamespace::IConnectedPlayer*>*, MultiplayerPlayersManager* self) {
         getLogger().debug("Start: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers");
+        if (targetIterations == 0)
+        {
+            getLogger().debug("THIS SHOULD NEVER RUN");
+            targetIterations = floor((reinterpret_cast<IReadOnlyCollection_1<GlobalNamespace::IConnectedPlayer*>*>(self->dyn__allActiveAtGameStartPlayers())->get_Count() - 1) / 4) + 1;
+        }
         static auto* Enumerable_ToList_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToList", 1));
         static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_ToList_Generic, { classof(IConnectedPlayer*) }));
 
@@ -118,6 +125,7 @@ namespace MultiplayerCore {
         if (cpispt == BindTimeline) {
             cpispt = None;
             try {
+                getLogger().debug("Getting intro active players (skipping (target iterations-1)*4, Taking 4 then adding player)");
                 List_1<IConnectedPlayer*>* listActivePlayers = il2cpp_utils::RunMethodThrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                     Enumerable_ToList, reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(self->dyn__allActiveAtGameStartPlayers()));
                 //List<IConnectedPlayer*>* listActivePlayers = Enumerable::ToList<IConnectedPlayer*>(reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(allActivePlayer));
@@ -152,31 +160,37 @@ namespace MultiplayerCore {
                     selectedActivePlayers->Add(localPlayer);
                 }
 
-                getLogger().debug("Finish: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers");
+                getLogger().debug("Finish: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers(intro)");
 
                 //return new list of players
                 return reinterpret_cast<IReadOnlyList_1<IConnectedPlayer*>*>(selectedActivePlayers);
             }
             catch (const std::runtime_error& e) {
                 getLogger().critical("REPORT TO ENDER: Hook MultiplayerPlayersManager_get_allActiveAtGameStartPlayers Exception: %s", e.what());
+                return self->dyn__allActiveAtGameStartPlayers();
             }
         }
         else if (cpispt == BindOutroTimeline) {
             cpispt = None;
-
+            getLogger().debug("Getting outro active players(first 4 in list)");
             auto* result = il2cpp_utils::RunMethodThrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_Take, reinterpret_cast<List_1<IConnectedPlayer*>*>(self->dyn__allActiveAtGameStartPlayers()), 4);
             
+            getLogger().debug("Finish: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers(outro)");
+            getLogger().debug("RESETTING TARGET ITERATIONS");
+            targetIterations = 0;
             return reinterpret_cast<IReadOnlyList_1<IConnectedPlayer*>*>(il2cpp_utils::RunMethodThrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_ToList, result));
         }
         cpispt = None;
+        getLogger().debug("Getting all active players");
+        getLogger().debug("Finish: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers(ALL)");
         return self->dyn__allActiveAtGameStartPlayers();
     }
 
     MAKE_HOOK_MATCH(CreateServerFormController_get_formData, &CreateServerFormController::get_formData, CreateServerFormData, CreateServerFormController* self) {
         CreateServerFormData result = CreateServerFormController_get_formData(self);
-        result.maxPlayers = std::clamp<int>(self->dyn__maxPlayersList()->get_value(), 2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 100));
+        result.maxPlayers = std::clamp<int>(self->dyn__maxPlayersList()->get_value(), 2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120));
         return result;
     }
 
@@ -186,7 +200,7 @@ namespace MultiplayerCore {
             static auto* Enumerable_ToArray_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToArray", 1));
             static auto* Enumerable_ToArray = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_ToArray_Generic, { classof(int) }));
             il2cpp_utils::RunMethodThrow<::Array<int>*, false>(static_cast<Il2CppClass*>(nullptr),
-                Enumerable_ToArray, Enumerable::Range(2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 100) - 1))->copy_to(rangeVec);
+                Enumerable_ToArray, Enumerable::Range(2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120) - 1))->copy_to(rangeVec);
             //Enumerable::ToArray(Enumerable::Range(2, 9))->copy_to(rangeVec);
             std::vector<float> resultVec(rangeVec.begin(), rangeVec.end());
             self->dyn__maxPlayersList()->dyn__values() = il2cpp_utils::vectorToArray(resultVec);
