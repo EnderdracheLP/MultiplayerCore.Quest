@@ -2,7 +2,6 @@
 #include "Hooks/Hooks.hpp"
 #include "Hooks/SessionManagerAndExtendedPlayerHooks.hpp"
 #include "GlobalFields.hpp"
-#include "Hooks/EnvironmentAndAvatarHooks.hpp"
 #include "Players/MpPlayerData.hpp"
 #include "Players/MpPlayerManager.hpp"
 #include "UI/CenterScreenLoading.hpp"
@@ -27,7 +26,7 @@
 #include "questui/shared/BeatSaberUI.hpp"
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
 #include "songdownloader/shared/BeatSaverAPI.hpp"
-using namespace MultiQuestensions;
+
 using namespace MultiplayerCore;
 using namespace GlobalNamespace;
 

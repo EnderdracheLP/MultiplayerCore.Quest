@@ -1,7 +1,6 @@
 #include "main.hpp"
 #include "Hooks/Hooks.hpp"
 #include "GlobalFields.hpp"
-#include "Hooks/EnvironmentAndAvatarHooks.hpp"
 #include "Hooks/SessionManagerAndExtendedPlayerHooks.hpp"
 
 #include "GlobalNamespace/MultiplayerLobbyController.hpp"
@@ -43,8 +42,6 @@ namespace MultiplayerCore {
     float outerCircleRadius;
 
     bool initialized;
-
-    MultiplayerLobbyAvatarManager* _avatarManager;
 
     void HandleLobbyEnvironmentLoaded() {
         initialized = false;
@@ -92,11 +89,6 @@ namespace MultiplayerCore {
 
 #pragma endregion
 
-    MAKE_HOOK_MATCH(MultiplayerLobbyAvatarManager_AddPlayer, &MultiplayerLobbyAvatarManager::AddPlayer, void, MultiplayerLobbyAvatarManager* self, IConnectedPlayer* connectedPlayer) {
-        MultiplayerLobbyAvatarManager_AddPlayer(self, connectedPlayer);
-        _avatarManager = self;
-    }
-
     MAKE_HOOK_MATCH(AvatarPoseRestrictions_HandleAvatarPoseControllerPositionsWillBeSet, &AvatarPoseRestrictions::HandleAvatarPoseControllerPositionsWillBeSet, void, AvatarPoseRestrictions* self, Quaternion headRotation, Vector3 headPosition, Vector3 leftHandPosition, Vector3 rightHandPosition, ByRef<Vector3> newHeadPosition, ByRef<Vector3> newLeftHandPosition, ByRef<Vector3> newRightHandPosition) {
         newHeadPosition.heldRef = headPosition;
         newLeftHandPosition.heldRef = self->LimitHandPositionRelativeToHead(leftHandPosition, headPosition);
@@ -106,7 +98,6 @@ namespace MultiplayerCore {
     void Hooks::EnvironmentHooks() {
         INSTALL_HOOK(getLogger(), MultiplayerLobbyController_ActivateMultiplayerLobby);
 
-        INSTALL_HOOK(getLogger(), MultiplayerLobbyAvatarManager_AddPlayer);
         INSTALL_HOOK_ORIG(getLogger(), AvatarPoseRestrictions_HandleAvatarPoseControllerPositionsWillBeSet);
     }
 }
