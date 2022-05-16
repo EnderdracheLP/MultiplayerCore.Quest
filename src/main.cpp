@@ -147,9 +147,6 @@ MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController:
                 if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
             }
         }
-        // if (firstActivation && _multiplayerSessionManager) {
-        //     MultiplayerCore::UI::LobbySetupPanel::AddSetupPanel(self->get_rectTransform(), _multiplayerSessionManager);
-        // }
     }
     catch (il2cpp_utils::RunMethodException const& e) {
         getLogger().error("REPORT TO ENDER RunMethodException in LobbySetupViewController_DidActivate: %s", e.what());
@@ -167,13 +164,6 @@ MAKE_HOOK_MATCH(MultiplayerLobbyConnectionController_CreateParty, &MultiplayerLo
     data.songPacks = SongPackMask::get_all() | SongPackMask(BloomFilterUtil::ToBloomFilter<BitMask128>(getCustomLevelSongPackMaskStr(), 2, 13)); // TODO: Figure out why the Il2CppString constructor crashes
     MultiplayerLobbyConnectionController_CreateParty(self, data);
 }
-
-//MAKE_HOOK_MATCH(MultiplayerLobbyConnectionController_ConnectToMatchmaking, &MultiplayerLobbyConnectionController::ConnectToMatchmaking, void, MultiplayerLobbyConnectionController* self, BeatmapDifficultyMask beatmapDifficultyMask, SongPackMask songPackMask, bool allowSongSelection) {
-//    if (!gotSongPackOverrides) {
-//        songPackMask = songPackMask | SongPackMask(getCustomLevelSongPackMaskStr());
-//    }
-//    MultiplayerLobbyConnectionController_ConnectToMatchmaking(self, beatmapDifficultyMask, songPackMask, allowSongSelection);
-//}
 
 // Show the custom levels tab in multiplayer
 MAKE_HOOK_MATCH(LevelSelectionNavigationController_Setup, &LevelSelectionNavigationController::Setup, void, LevelSelectionNavigationController* self,
@@ -442,7 +432,7 @@ void saveDefaultConfig() {
     ConfigDocument& config = getConfig().config;
 
     if (config.HasMember("autoDelete") && config["autoDelete"].IsBool() &&
-        config.HasMember("LagReducer") && config["LagReducer"].IsBool() &&
+        //config.HasMember("LagReducer") && config["LagReducer"].IsBool() &&
         config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt()) {
         getLogger().info("Config file already exists.");
         return;
@@ -455,8 +445,8 @@ void saveDefaultConfig() {
 
     if (!(config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt()))
         config.AddMember("MaxPlayers", 10, allocator);
-    if (!(config.HasMember("LagReducer") && config["LagReducer"].IsBool()))
-        config.AddMember("LagReducer", false, allocator);
+    //if (!(config.HasMember("LagReducer") && config["LagReducer"].IsBool()))
+    //    config.AddMember("LagReducer", false, allocator);
     if (!(config.HasMember("autoDelete") && config["autoDelete"].IsBool()))
         config.AddMember("autoDelete", false, allocator);
 

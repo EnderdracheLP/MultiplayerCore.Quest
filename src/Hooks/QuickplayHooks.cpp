@@ -14,7 +14,6 @@
 
 #include "CodegenExtensions/TempBloomFilterUtil.hpp"
 
-//#include "GlobalNamespace/MasterServerQuickPlaySetupModel.hpp"
 #include "GlobalNamespace/SongPackMaskModelSO.hpp"
 
 #include "GlobalNamespace/MultiplayerModeSelectionFlowCoordinator.hpp"
@@ -54,6 +53,7 @@ namespace MultiplayerCore {
         Difficulties->dyn__simpleTextDropdown()->SelectCellWithIdx(0);
     }
 
+    //Adds warning screen about custom quickplay
     MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish, &MultiplayerModeSelectionFlowCoordinator::HandleJoinQuickPlayViewControllerDidFinish, void, MultiplayerModeSelectionFlowCoordinator* self, bool success) {
         Il2CppString* levelPackName = self->dyn__joinQuickPlayViewController()->dyn__multiplayerModeSettings()->dyn_quickPlaySongPackMaskSerializedName();
         if (success && 
@@ -86,44 +86,10 @@ namespace MultiplayerCore {
         } else MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish(self, success);
     }
 
-    //MAKE_HOOK_MATCH(MasterServerQuickPlaySetupModel_GetQuickPlaySetupInternal, &MasterServerQuickPlaySetupModel::GetQuickPlaySetupInternal, System::Threading::Tasks::Task_1<GlobalNamespace::QuickPlaySetupData*>*, MasterServerQuickPlaySetupModel* self) {
-    //    getLogger().debug("MasterServerQuickPlaySetupModel::GetQuickPlaySetupInternal");
-    //    using T1_MasterServerQuickplaySetupData = System::Threading::Tasks::Task_1<GlobalNamespace::QuickPlaySetupData*>*;
-    //    T1_MasterServerQuickplaySetupData result = MasterServerQuickPlaySetupModel_GetQuickPlaySetupInternal(self);
-    //    auto action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void()>)[result] {
-    //        QuickPlaySetupData* data = result->get_ResultOnSuccess();
-    //        if (data) {
-    //            QuickPlaySetupData::QuickPlaySongPacksOverride* overrides = data->dyn_quickPlayAvailablePacksOverride();
-    //            getLogger().debug("MasterServerQuickplaySetupData: hasOverride: '%s', Check _quickPlayAvailablePacksOverride Pointer: '%p'", data->get_hasOverride() ? "true" : "false", overrides);
-    //            using PredefinedPack = QuickPlaySetupData::QuickPlaySongPacksOverride::PredefinedPack;
-    //            for (int i = 0; i < overrides->dyn_predefinedPackIds()->get_Count(); i++) {
-    //                PredefinedPack* pack = overrides->dyn_predefinedPackIds()->get_Item(i);
-    //                getLogger().debug("predefinedPackIds: order: '%d', packId: '%s'", pack->dyn_order(), to_utf8(csstrtostr(pack->dyn_packId())).c_str());
-    //            }
-    //            using LocalizedCustomPack = QuickPlaySetupData::QuickPlaySongPacksOverride::LocalizedCustomPack;
-    //            for (int i = 0; i < overrides->dyn_localizedCustomPacks()->get_Count(); i++) {
-    //                LocalizedCustomPack* pack = overrides->dyn_localizedCustomPacks()->get_Item(i);
-    //                getLogger().debug("predefinedPackIds: order: '%d', serializedName: '%s'", pack->dyn_order(), to_utf8(csstrtostr(pack->dyn_serializedName())).c_str());
-    //                for (int j = 0; j < pack->dyn_packIds()->get_Count(); j++) {
-    //                    getLogger().debug("predefinedPackIds packId '%d': packId: '%s'", j, to_utf8(csstrtostr(pack->dyn_packIds()->get_Item(j))).c_str());
-    //                }
-    //            }
-    //        }
-    //        else {
-    //            getLogger().debug("MasterServerQuickPlaySetupModel::GetQuickPlaySetupInternal: Task does not have Results");
-    //        }
-    //        }
-    //    );
-    //    reinterpret_cast<System::Threading::Tasks::Task*>(result)->ContinueWith(action);
-
-    //    return result;
-    //}
-
     void Hooks::QuickplayHooks() {
         INSTALL_HOOK(getLogger(), QuickPlaySongPacksDropdown_LazyInit);
         INSTALL_HOOK(getLogger(), MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish);
         INSTALL_HOOK(getLogger(), JoinQuickPlayViewController_setup);
-        //INSTALL_HOOK(getLogger(), MasterServerQuickPlaySetupModel_GetQuickPlaySetupInternal);
     }
 }
 

@@ -53,10 +53,10 @@ std::map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerDa
 IPlatformUserModel* platformUserModel;
 
 event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> MultiplayerCore::Players::MpPlayerManager::PlayerConnected;
+event<GlobalNamespace::DisconnectedReason> MultiplayerCore::Players::MpPlayerManager::disconnectedEvent;
 
 event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent;
 event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent;
-event<GlobalNamespace::DisconnectedReason> MultiplayerCore::Players::MpPlayerManager::disconnectedEvent;
 
 static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData, IConnectedPlayer* player) {
     const std::string userId = static_cast<std::string>(player->get_userId());
@@ -100,10 +100,15 @@ void HandlePlayerConnected(IConnectedPlayer* player) {
 }
 
 void HandlePlayerDisconnected(IConnectedPlayer* player) {
-    getLogger().info("Player '%s' left", static_cast<std::string>(player->get_userId()).c_str());
-    if(_playerData.contains(static_cast<std::string>(player->get_userId()))){
-        _playerData.at(static_cast<std::string>(player->get_userId())).~SafePtr();
-        _playerData.erase(static_cast<std::string>(player->get_userId()));
+    try {
+        getLogger().info("Player '%s' left", static_cast<std::string>(player->get_userId()).c_str());
+        if(_playerData.contains(static_cast<std::string>(player->get_userId()))){
+            _playerData.at(static_cast<std::string>(player->get_userId())).~SafePtr();
+            _playerData.erase(static_cast<std::string>(player->get_userId()));
+        }
+    }
+        catch (const std::runtime_error& e) {
+        getLogger().error("REPORT TO ENDER: %s", e.what());
     }
 }
 
@@ -215,7 +220,7 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
 
     // self->add_playerConnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<IConnectedPlayer*>*>(classof(System::Action_1<IConnectedPlayer*>*), static_cast<Il2CppObject*>(nullptr), HandlePlayerConnected));
     // self->add_playerDisconnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<IConnectedPlayer*>*>(classof(System::Action_1<IConnectedPlayer*>*), static_cast<Il2CppObject*>(nullptr), HandlePlayerDisconnected));
-    self->add_disconnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<DisconnectedReason>*>(classof(System::Action_1<DisconnectedReason>*), static_cast<Il2CppObject*>(nullptr), HandleDisconnect));
+    //COMMENTED OUT RECENTLYself->add_disconnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<DisconnectedReason>*>(classof(System::Action_1<DisconnectedReason>*), static_cast<Il2CppObject*>(nullptr), HandleDisconnect));
 }
 
 MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap, &LobbyPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap, void, LobbyPlayersDataModel* self, StringW userId) {
@@ -261,23 +266,17 @@ MAKE_HOOK_MATCH(BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatma
 }
 
 bool MultiplayerCore::Players::MpPlayerManager::TryGetPlayer(std::string playerId, Players::MpPlayerData*& player) {
-    //getLogger().debug("PlayerFound returning true ");
     if (_playerData.find(playerId) != _playerData.end()) {
-        //getLogger().debug("PlayerFound returning true and player");
         player = static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
         return true;
     }
-    //getLogger().debug("PlayerNotFound %s Returning false", playerId.c_str());
     return false;
 }
 
 Players::MpPlayerData* MultiplayerCore::Players::MpPlayerManager::GetPlayer(std::string playerId) {
-    //getLogger().debug("Getting player");
     if (_playerData.find(playerId) != _playerData.end()) {
-        //getLogger().debug("GotPlayer");
         return static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
     }
-    //getLogger().debug("PlayerNotFound %s returning nullptr", playerId.c_str());
     return nullptr;
 }
 
