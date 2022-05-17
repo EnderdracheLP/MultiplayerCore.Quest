@@ -51,16 +51,20 @@ SafePtr<MultiplayerCore::Players::MpPlayerData> localPlayer;
 std::map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerData;
 IPlatformUserModel* platformUserModel;
 
-event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> MultiplayerCore::Players::MpPlayerManager::PlayerConnected;
-event<GlobalNamespace::DisconnectedReason> MultiplayerCore::Players::MpPlayerManager::disconnectedEvent;
+event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> MultiplayerCore::Players::MpPlayerManager::RecievedPlayerData; //USED BY MQE
 
+MultiplayerCore::event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerConnectedHandler = MultiplayerCore::event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerConnected);
+MultiplayerCore::event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerDisconnectedHandler = MultiplayerCore::event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerDisconnected);
+MultiplayerCore::event_handler<GlobalNamespace::DisconnectedReason> _DisconnectedHandler = MultiplayerCore::event_handler<GlobalNamespace::DisconnectedReason>(HandleDisconnect);
+
+event<GlobalNamespace::DisconnectedReason> MultiplayerCore::Players::MpPlayerManager::disconnectedEvent;
 event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent;
 event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent;
 
 static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData, IConnectedPlayer* player) {
     const std::string userId = static_cast<std::string>(player->get_userId());
     if (_playerData.contains(userId)) {
-        getLogger().debug("HandlePlayerData, IsLocalClient");
+        getLogger().debug("HandlePlayerData, player already exists");
         _playerData.at(userId) = playerData;
     }
     else {
@@ -72,7 +76,7 @@ static void HandlePlayerData(MultiplayerCore::Players::MpPlayerData* playerData,
         _playerData.emplace(userId, playerData);
     }
     getLogger().debug("MpPlayerData firing event");
-    MultiplayerCore::Players::MpPlayerManager::PlayerConnected(player, playerData);
+    MultiplayerCore::Players::MpPlayerManager::RecievedPlayerData(player, playerData);
     getLogger().debug("MpPlayerData done");
 }
 
@@ -114,6 +118,9 @@ void HandlePlayerDisconnected(IConnectedPlayer* player) {
 void HandleDisconnect(DisconnectedReason reason) {
     getLogger().info("Disconnected from server reason: '%s'", EnumUtils::GetEnumName(reason).c_str());
     _playerData.clear();
+    MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent -= _PlayerConnectedHandler;
+    MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent -= _PlayerDisconnectedHandler;
+    MultiplayerCore::Players::MpPlayerManager::disconnectedEvent -= _DisconnectedHandler;
 }
 
 MAKE_HOOK_MATCH(SessionManagerStart, &MultiplayerSessionManager::Start, void, MultiplayerSessionManager* self) {
@@ -158,7 +165,7 @@ Players::Platform getPlatform(UserInfo::Platform platform) {
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSessionManager::HandlePlayerConnected, void, MultiplayerSessionManager* self, IConnectedPlayer* player) {
     getLogger().debug("MultiplayerSessionManager_HandlePlayerConnected");
     if(player){
-        HandlePlayerConnected(player);
+        //HandlePlayerConnected(player);
         MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent(player);
     }
     MultiplayerSessionManager_HandlePlayerConnected(self, player);
@@ -167,7 +174,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSes
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &MultiplayerSessionManager::HandlePlayerDisconnected, void, MultiplayerSessionManager* self, IConnectedPlayer* player) {
     getLogger().debug("MultiplayerSessionManager_HandlePlayerDisconnected");
     if(player){
-        HandlePlayerDisconnected(player);
+        //HandlePlayerDisconnected(player);
         MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent(player);
     }
     MultiplayerSessionManager_HandlePlayerDisconnected(self, player);
@@ -175,7 +182,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &Multiplayer
 
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandleDisconnected, &MultiplayerSessionManager::HandleDisconnected, void, MultiplayerSessionManager* self, DisconnectedReason disconnectedReason) {
     getLogger().debug("MultiplayerSessionManager_HandleDisconnected");
-    HandleDisconnect(disconnectedReason);
+    //HandleDisconnect(disconnectedReason);
     MultiplayerCore::Players::MpPlayerManager::disconnectedEvent(disconnectedReason);
     MultiplayerSessionManager_HandleDisconnected(self, disconnectedReason);
 }
@@ -216,6 +223,11 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
         self->SetLocalPlayerState(getMEStateStr(), MatchesVersion("MappingExtensions", "*"));
         self->SetLocalPlayerState(getNEStateStr(), MatchesVersion("NoodleExtensions", "*"));
         self->SetLocalPlayerState(getChromaStateStr(), MatchesVersion(ChromaID, ChromaVersionRange));
+
+        MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent += _PlayerConnectedHandler;
+        MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent += _PlayerDisconnectedHandler;
+        MultiplayerCore::Players::MpPlayerManager::disconnectedEvent += _DisconnectedHandler;
+
 
     // self->add_playerConnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<IConnectedPlayer*>*>(classof(System::Action_1<IConnectedPlayer*>*), static_cast<Il2CppObject*>(nullptr), HandlePlayerConnected));
     // self->add_playerDisconnectedEvent(il2cpp_utils::MakeDelegate<System::Action_1<IConnectedPlayer*>*>(classof(System::Action_1<IConnectedPlayer*>*), static_cast<Il2CppObject*>(nullptr), HandlePlayerDisconnected));

@@ -49,6 +49,7 @@ namespace MultiplayerCore {
     MAKE_HOOK_MATCH(JoinQuickPlayViewController_setup, &JoinQuickPlayViewController::Setup, void, JoinQuickPlayViewController* self, GlobalNamespace::QuickPlaySetupData* quickPlaySetupData, ::GlobalNamespace::MultiplayerModeSettings* multiplayerModeSettings){
         auto &Difficulties = self->dyn__beatmapDifficultyDropdown();
         Difficulties->set_includeAllDifficulties(true);
+        
         JoinQuickPlayViewController_setup(self, quickPlaySetupData, multiplayerModeSettings);
         Difficulties->dyn__simpleTextDropdown()->SelectCellWithIdx(0);
     }
