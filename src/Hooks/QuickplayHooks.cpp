@@ -29,6 +29,8 @@
 
 #include "GlobalNamespace/QuickPlaySongPacksDropdown.hpp"
 
+//Nothing here causes blackscreen crash
+
 using namespace GlobalNamespace;
 using namespace HMUI;
 

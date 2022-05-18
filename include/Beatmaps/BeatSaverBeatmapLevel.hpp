@@ -7,9 +7,7 @@
 
 // TODO: Still work in progress CT
 DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, BeatSaverBeatmapLevel, Abstractions::MpBeatmapLevel, "MultiplayerCore.Beatmaps",
-//___DECLARE_TYPE_WRAPPER_INHERITANCE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Il2CppTypeEnum::IL2CPP_TYPE_CLASS,
-//	Il2CppObject, "MultiplayerCore.Beatmaps",
-//	{ classof(MpBeatmapPacket) }, 0, nullptr,
+
 	DECLARE_CTOR(New, StringW hash, GlobalNamespace::IPreviewBeatmapLevel* preview);
 
 	DECLARE_INSTANCE_FIELD(StringW, levelHash);

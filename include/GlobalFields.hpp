@@ -4,10 +4,6 @@
 #include "GlobalNamespace/LobbyPlayersDataModel.hpp"
 #include "GlobalNamespace/LobbyGameStateController.hpp"
 
-//// MQE Includes
-//#include "Packets/PacketManager.hpp"
-
-//#include "System/Collections/Generic/Dictionary_2.hpp"
 namespace MultiplayerCore {
     // Plugin setup stuff
     extern GlobalNamespace::MultiplayerSessionManager* _multiplayerSessionManager;
@@ -16,5 +12,3 @@ namespace MultiplayerCore {
 
     extern StringW getCustomLevelSongPackMaskStr();
 }
-
-//extern System::Collections::Generic::Dictionary_2<std::string, MultiQuestensions::Extensions::ExtendedPlayer*> extendedPlayers;

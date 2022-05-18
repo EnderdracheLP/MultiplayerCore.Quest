@@ -6,9 +6,7 @@
 #include "custom-types/shared/macros.hpp"
 
 DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, LocalBeatmapLevel, Abstractions::MpBeatmapLevel, "MultiplayerCore.Beatmaps",
-//___DECLARE_TYPE_WRAPPER_INHERITANCE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Il2CppTypeEnum::IL2CPP_TYPE_CLASS,
-//	Il2CppObject, "MultiplayerCore.Beatmaps",
-//	{ classof(MpBeatmapPacket) }, 0, nullptr,
+
 	DECLARE_CTOR(New, StringW hash, GlobalNamespace::IPreviewBeatmapLevel* preview);
 
 	// IPreviewBeatmapLevel

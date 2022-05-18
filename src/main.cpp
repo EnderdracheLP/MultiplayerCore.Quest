@@ -55,7 +55,6 @@ namespace MultiplayerCore {
     // Plugin setup stuff
     GlobalNamespace::MultiplayerSessionManager* _multiplayerSessionManager;
     GlobalNamespace::LobbyPlayersDataModel* lobbyPlayersDataModel;
-    //MultiQuestensions::PacketManager* packetManager;
     SafePtr<Networking::MpPacketSerializer> mpPacketSerializer;
     GlobalNamespace::LobbyGameStateController* lobbyGameStateController;
 
@@ -412,11 +411,6 @@ MAKE_HOOK_MATCH(LobbyGameStateController_Activate, &LobbyGameStateController::Ac
 MAKE_HOOK_MATCH(GameServerPlayerTableCell_SetData, &GameServerPlayerTableCell::SetData, void, GameServerPlayerTableCell* self, IConnectedPlayer* connectedPlayer, ILobbyPlayerData* playerData, bool hasKickPermissions, bool allowSelection, System::Threading::Tasks::Task_1<AdditionalContentModel::EntitlementStatus>* getLevelEntitlementTask) {
     getLogger().debug("GameServerPlayerTableCell_SetData Set Entitlement Owned");
     getLevelEntitlementTask = Task_1<AdditionalContentModel::EntitlementStatus>::New_ctor(AdditionalContentModel::EntitlementStatus::Owned);
-    //if (playerData && reinterpret_cast<ILevelGameplaySetupData*>(playerData)->get_beatmapLevel()) {
-    //    std::string UserID = to_utf8(csstrtostr(connectedPlayer->get_userId()));
-    //    std::string LevelID = to_utf8(csstrtostr(reinterpret_cast<ILevelGameplaySetupData*>(playerData)->get_beatmapLevel()->get_levelID()));
-    //    if (!playerData->get_isInLobby() && entitlementDictionary[UserID][LevelID] != EntitlementsStatus::Ok) getLevelEntitlementTask->TrySetResult(AdditionalContentModel::EntitlementStatus::NotOwned);
-    //}
     GameServerPlayerTableCell_SetData(self, connectedPlayer, playerData, hasKickPermissions, allowSelection, getLevelEntitlementTask);
 }
 
@@ -432,7 +426,6 @@ void saveDefaultConfig() {
     ConfigDocument& config = getConfig().config;
 
     if (config.HasMember("autoDelete") && config["autoDelete"].IsBool() &&
-        //config.HasMember("LagReducer") && config["LagReducer"].IsBool() &&
         config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt()) {
         getLogger().info("Config file already exists.");
         return;
@@ -445,8 +438,6 @@ void saveDefaultConfig() {
 
     if (!(config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt()))
         config.AddMember("MaxPlayers", 10, allocator);
-    //if (!(config.HasMember("LagReducer") && config["LagReducer"].IsBool()))
-    //    config.AddMember("LagReducer", false, allocator);
     if (!(config.HasMember("autoDelete") && config["autoDelete"].IsBool()))
         config.AddMember("autoDelete", false, allocator);
 
@@ -497,34 +488,25 @@ extern "C" void load() {
     getLogger().info("Installing hooks...");
     Hooks::Install_Hooks();
     INSTALL_HOOK(getLogger(), LobbyPlayersActivate);
-    //INSTALL_HOOK(getLogger(), LobbyPlayersSetLocalBeatmap);
-    //INSTALL_HOOK(getLogger(), LobbyPlayersSelectedBeatmap);
 
     INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_LoadLevel);
     INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_Tick);
-    //INSTALL_HOOK(getLogger(), NetworkPlayerEntitlementChecker_GetPlayerLevelEntitlementsAsync);
     if (Modloader::getMods().find("BeatTogether") != Modloader::getMods().end()) {
         getLogger().info("Hello BeatTogether!");
     }
     else getLogger().warning("BeatTogether was not found! Is Multiplayer modded?");
 
-    // INSTALL_HOOK_ORIG(getLogger(), LobbyGameStateController_HandleMultiplayerLevelLoaderCountdownFinished);
     INSTALL_HOOK(getLogger(), LobbyGameStateController_Activate);
     INSTALL_HOOK(getLogger(), LobbySetupViewController_SetPlayersMissingLevelText);
     INSTALL_HOOK(getLogger(), LobbySetupViewController_SetStartGameEnabled);
     INSTALL_HOOK(getLogger(), LobbySetupViewController_DidActivate);
 
     INSTALL_HOOK(getLogger(), MultiplayerLobbyConnectionController_CreateParty);
-    //INSTALL_HOOK(getLogger(), MultiplayerLobbyConnectionController_ConnectToMatchmaking);
 
     INSTALL_HOOK(getLogger(), LevelSelectionNavigationController_Setup);
     INSTALL_HOOK(getLogger(), CenterStageScreenController_Setup);
 
 #pragma region Debug Hooks
-    //INSTALL_HOOK(getLogger(), MenuRpcManager_InvokeSetCountdownEndTime);
-    //INSTALL_HOOK(getLogger(), MenuRpcManager_InvokeStartLevel);
-    //INSTALL_HOOK(getLogger(), LobbyGameStateController_HandleMenuRpcManagerSetCountdownEndTime);
-    //INSTALL_HOOK(getLogger(), ConnectedPlayerManager_HandleSyncTimePacket);
 
     INSTALL_HOOK(getLogger(), BGNetDebug_Log);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogError);

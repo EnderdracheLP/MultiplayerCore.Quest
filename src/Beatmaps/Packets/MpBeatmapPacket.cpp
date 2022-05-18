@@ -11,8 +11,6 @@ DEFINE_TYPE(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket);
 
 namespace MultiplayerCore::Beatmaps::Packets {
 
-	//void PreviewBeatmapPacket::New_ctor() {}
-	//PreviewBeatmapPacket::PreviewBeatmapPacket() {}
 	void MpBeatmapPacket::New() {}
 
 	MpBeatmapPacket* MpBeatmapPacket::CS_Ctor(GlobalNamespace::PreviewDifficultyBeatmap* beatmap) {

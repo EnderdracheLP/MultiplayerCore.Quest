@@ -3,6 +3,9 @@
 #include "Utils/CustomData.hpp"
 #include "Utilities.hpp"
 #include "CS_DataStore.hpp"
+
+//Dont think this would cause blackscreen
+
 using namespace GlobalNamespace;
 using namespace System::Threading::Tasks;
 
@@ -11,17 +14,9 @@ std::string missingLevelText;
 namespace MultiplayerCore {
 
 #pragma region Fields
+
     std::map<std::string, std::map<std::string, int>> entitlementDictionary;
 
-    //static std::multimap<std::string, std::string, int> entitlementDictionary;
-
-    //GlobalNamespace::IPreviewBeatmapLevel* loadingPreviewBeatmapLevel;
-    //GlobalNamespace::BeatmapDifficulty loadingBeatmapDifficulty;
-    //GlobalNamespace::BeatmapCharacteristicSO* loadingBeatmapCharacteristic;
-    //GlobalNamespace::IDifficultyBeatmap* loadingDifficultyBeatmap;
-    //GlobalNamespace::GameplayModifiers* loadingGameplayModifiers;
-
-    //System::Action_3<::Il2CppString*, ::Il2CppString*, EntitlementsStatus>* entitlementAction;
 #pragma endregion
 
     // For debugging purposes
@@ -55,42 +50,12 @@ namespace MultiplayerCore {
             if (player) {
                 if (!(player->HasState(getMEStateStr()) || player->HasState(getNEStateStr()) || player->HasState(getChromaStateStr())))
                     missingLevelText = "One or more players might be missing mod Requirements";
-                // if (!player->HasState(getMEStateStr()))
-                //     missingLevelText = "One or more players are missing the following Requirement: Mapping Extensions";
-                // else if (!player->HasState(getNEStateStr()))
-                //     missingLevelText = "One or more players are missing the following Requirement: Noodle Extensions";
-                // else if (!player->HasState(getChromaStateStr()))
-                //     missingLevelText = "One or more players are missing the following Requirement: Chroma";
             }
             else {
                 missingLevelText = "Error Checking Requirement: Player not found";
             }
         }
         entitlementDictionary[cUserId][cLevelId] = entitlement.value;
-        
-
-        // if (lobbyGameStateController != nullptr && lobbyGameStateController->get_state() == MultiplayerLobbyState::GameStarting) {
-        //     DataStore* instance = MultiplayerCore::DataStore::get_Instance();
-        //     if (instance && instance->loadingDifficultyBeatmap && instance->loadingGameplaySetupData) {
-        //         getLogger().debug("[HandleEntitlementReceived] GameStarting, running 'HandleMultiplayerLevelLoaderCountdownFinished'");
-        //         lobbyGameStateController->HandleMultiplayerLevelLoaderCountdownFinished(instance->loadingGameplaySetupData, instance->loadingDifficultyBeatmap);
-        //         return;
-        //     }
-        //     else if (lobbyGameStateController->dyn__multiplayerLevelLoader()) {
-        //         getLogger().debug("[HandleEntitlementReceived] GameStarting, DataStore empty trying to run 'HandleMultiplayerLevelLoaderCountdownFinished' with lvlLoader Data");
-        //         MultiplayerLevelLoader* lvlLoader = lobbyGameStateController->dyn__multiplayerLevelLoader();
-        //         if (lvlLoader->dyn__gameplaySetupData() && lvlLoader->dyn__difficultyBeatmap()) {
-        //             lobbyGameStateController->HandleMultiplayerLevelLoaderCountdownFinished(lvlLoader->dyn__gameplaySetupData(), lvlLoader->dyn__difficultyBeatmap());
-        //             return;
-        //         }
-        //         //if (lvlLoader->dyn__previewBeatmapLevel() && lvlLoader->dyn__beatmapId() && lvlLoader->dyn__beatmapCharacteristic() && lvlLoader->dyn__difficultyBeatmap() && lvlLoader->dyn__gameplayModifiers()) {
-        //         //    lobbyGameStateController->HandleMultiplayerLevelLoaderCountdownFinished(lvlLoader->dyn__previewBeatmapLevel(), lvlLoader->dyn__beatmapId()->get_difficulty(), lvlLoader->dyn__beatmapCharacteristic(), lvlLoader->dyn__difficultyBeatmap(), lvlLoader->dyn__gameplayModifiers());
-        //         //    return;
-        //         //}
-        //     }
-        //     getLogger().critical("[HandleEntitlementReceived] GameStarting but level data not available");
-        //     //getLogger().debug("[HandleEntitlementReceived] checking pointers: loadingPreviewBeatmapLevel='%p', loadingBeatmapDifficulty set to '%d', loadingBeatmapCharacteristic='%p', loadingDifficultyBeatmap='%p', loadingGameplayModifiers='%p'", loadingPreviewBeatmapLevel, static_cast<int>(loadingBeatmapDifficulty), loadingBeatmapCharacteristic, loadingDifficultyBeatmap, loadingGameplayModifiers);
-        // }
     }
 
 #pragma region Hooks
@@ -100,7 +65,6 @@ namespace MultiplayerCore {
         getLogger().info("NetworkPlayerEntitlementChecker_GetEntitlementStatus: %s", levelId.c_str());
         if (IsCustomLevel(levelId)) {
             if (HasSong(levelId)) {
-                //std::optional<GlobalNamespace::CustomPreviewBeatmapLevel*> level = RuntimeSongLoader::API::GetLevelById(levelId);
                 if (MultiplayerCore::Utils::HasRequirement(RuntimeSongLoader::API::GetLevelById(levelId)))
                     return Task_1<EntitlementsStatus>::New_ctor(EntitlementsStatus::Ok);
                 else return Task_1<EntitlementsStatus>::New_ctor(EntitlementsStatus::NotOwned);
@@ -165,10 +129,6 @@ namespace MultiplayerCore {
     }
 
     MAKE_HOOK_MATCH(NetworkPlayerEntitlementChecker_Start, &NetworkPlayerEntitlementChecker::Start, void, NetworkPlayerEntitlementChecker* self) {
-        //entitlementAction = il2cpp_utils::MakeDelegate<System::Action_3<::Il2CppString*, ::Il2CppString*, EntitlementsStatus>*>(classof(System::Action_3<::Il2CppString*, ::Il2CppString*, EntitlementsStatus>*), (std::function<void(Il2CppString*, Il2CppString*, EntitlementsStatus)>) [&](Il2CppString* userId, Il2CppString* beatmapId, EntitlementsStatus status) {
-        //    HandleEntitlementReceived(userId, beatmapId, status);
-        //    });
-        //self->rpcManager->add_setIsEntitledToLevelEvent(entitlementAction);
         self->dyn__rpcManager()->add_setIsEntitledToLevelEvent(
         il2cpp_utils::MakeDelegate<System::Action_3<::StringW, ::StringW, EntitlementsStatus>*>(classof(System::Action_3<::StringW, ::StringW, EntitlementsStatus>*), (std::function<void(StringW, StringW, EntitlementsStatus)>) [&](StringW userId, StringW beatmapId, EntitlementsStatus status) {
             HandleEntitlementReceived(userId, beatmapId, status);

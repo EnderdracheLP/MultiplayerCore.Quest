@@ -7,14 +7,9 @@
 #include "custom-types/shared/types.hpp"
 #include "custom-types/shared/macros.hpp"
 
-//DECLARE_CLASS_CODEGEN_INTERFACES_DLL(MultiplayerCore::Beatmaps, NetworkBeatmapLevel,
-//Il2CppObject,
-//{ classof(GlobalNamespace::IPreviewBeatmapLevel*) },
-//"MultiplayerCore.Beatmaps",
+
 DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Abstractions::MpBeatmapLevel, "MultiplayerCore.Beatmaps",
-//___DECLARE_TYPE_WRAPPER_INHERITANCE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Il2CppTypeEnum::IL2CPP_TYPE_CLASS,
-//	Il2CppObject, "MultiplayerCore.Beatmaps",
-//	{ classof(MpBeatmapPacket) }, 0, nullptr,
+
 	DECLARE_CTOR(New, Packets::MpBeatmapPacket* packet);
 
 	//// Packet

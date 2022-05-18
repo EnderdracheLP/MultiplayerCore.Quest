@@ -1,9 +1,11 @@
 #include "main.hpp"
 #include "Hooks/Hooks.hpp"
-//#include "UnityEngine/Debug.hpp"
 #include "GlobalNamespace/MultiplayerOutroAnimationController.hpp"
 #include "GlobalNamespace/CreateServerFormController.hpp"
 #include "GlobalNamespace/FormattedFloatListSettingsController.hpp"
+
+//Nothing here causes blackscreen crash
+
 
 using namespace GlobalNamespace;
 using namespace System;

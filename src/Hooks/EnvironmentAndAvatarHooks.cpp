@@ -24,6 +24,8 @@
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Transform.hpp"
 
+//Nothing here causes blackscreen crash
+
 using namespace GlobalNamespace;
 using namespace UnityEngine;
 using namespace System::Collections::Generic;
