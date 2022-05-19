@@ -36,10 +36,11 @@ function Set-EnvironmentVariable
         exit 0;
     }
 
-
   [System.Environment]::SetEnvironmentVariable($Name, $Value, $Target)
   Write-Host "Environment variable set successfully"
-  timeout /T 5
+  Write-Host "Restart Visual Studio Code for the new environment to take effect"
+  Write-Host "Make sure you have the 'Oculus Debugger' Extension installed"
+  timeout /T 10
 }
 
 if ($System) {
