@@ -9,6 +9,7 @@
             "name": "Launch Beat Saber",
             "type": "fb-lldb",
             "request": "launch",
+            "preLaunchTask": "build-and-copy-to-device",
             "android": {
                 "application": {
                     "package": "com.beatgames.beatsaber",

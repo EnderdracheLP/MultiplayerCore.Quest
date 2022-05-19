@@ -10,15 +10,26 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/shared",
                 "${workspaceFolder}/include",
-                "${workspaceFolder}/extern/**",
-                "${workspaceFolder}/extern/libil2cpp/il2cpp/libil2cpp",
-                "#{ndkpath}/**"
+                "${workspaceFolder}/extern/includes/**",
+                "${workspaceFolder}/extern/includes/libil2cpp/il2cpp/libil2cpp",
+                "${NdkPath}/**"
             ],
             "name": "Quest",
-            "cStandard": "c11",
+            "cStandard": "c17",
             "cppStandard": "c++20",
-            "intelliSenseMode": "clang-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "intelliSenseMode": "linux-clang-arm64",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compilerPath": "${NdkPath}/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++.exe",
+            "forcedInclude": [],
+            "browse": {
+                "path": [
+                    "${NdkPath}/sources/cxx-stl/llvm-libc++/include",
+                    "${NdkPath}/sources/cxx-stl/llvm-libc++abi/include",
+                    "${NdkPath}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include",
+                    "${NdkPath}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include",
+                    "${NdkPath}"
+                ]
+            }
         }
     ],
     "version": 4

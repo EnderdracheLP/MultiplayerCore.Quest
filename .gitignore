@@ -61,3 +61,5 @@ log_timestamp
 /build/arm64-v8a-Debug
 /.idea/.idea.MultiplayerCore.Quest.dir/.idea
 /build
+ndkpath.txt
+*.cmake

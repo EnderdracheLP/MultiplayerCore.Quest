@@ -10,7 +10,9 @@ Param(
 
     [Parameter(Mandatory=$false, HelpMessage="Tells the script to not compile and only package the existing files")]
     [Alias("actions", "pack")]
-    [Switch] $package
+    [Switch] $package,
+
+    [Parameter(Mandatory=$false, HelpMessage="The version of the mod")][String] $version
 )
 
 # Builds a .qmod file for loading with QP or BMBF
@@ -42,7 +44,11 @@ if ($package -eq $true) {
 }
 if (($args.Count -eq 0) -And $package -eq $false) {
 echo "Creating QMod $qmodName"
-    & $PSScriptRoot/build.ps1 -clean:$clean
+    if ($version.Length -gt 0) {
+        $qmodName += $version
+        qpm-rust package edit --version $version
+    }
+    & $PSScriptRoot/build.ps1 -clean:$clean -version:$version
 
     if ($LASTEXITCODE -ne 0) {
         echo "Failed to build, exiting..."
