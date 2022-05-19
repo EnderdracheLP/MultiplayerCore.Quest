@@ -3,7 +3,7 @@
   "name": "${mod_name}",
   "id": "${mod_id}",
   "author": "Goobie",
-  "porter": "EnderdracheLP",
+  "porter": "EnderdracheLP, cubic",
   "version": "${version}",
   "packageId": "com.beatgames.beatsaber",
   "packageVersion": "1.21.0",
