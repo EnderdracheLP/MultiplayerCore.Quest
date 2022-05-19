@@ -5,6 +5,8 @@ param(
     $System
 )
 
+$CurrentCommandPath = $MyInvocation.MyCommand.Path
+
 function Set-EnvironmentVariable
 {
   param
@@ -21,21 +23,26 @@ function Set-EnvironmentVariable
     [EnvironmentVariableTarget]
     $Target
   )
-  [System.Environment]::SetEnvironmentVariable($Name, $Value, $Target)
+
   # This line below will also set the variable in the current session so no restart is required
   [System.Environment]::SetEnvironmentVariable($Name, $Value)
-}
 
-if ($System) {
-    If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(`
+    If ($Target -eq [EnvironmentVariableTarget]::Machine -And -NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(`
     [Security.Principal.WindowsBuiltInRole] "Administrator"))
     {
-        Write-Warning "You do not have Administrator rights to run this script!`nRequesting in 5 seconds or press Enter to continue"
+        Write-Warning "Setting environment variables system wide requires Administrator rights!`nRequesting rights and restarting script"
         timeout /T 5
-        Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList "-File `"$($MyInvocation.MyCommand.Path)`" -System"
+        Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList "-File `"$($CurrentCommandPath)`" -System"
         exit 0;
     }
 
+
+  [System.Environment]::SetEnvironmentVariable($Name, $Value, $Target)
+  Write-Host "Environment variable set successfully"
+  timeout /T 5
+}
+
+if ($System) {
     Set-EnvironmentVariable -Name 'ANDROID_SDK_ROOT' -Value "$env:APPDATA\SideQuest" -Target Machine
 }
 else {
