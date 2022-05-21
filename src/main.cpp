@@ -426,7 +426,9 @@ void saveDefaultConfig() {
     ConfigDocument& config = getConfig().config;
 
     if (config.HasMember("autoDelete") && config["autoDelete"].IsBool() &&
-        config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt()) {
+        config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt() &&
+        config.HasMember("CustomsWarning") && config["CustomsWarning"].IsBool() &&
+        config.HasMember("LastWarningVersion") && config["LastWarningVersion"].IsString()) {
         getLogger().info("Config file already exists.");
         return;
     }  
@@ -440,7 +442,11 @@ void saveDefaultConfig() {
         config.AddMember("MaxPlayers", 10, allocator);
     if (!(config.HasMember("autoDelete") && config["autoDelete"].IsBool()))
         config.AddMember("autoDelete", false, allocator);
-
+    if (!(config.HasMember("CustomsWarning") && config["CustomsWarning"].IsBool()))
+        config.AddMember("CustomsWarning", true, allocator);
+    if (!(config.HasMember("LastWarningVersion") && config["LastWarningVersion"].IsString()))
+        config.AddMember("LastWarningVersion", "", allocator);
+        
     getConfig().Write();
     getLogger().info("Config file created.");
 }

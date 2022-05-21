@@ -59,7 +59,7 @@ namespace MultiplayerCore {
     //Adds warning screen about custom quickplay
     MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish, &MultiplayerModeSelectionFlowCoordinator::HandleJoinQuickPlayViewControllerDidFinish, void, MultiplayerModeSelectionFlowCoordinator* self, bool success) {
         Il2CppString* levelPackName = self->dyn__joinQuickPlayViewController()->dyn__multiplayerModeSettings()->dyn_quickPlaySongPackMaskSerializedName();
-        if (success && 
+        if ((getConfig().config["CustomsWarning"].GetBool() || getConfig().config["LastWarningVersion"].GetString() != modInfo.version) && success && 
             self->dyn__songPackMaskModel()->ToSongPackMask(
                 levelPackName
             ).Contains(
@@ -75,6 +75,10 @@ namespace MultiplayerCore {
                     {
                     default:
                     case 0: // Continue
+                        getLogger().debug("Warned once, now removing");
+                        getConfig().config["CustomsWarning"].SetBool(false);
+                        getConfig().config["LastWarningVersion"].SetString(modInfo.version, getConfig().config.GetAllocator());
+                        getConfig().Write();
                         MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish(self, success);
                         return;
                     case 1: // Cancel
@@ -91,8 +95,10 @@ namespace MultiplayerCore {
 
     void Hooks::QuickplayHooks() {
         INSTALL_HOOK(getLogger(), QuickPlaySongPacksDropdown_LazyInit);
-        INSTALL_HOOK(getLogger(), MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish);
         INSTALL_HOOK(getLogger(), JoinQuickPlayViewController_setup);
+
+        if(getConfig().config["CustomsWarning"].GetBool() || getConfig().config["LastWarningVersion"].GetString() != modInfo.version)
+            INSTALL_HOOK(getLogger(), MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish);
     }
 }
 
