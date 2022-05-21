@@ -14,7 +14,6 @@
 
 #include "Networking/MpPacketSerializer.hpp"
 
-#include "GlobalNamespace/IPlatformUserModel.hpp"
 #include "GlobalNamespace/LocalNetworkPlayerModel.hpp"
 #include "UnityEngine/Resources.hpp"
 #include "GlobalNamespace/UserInfo.hpp"
@@ -47,9 +46,6 @@ static void HandleMpBeatmapPacket(Beatmaps::Packets::MpBeatmapPacket* packet, Gl
 
     lobbyPlayersDataModel->SetPlayerBeatmapLevel(player->get_userId(), GlobalNamespace::PreviewDifficultyBeatmap::New_ctor(reinterpret_cast<IPreviewBeatmapLevel*>(preview), characteristic, packet->difficulty));
 }
-
-IPlatformUserModel* platformUserModel;//TODO possible not needed
-
 
 MAKE_HOOK_MATCH(SessionManagerStart, &MultiplayerSessionManager::Start, void, MultiplayerSessionManager* self) {
     _multiplayerSessionManager = self;
