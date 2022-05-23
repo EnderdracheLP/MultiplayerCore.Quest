@@ -3,7 +3,7 @@
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 
 extern SafePtr<MultiplayerCore::Players::MpPlayerData> localPlayer;
-extern std::map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerData;
+extern std::unordered_map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerData;
 
 
 extern void HandlePlayerConnected(GlobalNamespace::IConnectedPlayer* player);

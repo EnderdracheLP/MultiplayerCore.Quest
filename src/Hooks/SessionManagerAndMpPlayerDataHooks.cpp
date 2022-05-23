@@ -36,7 +36,7 @@ using namespace MultiplayerCore;
 using namespace GlobalNamespace;
 
 SafePtr<MultiplayerCore::Players::MpPlayerData> localPlayer;
-std::map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerData;
+std::unordered_map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerData;
 
 event<GlobalNamespace::DisconnectedReason> MultiplayerCore::Players::MpPlayerManager::disconnectedEvent;
 event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent;
