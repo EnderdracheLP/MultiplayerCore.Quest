@@ -35,14 +35,14 @@
 using namespace MultiplayerCore;
 using namespace GlobalNamespace;
 
-SafePtr<MultiplayerCore::Players::MpPlayerData> localPlayer;
-std::unordered_map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerData;
+MultiplayerCore::Players::MpPlayerData* localPlayer;
+std::unordered_map<std::string, MultiplayerCore::Players::MpPlayerData*> _playerData;
 
 event<GlobalNamespace::DisconnectedReason> MultiplayerCore::Players::MpPlayerManager::disconnectedEvent;
 event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent;
 event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent;
 
-event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> MultiplayerCore::Players::MpPlayerManager::RecievedPlayerData;
+event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> MultiplayerCore::Players::MpPlayerManager::ReceivedPlayerData;
 
 event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerConnectedHandler = MultiplayerCore::event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerConnected);
 event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerDisconnectedHandler = MultiplayerCore::event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerDisconnected);
@@ -68,7 +68,7 @@ static void HandleMpBeatmapPacket(Beatmaps::Packets::MpBeatmapPacket* packet, Gl
 
 bool Players::MpPlayerManager::TryGetMpPlayerData(std::string playerId, Players::MpPlayerData*& player) {
     if (_playerData.find(playerId) != _playerData.end()) {
-        player = static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
+        player = _playerData.at(playerId);
         return true;
     }
     return false;
@@ -76,7 +76,7 @@ bool Players::MpPlayerManager::TryGetMpPlayerData(std::string playerId, Players:
 
 Players::MpPlayerData* Players::MpPlayerManager::GetMpPlayerData(std::string playerId) {
     if (_playerData.find(playerId) != _playerData.end()) {
-        return static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
+        return _playerData.at(playerId);
     }
     return nullptr;
 }
@@ -92,14 +92,14 @@ static void HandlePlayerData(Players::MpPlayerData* playerData, IConnectedPlayer
         }
         else {
             getLogger().info("Received new 'MpPlayerData' from '%s' with platformID: '%s' platform: '%d'",
-                to_utf8(csstrtostr(player->get_userId())).c_str(),
-                to_utf8(csstrtostr(playerData->platformId)).c_str(),
+                static_cast<std::string>(player->get_userId()).c_str(),
+                static_cast<std::string>(playerData->platformId).c_str(),
                 (int)playerData->platform
             );
             _playerData.emplace(userId, playerData);
         }
         getLogger().debug("MpPlayerData firing event");
-        Players::MpPlayerManager::RecievedPlayerData(player, playerData);
+        Players::MpPlayerManager::ReceivedPlayerData(player, playerData);
         getLogger().debug("MpPlayerData done");
     }
 }
@@ -233,12 +233,12 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
         if(action){
     reinterpret_cast<System::Threading::Tasks::Task*>(UserInfoTask)->ContinueWith(action);
     action = nullptr;
-    }    
+    }
 
 
     if (!mpPacketSerializer) {
         getLogger().debug("Creating MpPacketSerializer");
-        mpPacketSerializer = Networking::MpPacketSerializer::New_ctor(_multiplayerSessionManager);
+        mpPacketSerializer = Networking::MpPacketSerializer::New_ctor<il2cpp_utils::CreationType::Manual>(_multiplayerSessionManager);
 
         mpPacketSerializer->RegisterCallback<Players::MpPlayerData*>(HandlePlayerData);
         getLogger().debug("Callback MpPlayerDataPacket Registered");

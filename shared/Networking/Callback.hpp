@@ -6,7 +6,7 @@
 #include "LiteNetLib/Utils/NetDataReader.hpp"
 
 template <class T>
-using PacketCallback = void (*)(T, GlobalNamespace::IConnectedPlayer*);
+using PacketCallback = function_ptr_t<void, T, GlobalNamespace::IConnectedPlayer*>;
 
 namespace MultiplayerCore {
 	class CallbackBase {
@@ -15,7 +15,7 @@ namespace MultiplayerCore {
 		virtual void Invoke(LiteNetLib::Utils::NetDataReader* reader, int size, GlobalNamespace::IConnectedPlayer* player) = 0;
 	};
 
-	template <class TPacket> class CallbackWrapper : public CallbackBase {
+	template <class TPacket, ::il2cpp_utils::CreationType creationType = ::il2cpp_utils::CreationType::Temporary> class CallbackWrapper : public CallbackBase {
 	private:
 		PacketCallback<TPacket> action = nullptr;
 
@@ -26,10 +26,15 @@ namespace MultiplayerCore {
 
 		void Invoke(LiteNetLib::Utils::NetDataReader* reader, int size, GlobalNamespace::IConnectedPlayer* player) {
 			getLogger().debug("Running Invoke creating packet");
-			//TPacket packet = THROW_UNLESS(il2cpp_utils::New<TPacket>());
+			TPacket packet;
+			if constexpr (creationType == ::il2cpp_utils::CreationType::Temporary)
+				packet = THROW_UNLESS(il2cpp_utils::New<TPacket>());
+			else
+				packet = THROW_UNLESS(il2cpp_utils::New<TPacket, il2cpp_utils::CreationType::Manual>());
+
 			//getLogger().debug("Assigning from ThreadStaticPacketPool");
 			//packet = GlobalNamespace::ThreadStaticPacketPool_1<TPacket>::get_pool()->Obtain();
-			TPacket packet = GlobalNamespace::ThreadStaticPacketPool_1<TPacket>::get_pool()->Obtain();
+			// TPacket packet = GlobalNamespace::ThreadStaticPacketPool_1<TPacket>::get_pool()->Obtain();
 			if (packet == nullptr) {
 				reader->SkipBytes(size);
 			}
