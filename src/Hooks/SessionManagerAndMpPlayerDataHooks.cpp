@@ -133,7 +133,6 @@ void HandlePlayerDisconnected(IConnectedPlayer* player) {
                 const std::string userId = to_utf8(csstrtostr(player->get_userId()));
                 getLogger().info("Player '%s' left", userId.c_str());
             if(_playerData.contains(userId)){
-                //_playerData.at(userId).~SafePtr();
                 _playerData.erase(userId);
             }
         }
