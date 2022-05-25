@@ -7,7 +7,6 @@ DEFINE_TYPE(MultiplayerCore::Networking, MpPacketSerializer);
 
 namespace MultiplayerCore::Networking {
 
-	//CallbackDictionary MpPacketSerializer::packetHandlers;
 
 	void MpPacketSerializer::Construct(GlobalNamespace::MultiplayerSessionManager* sessionManager) {
 		getLogger().debug("Constructing MpPacketSerializer");
