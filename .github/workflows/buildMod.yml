@@ -3,7 +3,6 @@ name: NDK build
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master, dev ]
     paths-ignore:
       - '**.yml'
       - '!.github/workflows/BuildMod.yml'
@@ -16,7 +15,6 @@ on:
       - '.gitignore'
       - '**.zip'
   pull_request:
-    branches: [ main, dev ]
 
 env:
      module_id: MultiplayerCore
