@@ -33,7 +33,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
     private:
         static const uint8_t Packet_ID = 100u;
 
-        static CallbackDictionary packetHandlers;
+        CallbackDictionary packetHandlers;
 
     public:
         template <class TPacket>
