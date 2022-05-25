@@ -6,7 +6,7 @@
 namespace MultiplayerCore::Players {
     struct MpPlayerManager {
 
-        static event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> RecievedPlayerData;
+        static event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> ReceivedPlayerData;
         // C++ equivalent to basegame events
         static event<GlobalNamespace::DisconnectedReason> disconnectedEvent;
         static event<GlobalNamespace::IConnectedPlayer*> playerConnectedEvent;

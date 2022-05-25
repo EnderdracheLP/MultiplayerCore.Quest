@@ -13,6 +13,7 @@
 #include "Beatmaps/NetworkBeatmapLevel.hpp"
 
 #include "Networking/MpPacketSerializer.hpp"
+#include "Networking/MpNetworkingEvents.hpp"
 
 #include "GlobalNamespace/IPlatformUserModel.hpp"
 #include "GlobalNamespace/LocalNetworkPlayerModel.hpp"
@@ -35,14 +36,18 @@
 using namespace MultiplayerCore;
 using namespace GlobalNamespace;
 
-SafePtr<MultiplayerCore::Players::MpPlayerData> localPlayer;
-std::unordered_map<std::string, SafePtr<MultiplayerCore::Players::MpPlayerData>> _playerData;
+MultiplayerCore::Players::MpPlayerData* localPlayer;
+std::unordered_map<std::string, MultiplayerCore::Players::MpPlayerData*> _playerData;
 
 event<GlobalNamespace::DisconnectedReason> MultiplayerCore::Players::MpPlayerManager::disconnectedEvent;
 event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerConnectedEvent;
 event<GlobalNamespace::IConnectedPlayer*> MultiplayerCore::Players::MpPlayerManager::playerDisconnectedEvent;
 
-event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> MultiplayerCore::Players::MpPlayerManager::RecievedPlayerData;
+event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> MultiplayerCore::Players::MpPlayerManager::ReceivedPlayerData;
+
+event<MultiplayerCore::Networking::MpPacketSerializer*> MultiplayerCore::Networking::MpNetworkingEvents::RegisterPackets;
+event_handler<MultiplayerCore::Networking::MpPacketSerializer*> _RegisterMpPacketsHandler = MultiplayerCore::event_handler<MultiplayerCore::Networking::MpPacketSerializer*>(HandleRegisterMpPackets);
+
 
 event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerConnectedHandler = MultiplayerCore::event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerConnected);
 event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerDisconnectedHandler = MultiplayerCore::event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerDisconnected);
@@ -68,7 +73,7 @@ static void HandleMpBeatmapPacket(Beatmaps::Packets::MpBeatmapPacket* packet, Gl
 
 bool Players::MpPlayerManager::TryGetMpPlayerData(std::string playerId, Players::MpPlayerData*& player) {
     if (_playerData.find(playerId) != _playerData.end()) {
-        player = static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
+        player = _playerData.at(playerId);
         return true;
     }
     return false;
@@ -76,12 +81,10 @@ bool Players::MpPlayerManager::TryGetMpPlayerData(std::string playerId, Players:
 
 Players::MpPlayerData* Players::MpPlayerManager::GetMpPlayerData(std::string playerId) {
     if (_playerData.find(playerId) != _playerData.end()) {
-        return static_cast<Players::MpPlayerData*>(_playerData.at(playerId));
+        return _playerData.at(playerId);
     }
     return nullptr;
 }
-
-
 
 static void HandlePlayerData(Players::MpPlayerData* playerData, IConnectedPlayer* player) {
     if(player){
@@ -92,18 +95,25 @@ static void HandlePlayerData(Players::MpPlayerData* playerData, IConnectedPlayer
         }
         else {
             getLogger().info("Received new 'MpPlayerData' from '%s' with platformID: '%s' platform: '%d'",
-                to_utf8(csstrtostr(player->get_userId())).c_str(),
-                to_utf8(csstrtostr(playerData->platformId)).c_str(),
+                static_cast<std::string>(player->get_userId()).c_str(),
+                static_cast<std::string>(playerData->platformId).c_str(),
                 (int)playerData->platform
             );
             _playerData.emplace(userId, playerData);
         }
         getLogger().debug("MpPlayerData firing event");
-        Players::MpPlayerManager::RecievedPlayerData(player, playerData);
+        Players::MpPlayerManager::ReceivedPlayerData(player, playerData);
         getLogger().debug("MpPlayerData done");
     }
 }
 
+void HandleRegisterMpPackets(MultiplayerCore::Networking::MpPacketSerializer* _mpPacketSerializer) {
+        _mpPacketSerializer->RegisterCallback<Players::MpPlayerData*>(HandlePlayerData);
+        getLogger().debug("Callback MpPlayerDataPacket Registered");
+
+        _mpPacketSerializer->RegisterCallback<Beatmaps::Packets::MpBeatmapPacket*>(HandleMpBeatmapPacket);
+        getLogger().debug("Callback HandleMpBeatmapPacket Registered");
+}
 
 void HandlePlayerConnected(IConnectedPlayer* player) {
     try {
@@ -133,7 +143,6 @@ void HandlePlayerDisconnected(IConnectedPlayer* player) {
                 const std::string userId = to_utf8(csstrtostr(player->get_userId()));
                 getLogger().info("Player '%s' left", userId.c_str());
             if(_playerData.contains(userId)){
-                //_playerData.at(userId).~SafePtr();
                 _playerData.erase(userId);
             }
         }
@@ -233,19 +242,15 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
         if(action){
     reinterpret_cast<System::Threading::Tasks::Task*>(UserInfoTask)->ContinueWith(action);
     action = nullptr;
-    }    
+    }
 
 
     if (!mpPacketSerializer) {
-        getLogger().debug("Creating MpPacketSerializer");
-        mpPacketSerializer = Networking::MpPacketSerializer::New_ctor(_multiplayerSessionManager);
-
-        mpPacketSerializer->RegisterCallback<Players::MpPlayerData*>(HandlePlayerData);
-        getLogger().debug("Callback MpPlayerDataPacket Registered");
-
-        mpPacketSerializer->RegisterCallback<Beatmaps::Packets::MpBeatmapPacket*>(HandleMpBeatmapPacket);
-        getLogger().debug("Callback HandleMpBeatmapPacket Registered");
+        getLogger().debug("Creating MpPacketSerializer and calling register event");
+        mpPacketSerializer = Networking::MpPacketSerializer::New_ctor<il2cpp_utils::CreationType::Manual>(_multiplayerSessionManager);
+        MultiplayerCore::Networking::MpNetworkingEvents::RegisterPackets(mpPacketSerializer);
     }
+
     using namespace MultiplayerCore::Utils;
     self->SetLocalPlayerState("modded", true);
     self->SetLocalPlayerState(getMEStateStr(), MatchesVersion("MappingExtensions", "*"));
@@ -302,6 +307,7 @@ MAKE_HOOK_MATCH(BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatma
 
 
 void MultiplayerCore::Hooks::SessionManagerAndExtendedPlayerHooks() {
+    MultiplayerCore::Networking::MpNetworkingEvents::RegisterPackets += _RegisterMpPacketsHandler;
     INSTALL_HOOK(getLogger(), SessionManagerStart);
 
 

@@ -7,7 +7,6 @@ DEFINE_TYPE(MultiplayerCore::Networking, MpPacketSerializer);
 
 namespace MultiplayerCore::Networking {
 
-	CallbackDictionary MpPacketSerializer::packetHandlers;
 
 	void MpPacketSerializer::Construct(GlobalNamespace::MultiplayerSessionManager* sessionManager) {
 		getLogger().debug("Constructing MpPacketSerializer");
@@ -41,7 +40,6 @@ namespace MultiplayerCore::Networking {
 		getLogger().debug("Unregistering MpPacketSerializer");
 		_sessionManager->UnregisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 		_sessionManager = nullptr;
-		mpPacketSerializer.~SafePtr();
 	}
 
 	void MpPacketSerializer::Serialize(LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet) {
@@ -139,18 +137,4 @@ namespace MultiplayerCore::Networking {
 	bool MpPacketSerializer::HandlesType(Il2CppReflectionType* type) {
 		return packetHandlers.find(static_cast<std::string>(type->get_Name())) != packetHandlers.end();
 	}
-
-	//void MpPacketSerializer::UnregisterCallback(std::string identifier) {
-	//	getLogger().debug("UnregisterCallback called");
-
-	//	//for (auto it = registeredTypes.begin(); it != registeredTypes.end(); it++) {
-	//	//	if (it->second == identifier) registeredTypes.erase(it);
-	//	//}
-
-	//	auto itr = packetHandlers.find(identifier);
-	//	if (itr != packetHandlers.end()) {
-	//		delete itr->second;
-	//		packetHandlers.erase(itr);
-	//	}
-	//}
 }

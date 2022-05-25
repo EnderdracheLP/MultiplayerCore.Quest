@@ -55,7 +55,7 @@ namespace MultiplayerCore {
     // Plugin setup stuff
     GlobalNamespace::MultiplayerSessionManager* _multiplayerSessionManager;
     GlobalNamespace::LobbyPlayersDataModel* lobbyPlayersDataModel;
-    SafePtr<Networking::MpPacketSerializer> mpPacketSerializer;
+    Networking::MpPacketSerializer* mpPacketSerializer;
     GlobalNamespace::LobbyGameStateController* lobbyGameStateController;
 
     LobbySetupViewController* lobbySetupView;

@@ -11,7 +11,7 @@ namespace MultiplayerCore::Players {
 
     MpPlayerData* MpPlayerData::Init(StringW platformID, Platform platform)
     {
-        auto mpPlayerData = THROW_UNLESS(il2cpp_utils::New<MpPlayerData*>());
+        auto mpPlayerData = THROW_UNLESS(il2cpp_utils::New<MpPlayerData*, il2cpp_utils::CreationType::Manual>());
 
         mpPlayerData->platformId = platformID;
         mpPlayerData->platform = platform;
