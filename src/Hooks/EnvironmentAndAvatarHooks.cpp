@@ -49,14 +49,14 @@ namespace MultiplayerCore {
         initialized = false;
         getLogger().debug("HandleLobbyEnvironmentLoaded Started");
 
-        innerCircleRadius = _placeManager->dyn__innerCircleRadius();
-        minOuterCircleRadius = _placeManager->dyn__minOuterCircleRadius();
+        innerCircleRadius = _placeManager->innerCircleRadius;
+        minOuterCircleRadius = _placeManager->minOuterCircleRadius;
         //getLogger().debug("innerCircleRadius %f, minOuterCircleRadius %f", innerCircleRadius, minOuterCircleRadius);
         angleBetweenPlayersWithEvenAdjustment = MultiplayerPlayerPlacement::GetAngleBetweenPlayersWithEvenAdjustment(_lobbyStateDataModel->get_configuration().maxPlayerCount, MultiplayerPlayerLayout::Circle);
         outerCircleRadius = fmax(MultiplayerPlayerPlacement::GetOuterCircleRadius(angleBetweenPlayersWithEvenAdjustment, innerCircleRadius), minOuterCircleRadius);
         //getLogger().debug("angleBetweenPlayersWithEvenAdjustment %f, outerCircleRadius %f", angleBetweenPlayersWithEvenAdjustment, outerCircleRadius);
 
-        bool buildingsEnabled = (_multiplayerSessionManager->dyn__maxPlayerCount() <= 18);
+        bool buildingsEnabled = (_multiplayerSessionManager->maxPlayerCount <= 18);
         auto* Construction_tr = _menuEnvironmentManager->get_transform()->Find("Construction");
         if (Construction_tr && Construction_tr->get_gameObject()) {
             Construction_tr->get_gameObject()->SetActive(buildingsEnabled);
@@ -79,10 +79,10 @@ namespace MultiplayerCore {
         _placeManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyAvatarPlaceManager*>()[0];
         _menuEnvironmentManager = Resources::FindObjectsOfTypeAll<MenuEnvironmentManager*>()[0];
         _stageManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyCenterStageManager*>()[0];
-        _lobbyStateDataModel = _placeManager->dyn__lobbyStateDataModel();
+        _lobbyStateDataModel = _placeManager->lobbyStateDataModel;
 
-        self->dyn__innerCircleRadius() = 1;
-        self->dyn__minOuterCircleRadius() = 4.4f;
+        self->innerCircleRadius = 1;
+        self->minOuterCircleRadius = 4.4f;
         MultiplayerLobbyController_ActivateMultiplayerLobby(self);
 
         HandleLobbyEnvironmentLoaded();

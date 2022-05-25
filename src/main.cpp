@@ -89,29 +89,29 @@ namespace MultiplayerCore {
     }
 
     bool AllPlayersModded() {
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getModdedStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getModdedStateStr())) return false;
         }
         return true;
     }
 
     bool AllPlayersHaveNE() {
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getNEStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getNEStateStr())) return false;
         }
         return true;
     }
 
     bool AllPlayersHaveME() {
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getMEStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getMEStateStr())) return false;
         }
         return true;
     }
 
     bool AllPlayersHaveChroma() {
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getChromaStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getChromaStateStr())) return false;
         }
         return true;
     }
@@ -143,7 +143,7 @@ MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController:
                     RefreshSongs(false);
                     DownloadedSongIds.pop_back();
                     });
-                if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
+                if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
             }
         }
     }
@@ -246,9 +246,9 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
         if (IsCustomLevel(levelId)) {
             if (HasSong(levelId)) {
                 getLogger().debug("MultiplayerLevelLoader_LoadLevel, HasSong, calling original");
-                if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
+                if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
                 MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
-                reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
+                reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->beatmapLevel->set_beatmapLevel(self->beatmapLevelsModel->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
                 //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                 return;
             }
@@ -284,11 +284,11 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                                         MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
                                                                     }
                                                                     getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
-                                                                    self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
+                                                                    self->loaderState = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
                                                                     getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
-                                                                    reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(levelId.c_str()));
+                                                                    reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->beatmapLevel->set_beatmapLevel(self->beatmapLevelsModel->GetLevelPreviewForLevelId(levelId.c_str()));
                                                                     MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
-                                                                    if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
+                                                                    if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
                                                                     //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                                     isDownloading = false;
                                                                     return;
@@ -321,11 +321,11 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                             MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
                                                         }
                                                         getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
-                                                        self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
+                                                        self->loaderState = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
                                                         getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
-                                                        reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(levelId.c_str()));
+                                                        reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->beatmapLevel->set_beatmapLevel(self->beatmapLevelsModel->GetLevelPreviewForLevelId(levelId.c_str()));
                                                         MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
-                                                        if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
+                                                        if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
                                                         //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                         isDownloading = false;
                                                         return;
@@ -368,29 +368,29 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
 // Checks entitlement and stalls lobby until fullfilled, unless a game is already in progress.
 static ConstString in_gameplay("in_gameplay");
 MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void, MultiplayerLevelLoader* self) {
-    if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::LoadingBeatmap) {
+    if (self->loaderState == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::LoadingBeatmap) {
         MultiplayerLevelLoader_Tick(self);
-        if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
-            if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(
-                self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::Ok);
-            getLogger().debug("Loaded Level %s", static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
+        if (self->loaderState == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
+            if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
+                self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::Ok);
+            getLogger().debug("Loaded Level %s", static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
         }
     }
-    else if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
-        std::string LevelID = static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
+    else if (self->loaderState == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
+        std::string LevelID = static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
         MultiplayerCore::UI::CenterScreenLoading::playersReady = 0;
         getLogger().debug("Checking all players have the map downloaded/OK entitlement");
-        if(HasSong(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()))
+        if(HasSong(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID()))
             MultiplayerCore::UI::CenterScreenLoading::playersReady++;
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            IConnectedPlayer* p = _multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i);
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            IConnectedPlayer* p = _multiplayerSessionManager->connectedPlayers->get_Item(i);
             StringW csUserID = p->get_userId();
             std::string UserID =  static_cast<std::string>(csUserID);
             if (entitlementDictionary[UserID][LevelID] == EntitlementsStatus::Ok || p->HasState(in_gameplay)){
             MultiplayerCore::UI::CenterScreenLoading::playersReady++;
             } 
         }
-        if (MultiplayerCore::UI::CenterScreenLoading::playersReady == _multiplayerSessionManager->dyn__connectedPlayers()->get_Count()+1) {
+        if (MultiplayerCore::UI::CenterScreenLoading::playersReady == _multiplayerSessionManager->connectedPlayers->get_Count()+1) {
             getLogger().debug("All players have OK entitilement");
             MultiplayerLevelLoader_Tick(self);
         }

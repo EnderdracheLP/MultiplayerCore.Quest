@@ -43,29 +43,28 @@ bool gotSongPackOverrides = false;
 namespace MultiplayerCore {
     // Check for our custom packs
     MAKE_HOOK_MATCH(QuickPlaySongPacksDropdown_LazyInit, &QuickPlaySongPacksDropdown::LazyInit, void, QuickPlaySongPacksDropdown* self) {
-        gotSongPackOverrides = (self->dyn__quickPlaySongPacksOverride() != nullptr);
+        gotSongPackOverrides = (self->quickPlaySongPacksOverride != nullptr);
         QuickPlaySongPacksDropdown_LazyInit(self);
     }
 
     //Adds All dificulty to quickplay
     MAKE_HOOK_MATCH(JoinQuickPlayViewController_setup, &JoinQuickPlayViewController::Setup, void, JoinQuickPlayViewController* self, GlobalNamespace::QuickPlaySetupData* quickPlaySetupData, ::GlobalNamespace::MultiplayerModeSettings* multiplayerModeSettings){
-        auto &Difficulties = self->dyn__beatmapDifficultyDropdown();
-        Difficulties->set_includeAllDifficulties(true);
+        self->beatmapDifficultyDropdown->set_includeAllDifficulties(true);
         
         JoinQuickPlayViewController_setup(self, quickPlaySetupData, multiplayerModeSettings);
-        Difficulties->dyn__simpleTextDropdown()->SelectCellWithIdx(0);
+        self->beatmapDifficultyDropdown->simpleTextDropdown->SelectCellWithIdx(0);
     }
 
     //Adds warning screen about custom quickplay
     MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish, &MultiplayerModeSelectionFlowCoordinator::HandleJoinQuickPlayViewControllerDidFinish, void, MultiplayerModeSelectionFlowCoordinator* self, bool success) {
-        Il2CppString* levelPackName = self->dyn__joinQuickPlayViewController()->dyn__multiplayerModeSettings()->dyn_quickPlaySongPackMaskSerializedName();
+        Il2CppString* levelPackName = self->joinQuickPlayViewController->multiplayerModeSettings->quickPlaySongPackMaskSerializedName;
         if ((getConfig().config["CustomsWarning"].GetBool() || getConfig().config["LastWarningVersion"].GetString() != modInfo.version) && success && 
-            self->dyn__songPackMaskModel()->ToSongPackMask(
+            self->songPackMaskModel->ToSongPackMask(
                 levelPackName
             ).Contains(
                 getCustomLevelSongPackMaskStr())
             ) {
-            self->dyn__simpleDialogPromptViewController()->Init(
+            self->simpleDialogPromptViewController->Init(
                 il2cpp_utils::newcsstr("Custom Song Quickplay"),
                 il2cpp_utils::newcsstr("<color=#EB4949>This category includes songs of varying difficulty.\nIt may be more enjoyable to play in a private lobby with friends."),
                 il2cpp_utils::newcsstr("Continue"),
@@ -83,13 +82,13 @@ namespace MultiplayerCore {
                         return;
                     case 1: // Cancel
                         //self->DismissViewController(self->dyn__simpleDialogPromptViewController(), HMUI::ViewController::AnimationDirection::Vertical, nullptr, false);
-                        self->ReplaceTopViewController(self->dyn__joinQuickPlayViewController(), nullptr, HMUI::ViewController::AnimationType::In, HMUI::ViewController::AnimationDirection::Vertical);
+                        self->ReplaceTopViewController(self->joinQuickPlayViewController, nullptr, HMUI::ViewController::AnimationType::In, HMUI::ViewController::AnimationDirection::Vertical);
                         return;
                     }
                     }
                 )
             );
-            self->ReplaceTopViewController(self->dyn__simpleDialogPromptViewController(), nullptr, HMUI::ViewController::AnimationType::In, HMUI::ViewController::AnimationDirection::Vertical);
+            self->ReplaceTopViewController(self->simpleDialogPromptViewController, nullptr, HMUI::ViewController::AnimationType::In, HMUI::ViewController::AnimationDirection::Vertical);
         } else MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish(self, success);
     }
 

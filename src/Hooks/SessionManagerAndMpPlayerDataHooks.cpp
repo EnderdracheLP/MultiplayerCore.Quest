@@ -56,7 +56,7 @@ event_handler<GlobalNamespace::DisconnectedReason> _DisconnectedHandler = Multip
 // Handles a HandleMpBeatmapPacket used to transmit data about a custom song.
 static void HandleMpBeatmapPacket(Beatmaps::Packets::MpBeatmapPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
     getLogger().debug("Player '%s' selected song '%s'", static_cast<std::string>(player->get_userId()).c_str(), static_cast<std::string>(packet->levelHash).c_str());
-    BeatmapCharacteristicSO* characteristic = lobbyPlayersDataModel->dyn__beatmapCharacteristicCollection()->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
+    BeatmapCharacteristicSO* characteristic = lobbyPlayersDataModel->beatmapCharacteristicCollection->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
     Beatmaps::NetworkBeatmapLevel* preview = Beatmaps::NetworkBeatmapLevel::New_ctor(packet);
 
     IPreviewBeatmapLevel* sendResponse = reinterpret_cast<IPreviewBeatmapLevel*>(preview);
@@ -226,14 +226,14 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
     
     getLogger().debug("MultiplayerSessionManager.StartSession, creating localPlayer");
     static auto localNetworkPlayerModel = UnityEngine::Resources::FindObjectsOfTypeAll<LocalNetworkPlayerModel*>().get(0);
-    static auto UserInfoTask = localNetworkPlayerModel->dyn__platformUserModel()->GetUserInfo();
+    static auto UserInfoTask = localNetworkPlayerModel->platformUserModel->GetUserInfo();
     static auto action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
         auto userInfo = userInfoTask->get_Result();
         if (userInfo) {
-            if (!localPlayer) localPlayer = Players::MpPlayerData::Init(userInfo->dyn_platformUserId(), getPlatform(userInfo->dyn_platform()));
+            if (!localPlayer) localPlayer = Players::MpPlayerData::Init(userInfo->platformUserId, getPlatform(userInfo->platform));
             else {
-                localPlayer->platformId = userInfo->dyn_platformUserId();
-                localPlayer->platform = getPlatform(userInfo->dyn_platform());
+                localPlayer->platformId = userInfo->platformUserId;
+                localPlayer->platform = getPlatform(userInfo->platform);
             }
         }
         else getLogger().error("Failed to get local network player!");
@@ -265,7 +265,7 @@ MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSe
 
 MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap, &LobbyPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap, void, LobbyPlayersDataModel* self, StringW userId) {
     getLogger().debug("LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap Start");
-    LobbyPlayerData* localPlayerData = self->dyn__playersData()->get_Item(self->get_localUserId());
+    LobbyPlayerData* localPlayerData = self->playersData->get_Item(self->get_localUserId());
     if (localPlayerData->get_beatmapLevel() && localPlayerData->get_beatmapLevel()->get_beatmapLevel()) {
         getLogger().debug("LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap Get LevelID");
         StringW levelId = localPlayerData->get_beatmapLevel()->get_beatmapLevel()->get_levelID();
