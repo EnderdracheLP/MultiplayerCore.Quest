@@ -17,7 +17,7 @@ namespace MultiplayerCore::Beatmaps {
 	System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* NetworkBeatmapLevel::GetCoverImageAsync(System::Threading::CancellationToken cancellationToken) {
 		if (!coverImageTask) {
 			coverImageTask = System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));
-			reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->dyn_m_stateFlags() = System::Threading::Tasks::Task::TASK_STATE_STARTED;
+			reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
 
 			BeatSaver::API::GetBeatmapByHashAsync(_packet->levelHash,
 				[this](std::optional<BeatSaver::Beatmap> beatmap) {
@@ -26,7 +26,7 @@ namespace MultiplayerCore::Beatmaps {
 							QuestUI::MainThreadScheduler::Schedule([this, bytes] {
 								getLogger().debug("Got coverImage from BeatSaver");
 								coverImageTask->TrySetResult(QuestUI::BeatSaberUI::VectorToSprite(bytes));
-								reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->dyn_m_stateFlags() = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+								reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
 								}
 							);
 							}

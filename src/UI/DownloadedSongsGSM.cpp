@@ -68,7 +68,7 @@ namespace MultiQuestensions::UI {
                         RefreshSongs(false);
                     }
                     });
-                if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(level.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
+                if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(level.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
             }
             else {
                 getLogger().debug("Level to Delete not found");

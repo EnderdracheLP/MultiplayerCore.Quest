@@ -43,10 +43,10 @@ namespace MultiplayerCore {
     }
 
     MAKE_HOOK_MATCH(IntroAnimationPatch, &MultiplayerIntroAnimationController::PlayIntroAnimation, void, MultiplayerIntroAnimationController* self, float maxDesiredIntroAnimationDuration, Action* onCompleted) {
-        PlayableDirector* realDirector = self->dyn__introPlayableDirector();
+        PlayableDirector* realDirector = self->introPlayableDirector;
         if (targetIterations == 0)
         {
-            targetIterations = floor((reinterpret_cast<IReadOnlyCollection_1<GlobalNamespace::IConnectedPlayer*>*>(self->dyn__multiplayerPlayersManager()->dyn__allActiveAtGameStartPlayers())->get_Count() - 1) / 4) + 1;
+            targetIterations = floor((reinterpret_cast<IReadOnlyCollection_1<GlobalNamespace::IConnectedPlayer*>*>(self->multiplayerPlayersManager->allActiveAtGameStartPlayers)->get_Count() - 1) / 4) + 1;
         }
         try {
             // Run animation one time for each set of 4 players
@@ -54,14 +54,14 @@ namespace MultiplayerCore {
                 getLogger().debug("starter animaton");
                 // Create duplicated animations
                 GameObject* newPlayableGameObject = GameObject::New_ctor();
-                self->dyn__introPlayableDirector() = newPlayableGameObject->AddComponent<PlayableDirector*>();
+                self->introPlayableDirector = newPlayableGameObject->AddComponent<PlayableDirector*>();
 
                 using SetPlayableAsset = function_ptr_t<void, Il2CppObject*, PlayableAsset*>;
                 static SetPlayableAsset setPlayableAsset = reinterpret_cast<SetPlayableAsset>(il2cpp_functions::resolve_icall("UnityEngine.Playables.PlayableDirector::SetPlayableAsset"));
-                setPlayableAsset(self->dyn__introPlayableDirector(), realDirector->get_playableAsset());
+                setPlayableAsset(self->introPlayableDirector, realDirector->get_playableAsset());
 
                 // Mute duplicated animations except one (otherwise audio is very loud)
-                TimelineAsset* mutedTimeline = reinterpret_cast<TimelineAsset*>(self->dyn__introPlayableDirector()->get_playableAsset());
+                TimelineAsset* mutedTimeline = reinterpret_cast<TimelineAsset*>(self->introPlayableDirector->get_playableAsset());
 
                 static auto* Enumerable_ToList_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToList", 1));
                 static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_ToList_Generic, { classof(TrackAsset*) }));
@@ -77,17 +77,17 @@ namespace MultiplayerCore {
                 }
             }
 
-            self->dyn__bindingFinished() = false;
+            self->bindingFinished = false;
             IntroAnimationPatch(self, maxDesiredIntroAnimationDuration, onCompleted);
             // Reset director to real director
-            self->dyn__introPlayableDirector() = realDirector;
+            self->introPlayableDirector = realDirector;
             //targetIterations--;
             if (targetIterations-1 != 0)
                 self->PlayIntroAnimation(maxDesiredIntroAnimationDuration, onCompleted);
         }
         catch (const std::runtime_error& e) {
             // Reset director to real director
-            self->dyn__introPlayableDirector() = realDirector;
+            self->introPlayableDirector = realDirector;
             getLogger().critical("REPORT TO ENDER: Hook IntroAnimationPatch Exception: %s", e.what());
             IntroAnimationPatch(self, maxDesiredIntroAnimationDuration, onCompleted);
         }
@@ -116,7 +116,7 @@ namespace MultiplayerCore {
         if (targetIterations == 0)
         {
             getLogger().debug("THIS SHOULD NEVER RUN");
-            targetIterations = floor((reinterpret_cast<IReadOnlyCollection_1<GlobalNamespace::IConnectedPlayer*>*>(self->dyn__allActiveAtGameStartPlayers())->get_Count() - 1) / 4) + 1;
+            targetIterations = floor((reinterpret_cast<IReadOnlyCollection_1<GlobalNamespace::IConnectedPlayer*>*>(self->allActiveAtGameStartPlayers)->get_Count() - 1) / 4) + 1;
         }
         static auto* Enumerable_ToList_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToList", 1));
         static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_ToList_Generic, { classof(IConnectedPlayer*) }));
@@ -129,7 +129,7 @@ namespace MultiplayerCore {
             try {
                 getLogger().debug("Getting intro active players (skipping (target iterations-1)*4, Taking 4 then adding player)");
                 List_1<IConnectedPlayer*>* listActivePlayers = il2cpp_utils::RunMethodThrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
-                    Enumerable_ToList, reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(self->dyn__allActiveAtGameStartPlayers()));
+                    Enumerable_ToList, reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(self->allActiveAtGameStartPlayers));
                 //List<IConnectedPlayer*>* listActivePlayers = Enumerable::ToList<IConnectedPlayer*>(reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(allActivePlayer));
                 IConnectedPlayer* localPlayer = nullptr;
 
@@ -169,14 +169,14 @@ namespace MultiplayerCore {
             }
             catch (const std::runtime_error& e) {
                 getLogger().critical("REPORT TO ENDER: Hook MultiplayerPlayersManager_get_allActiveAtGameStartPlayers Exception: %s", e.what());
-                return self->dyn__allActiveAtGameStartPlayers();
+                return self->allActiveAtGameStartPlayers;
             }
         }
         else if (cpispt == BindOutroTimeline) {
             cpispt = None;
             getLogger().debug("Getting outro active players(first 4 in list)");
             auto* result = il2cpp_utils::RunMethodThrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
-                Enumerable_Take, reinterpret_cast<List_1<IConnectedPlayer*>*>(self->dyn__allActiveAtGameStartPlayers()), 4);
+                Enumerable_Take, reinterpret_cast<List_1<IConnectedPlayer*>*>(self->allActiveAtGameStartPlayers), 4);
             
             getLogger().debug("Finish: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers(outro)");
             getLogger().debug("RESETTING TARGET ITERATIONS");
@@ -187,12 +187,12 @@ namespace MultiplayerCore {
         cpispt = None;
         getLogger().debug("Getting all active players");
         getLogger().debug("Finish: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers(ALL)");
-        return self->dyn__allActiveAtGameStartPlayers();
+        return self->allActiveAtGameStartPlayers;
     }
 
     MAKE_HOOK_MATCH(CreateServerFormController_get_formData, &CreateServerFormController::get_formData, CreateServerFormData, CreateServerFormController* self) {
         CreateServerFormData result = CreateServerFormController_get_formData(self);
-        result.maxPlayers = std::clamp<int>(self->dyn__maxPlayersList()->get_value(), 2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120));
+        result.maxPlayers = std::clamp<int>(self->maxPlayersList->get_value(), 2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120));
         return result;
     }
 
@@ -205,7 +205,7 @@ namespace MultiplayerCore {
                 Enumerable_ToArray, Enumerable::Range(2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120) - 1))->copy_to(rangeVec);
             //Enumerable::ToArray(Enumerable::Range(2, 9))->copy_to(rangeVec);
             std::vector<float> resultVec(rangeVec.begin(), rangeVec.end());
-            self->dyn__maxPlayersList()->dyn__values() = il2cpp_utils::vectorToArray(resultVec);
+            self->maxPlayersList->values = il2cpp_utils::vectorToArray(resultVec);
         } catch (const std::runtime_error& e) {
             getLogger().critical("REPORT TO ENDER: Hook CreateServerFormController_Setup Exception: %s", e.what());
         }
