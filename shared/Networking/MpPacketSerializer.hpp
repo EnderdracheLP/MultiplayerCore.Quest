@@ -17,8 +17,6 @@
 
 #include "Abstractions/MpPacket.hpp"
 
-//Could this cause the blackscreen crash??
-
 using CallbackDictionary = std::map<std::string, MultiplayerCore::CallbackBase*>;
 
 DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, Il2CppObject,
@@ -89,26 +87,6 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
             CallbackWrapper<TPacket, creationType>* newCallback = new CallbackWrapper<TPacket>(callback);
             this->RegisterCallback(newCallback);
         }
-
-        /*
-        Registers a Packet Callback, if you specify CreationType::Manual you'll be responsible for cleanup yourself
-        */
-        template <class TPacket, ::il2cpp_utils::CreationType creationType = ::il2cpp_utils::CreationType::Temporary>
-        static void RegisterCallbackStatic(PacketCallback<TPacket> callback) {
-            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
-            CallbackWrapper<TPacket, creationType>* newCallback = new CallbackWrapper<TPacket>(callback);
-            RegisterCallbackStatic(newCallback);
-        }
-
-        template <class TPacket>
-        static void RegisterCallbackStatic(CallbackWrapper<TPacket>* callback) {
-            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
-            if (packetHandlers.find(static_cast<std::string>(csTypeOf(TPacket)->get_Name())) != packetHandlers.end()) {
-                delete packetHandlers[static_cast<std::string>(csTypeOf(TPacket)->get_Name())];
-            }
-            packetHandlers[static_cast<std::string>(csTypeOf(TPacket)->get_Name())] = callback;
-        }
-        
 )
 namespace MultiplayerCore {
     extern MultiplayerCore::Networking::MpPacketSerializer* mpPacketSerializer;

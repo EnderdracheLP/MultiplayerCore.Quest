@@ -138,18 +138,4 @@ namespace MultiplayerCore::Networking {
 	bool MpPacketSerializer::HandlesType(Il2CppReflectionType* type) {
 		return packetHandlers.find(static_cast<std::string>(type->get_Name())) != packetHandlers.end();
 	}
-
-	//void MpPacketSerializer::UnregisterCallback(std::string identifier) {
-	//	getLogger().debug("UnregisterCallback called");
-
-	//	//for (auto it = registeredTypes.begin(); it != registeredTypes.end(); it++) {
-	//	//	if (it->second == identifier) registeredTypes.erase(it);
-	//	//}
-
-	//	auto itr = packetHandlers.find(identifier);
-	//	if (itr != packetHandlers.end()) {
-	//		delete itr->second;
-	//		packetHandlers.erase(itr);
-	//	}
-	//}
 }
