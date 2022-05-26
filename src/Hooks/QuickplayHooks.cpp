@@ -12,8 +12,6 @@
 #include "GlobalNamespace/BeatmapDifficultyMask.hpp"
 #include "HMUI/SimpleTextDropdown.hpp"
 
-#include "CodegenExtensions/TempBloomFilterUtil.hpp"
-
 #include "GlobalNamespace/SongPackMaskModelSO.hpp"
 
 #include "GlobalNamespace/MultiplayerModeSelectionFlowCoordinator.hpp"
@@ -65,10 +63,10 @@ namespace MultiplayerCore {
                 getCustomLevelSongPackMaskStr())
             ) {
             self->simpleDialogPromptViewController->Init(
-                il2cpp_utils::newcsstr("Custom Song Quickplay"),
-                il2cpp_utils::newcsstr("<color=#EB4949>This category includes songs of varying difficulty.\nIt may be more enjoyable to play in a private lobby with friends."),
-                il2cpp_utils::newcsstr("Continue"),
-                il2cpp_utils::newcsstr("Cancel"),
+                StringW("Custom Song Quickplay"),
+                StringW("<color=#EB4949>This category includes songs of varying difficulty.\nIt may be more enjoyable to play in a private lobby with friends."),
+                StringW("Continue"),
+                StringW("Cancel"),
                 il2cpp_utils::MakeDelegate<System::Action_1<int>*>(classof(System::Action_1<int>*), (std::function<void(int)>)[self, success](int btnId) {
                     switch (btnId)
                     {

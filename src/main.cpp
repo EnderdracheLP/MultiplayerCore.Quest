@@ -35,6 +35,9 @@ using namespace MultiplayerCore;
 #define VERSION "0.1.0"
 #endif
 
+// Below define will enable DEBUG Hooks
+#define DEBUG
+
 ModInfo modInfo; // Stores the ID and version of our mod, and is sent to the modloader upon startup
 
 // Loads the config from disk using our modInfo, then returns it for use
@@ -128,35 +131,23 @@ MAKE_HOOK_MATCH(LobbyPlayersActivate, &LobbyPlayersDataModel::Activate, void, Lo
 }
 
 MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController::DidActivate, void, LobbySetupViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
-    try {
-        lobbySetupView = self;
-        LobbySetupViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
-        if (getConfig().config["autoDelete"].GetBool() && !DownloadedSongIds.empty()) {
-            using namespace RuntimeSongLoader::API;
-            std::string hash = DownloadedSongIds.back();
-            getLogger().debug("AutoDelete Song with Hash '%s'", hash.c_str());
-            std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash);
-            if (levelOpt.has_value()) {
-                std::string songPath = to_utf8(csstrtostr(levelOpt.value()->get_customLevelPath()));
-                getLogger().info("Deleting Song: %s", songPath.c_str());
-                DeleteSong(songPath, [&] {
-                    RefreshSongs(false);
-                    DownloadedSongIds.pop_back();
-                    });
-                if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
-            }
+    lobbySetupView = self;
+    LobbySetupViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+    if (getConfig().config["autoDelete"].GetBool() && !DownloadedSongIds.empty()) {
+        using namespace RuntimeSongLoader::API;
+        std::string hash = DownloadedSongIds.back();
+        getLogger().debug("AutoDelete Song with Hash '%s'", hash.c_str());
+        std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash);
+        if (levelOpt.has_value()) {
+            std::string songPath = to_utf8(csstrtostr(levelOpt.value()->get_customLevelPath()));
+            getLogger().info("Deleting Song: %s", songPath.c_str());
+            DeleteSong(songPath, [&] {
+                RefreshSongs(false);
+                DownloadedSongIds.pop_back();
+                });
+            if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
         }
     }
-    catch (il2cpp_utils::RunMethodException const& e) {
-        getLogger().error("REPORT TO ENDER RunMethodException in LobbySetupViewController_DidActivate: %s", e.what());
-    }
-    catch (const std::exception& e) {
-        getLogger().error("REPORT TO ENDER exception in LobbySetupViewController_DidActivate: %s", e.what());
-    }
-    catch (...) {
-        getLogger().warning("REPORT TO ENDER: An Unknown exception was thrown in LobbySetupViewController_DidActivate");
-    }
-
 }
 
 MAKE_HOOK_MATCH(MultiplayerLobbyConnectionController_CreateParty, &MultiplayerLobbyConnectionController::CreateParty, void, MultiplayerLobbyConnectionController* self, CreateServerFormData data) {
@@ -228,7 +219,7 @@ std::vector<std::string> DownloadedSongIds;
 
 static bool isDownloading = false;
 
-MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadLevel, void, MultiplayerLevelLoader* self, ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
+MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadLevel, void, MultiplayerLevelLoader* self, ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
     try {
         if (isDownloading) {
             getLogger().info("Already downloading level, skipping...");
@@ -255,6 +246,12 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
             else {
                 isDownloading = true;
                 std::string hash = Utilities::GetHash(levelId);
+                // TODO: Keep the below in mind, and tweak if necessary.
+                // Be mindful of your lambdas, once again.
+                // This catpures self as a pointer, could be gc'd.
+                // gameplaySetupData as a pointer, could be gc'd.
+                // cslInstance, as a pointer, as a singleton so presumably not gc'd, soft restart could change that though.
+                // everything else okay.
                 BeatSaver::API::GetBeatmapByHashAsync(hash,
                     [self, gameplaySetupData, initialStartTime, hash, levelId, cslInstance](std::optional<BeatSaver::Beatmap> beatmapOpt) {
                         if (beatmapOpt.has_value()) {
@@ -353,8 +350,13 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
             MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
         }
     }
+    catch (il2cpp_utils::exceptions::StackTraceException const& e) {
+        getLogger().error("REPORT TO ENDER: %s", e.what());
+        e.log_backtrace();
+    }
     catch (il2cpp_utils::RunMethodException const& e) {
         getLogger().error("REPORT TO ENDER: %s", e.what());
+        e.log_backtrace();
     }
     catch (const std::exception& e) {
         getLogger().error("REPORT TO ENDER: %s", e.what());
@@ -513,11 +515,13 @@ extern "C" void load() {
     INSTALL_HOOK(getLogger(), CenterStageScreenController_Setup);
 
 #pragma region Debug Hooks
-
+#ifdef DEBUG
+#warning Debug Hooks enabled!!!
     INSTALL_HOOK(getLogger(), BGNetDebug_Log);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogError);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogException);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogWarning);
+#endif
 #pragma endregion
 
 

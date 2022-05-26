@@ -10,6 +10,7 @@
 #include "beatsaber-hook/shared/utils/il2cpp-functions.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 
+// TODO: Move the codegen includes out to where they're used
 // Codegen includes
 #include "LiteNetLib/Utils/INetSerializable.hpp"
 #include "GlobalNamespace/MultiplayerSessionManager.hpp"

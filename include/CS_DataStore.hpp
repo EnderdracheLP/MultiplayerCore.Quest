@@ -14,7 +14,10 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore, DataStore, Il2CppObject,
     static DataStore* instance;
 
 public:
+    [[deprecated("Use the Store method instead")]]
     static DataStore* get_Instance();
+    [[deprecated("Use the Store method instead")]]
     static DataStore* CS_Ctor(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap);
+    static void Store(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap);
     static void Clear();
 )

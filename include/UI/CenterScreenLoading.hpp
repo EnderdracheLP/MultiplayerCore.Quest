@@ -11,9 +11,9 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, CenterScreenLoading, UnityEngine::Mon
 
     DECLARE_INSTANCE_METHOD(void, Awake);
     DECLARE_INSTANCE_METHOD(void, OnDisable);
-    DECLARE_INSTANCE_METHOD(void, ShowLoading);
+    // DECLARE_INSTANCE_METHOD(void, ShowLoading);
     // Note: downloadingProgress 1.0f = Full
-    DECLARE_INSTANCE_METHOD(void, ShowDownloadingProgress, float downloadingProgress);
+    // DECLARE_INSTANCE_METHOD(void, ShowDownloadingProgress, float downloadingProgress);
     //DECLARE_INSTANCE_METHOD(void, HideLoading);
     DECLARE_INSTANCE_METHOD(void, FixedUpdate);
 
@@ -21,8 +21,11 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, CenterScreenLoading, UnityEngine::Mon
 
     static CenterScreenLoading* instance;
 public:
+    void ShowLoading();
+    void ShowDownloadingProgress(float downloadingProgress);
+
     static int playersReady;
-    static CenterScreenLoading* get_Instance() { return instance; }
+    static inline CenterScreenLoading* get_Instance() { return instance; }
     static void HideLoading();
     //static void UpdatePlayersReady(int playerReady);
 )

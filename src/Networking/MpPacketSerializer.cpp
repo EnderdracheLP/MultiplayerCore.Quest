@@ -11,24 +11,9 @@ namespace MultiplayerCore::Networking {
 	void MpPacketSerializer::Construct(GlobalNamespace::MultiplayerSessionManager* sessionManager) {
 		getLogger().debug("Constructing MpPacketSerializer");
 		this->_sessionManager = sessionManager;
-		// packetHandlers = std::move(CallbackDictionary());
 		getLogger().debug("Registering MpPacketSerializer");
-		try {
-			_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
-			getLogger().debug("MpPacketSerializer Registered Successfully");
-		}
-		catch (il2cpp_utils::RunMethodException const& e) {
-			getLogger().error("REPORT TO ENDER in MpPacketSerializer: %s", e.what());
-			getLogger().Backtrace(20);
-		}
-		catch (const std::exception& e) {
-			getLogger().error("REPORT TO ENDER in MpPacketSerializer: %s", e.what());
-			getLogger().Backtrace(20);
-		}
-		catch (...) {
-			getLogger().warning("REPORT TO ENDER in MpPacketSerializer: An Unknown exception was thrown");
-			getLogger().Backtrace(20);
-		}
+		_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
+		getLogger().debug("MpPacketSerializer Registered Successfully");
 	}
 
 	void MpPacketSerializer::Deconstruct() {
@@ -40,6 +25,7 @@ namespace MultiplayerCore::Networking {
 		getLogger().debug("Unregistering MpPacketSerializer");
 		_sessionManager->UnregisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 		_sessionManager = nullptr;
+		MpPacketSerializer::~MpPacketSerializer();
 	}
 
 	void MpPacketSerializer::Serialize(LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet) {
@@ -66,33 +52,21 @@ namespace MultiplayerCore::Networking {
 			prevPosition = reader->get_Position();
 			if (packetHandlers.find(packetType) != packetHandlers.end()) {
 				getLogger().debug("packetHandlers found PacketType, try Invoke");
-				try {
-					packetHandlers[packetType]->Invoke(reader, length, data);
-				}
-				catch (const std::exception& e) {
-					std::string user;
-					if (data) {
-						if (data->get_userName())
-							user += to_utf8(csstrtostr(data->get_userName()));
-						if (!user.empty() && data->get_userId()) user += "|";
-						if (data->get_userId())
-							user += to_utf8(csstrtostr(data->get_userId()));
-					}
-					getLogger().warning("An exception was thrown processing custom packet '%s' from player '%s'", packetType.c_str(), user.c_str());
-					getLogger().error("REPORT TO ENDER: %s", e.what());
-				}
-				catch (...) {
-					std::string user;
-					if (data) {
-						if (data->get_userName())
-							user += to_utf8(csstrtostr(data->get_userName()));
-						if (!user.empty() && data->get_userId()) user += "|";
-						if (data->get_userId())
-							user += to_utf8(csstrtostr(data->get_userId()));
-					}
-					getLogger().warning("REPORT TO ENDER: An Unknown exception was thrown processing custom packet '%s' from player '%s'", packetType.c_str(), user.c_str());
-				}
+				packetHandlers[packetType]->Invoke(reader, length, data);
 			}
+		}
+		catch(il2cpp_utils::exceptions::StackTraceException e) {
+			std::string user;
+			if (data) {
+				if (data->get_userName())
+					user += to_utf8(csstrtostr(data->get_userName()));
+				if (!user.empty() && data->get_userId()) user += "|";
+				if (data->get_userId())
+					user += to_utf8(csstrtostr(data->get_userId()));
+			}
+			getLogger().warning("An exception was thrown processing packet from player '%s'", user.c_str());
+			getLogger().error("REPORT TO ENDER: %s", e.what());
+			e.log_backtrace();
 		}
 		catch (il2cpp_utils::RunMethodException const& e) {
 			std::string user;
@@ -105,6 +79,7 @@ namespace MultiplayerCore::Networking {
 			}
 			getLogger().warning("An exception was thrown processing packet from player '%s'", user.c_str());
 			getLogger().error("REPORT TO ENDER: %s", e.what());
+			e.log_backtrace();
 		}
 		catch (const std::exception& e) {
 			std::string user;

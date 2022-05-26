@@ -128,25 +128,29 @@ namespace MultiplayerCore {
         }
     }
 
+    System::Action_3<::StringW, ::StringW, EntitlementsStatus>* entitlementAction = nullptr;
+
     MAKE_HOOK_MATCH(NetworkPlayerEntitlementChecker_Start, &NetworkPlayerEntitlementChecker::Start, void, NetworkPlayerEntitlementChecker* self) {
+        if (!entitlementAction) entitlementAction = il2cpp_utils::MakeDelegate<System::Action_3<::StringW, ::StringW, EntitlementsStatus>*>(classof(System::Action_3<::StringW, ::StringW, EntitlementsStatus>*), &HandleEntitlementReceived);
         self->rpcManager->add_setIsEntitledToLevelEvent(
-        il2cpp_utils::MakeDelegate<System::Action_3<::StringW, ::StringW, EntitlementsStatus>*>(classof(System::Action_3<::StringW, ::StringW, EntitlementsStatus>*), (std::function<void(StringW, StringW, EntitlementsStatus)>) [&](StringW userId, StringW beatmapId, EntitlementsStatus status) {
-            HandleEntitlementReceived(userId, beatmapId, status);
-            }));
+        entitlementAction
+        );
         NetworkPlayerEntitlementChecker_Start(self);
     }
 
-    // Causes crash when being called
-    //MAKE_HOOK_MATCH(NetworkPlayerEntitlementChecker_OnDestroy, &NetworkPlayerEntitlementChecker::OnDestroy, void, NetworkPlayerEntitlementChecker* self) {
-    //    if (entitlementAction)
-    //        self->rpcManager->remove_setIsEntitledToLevelEvent(entitlementAction);
-    //    NetworkPlayerEntitlementChecker_OnDestroy(self);
-    //}
+    // TODO: Figure this part out
+    MAKE_HOOK_MATCH(NetworkPlayerEntitlementChecker_OnDestroy, &NetworkPlayerEntitlementChecker::OnDestroy, void, NetworkPlayerEntitlementChecker* self) {
+       if (entitlementAction) {
+            il2cpp_utils::ClearDelegate({(Il2CppMethodPointer)reinterpret_cast<Il2CppDelegate*>(entitlementAction)->method_ptr.ToPointer(), true});
+            entitlementAction = nullptr;
+       }
+       NetworkPlayerEntitlementChecker_OnDestroy(self);
+    }
 #pragma endregion
 
     void Hooks::NetworkplayerEntitlementChecker() {
         INSTALL_HOOK_ORIG(getLogger(), NetworkPlayerEntitlementChecker_GetEntitlementStatus);
         INSTALL_HOOK(getLogger(), NetworkPlayerEntitlementChecker_Start);
-        //INSTALL_HOOK(getLogger(), NetworkPlayerEntitlementChecker_OnDestroy);
+        INSTALL_HOOK(getLogger(), NetworkPlayerEntitlementChecker_OnDestroy);
     }
 }

@@ -17,8 +17,16 @@ namespace MultiplayerCore {
 
     DataStore* DataStore::CS_Ctor(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap) {
         //instance = THROW_UNLESS(il2cpp_utils::New<MultiplayerCore::DataStore*, il2cpp_utils::CreationType::Manual>(gameplaySetupData, difficultyBeatmap));
-        instance = MultiplayerCore::DataStore::New_ctor<il2cpp_utils::CreationType::Manual>(gameplaySetupData, difficultyBeatmap);
+        DataStore::Store(gameplaySetupData, difficultyBeatmap);
         return instance;
+    }
+
+    void DataStore::Store(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap) {
+        if (!instance) instance = MultiplayerCore::DataStore::New_ctor<il2cpp_utils::CreationType::Manual>(gameplaySetupData, difficultyBeatmap);
+        else {
+            instance->loadingGameplaySetupData = gameplaySetupData;
+            instance->loadingDifficultyBeatmap = difficultyBeatmap;
+        }
     }
 
     void DataStore::Clear() {

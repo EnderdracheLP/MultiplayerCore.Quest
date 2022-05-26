@@ -33,11 +33,6 @@ using namespace System::Collections::Generic;
 namespace MultiplayerCore {
 
 #pragma region Fields
-    ILobbyStateDataModel* _lobbyStateDataModel;
-    MenuEnvironmentManager* _menuEnvironmentManager;
-    MultiplayerLobbyAvatarPlaceManager* _placeManager;
-    MultiplayerLobbyCenterStageManager* _stageManager;
-
     float innerCircleRadius;
     float minOuterCircleRadius;
     float angleBetweenPlayersWithEvenAdjustment;
@@ -45,7 +40,7 @@ namespace MultiplayerCore {
 
     bool initialized;
 
-    void HandleLobbyEnvironmentLoaded() {
+    void HandleLobbyEnvironmentLoaded(ILobbyStateDataModel* _lobbyStateDataModel, MenuEnvironmentManager* _menuEnvironmentManager, MultiplayerLobbyAvatarPlaceManager* _placeManager, MultiplayerLobbyCenterStageManager* _stageManager) {
         initialized = false;
         getLogger().debug("HandleLobbyEnvironmentLoaded Started");
 
@@ -76,16 +71,16 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(MultiplayerLobbyController_ActivateMultiplayerLobby, &MultiplayerLobbyController::ActivateMultiplayerLobby, void, MultiplayerLobbyController* self) {
         getLogger().debug("ActivateMultiplayerLobby Start");
-        _placeManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyAvatarPlaceManager*>()[0];
-        _menuEnvironmentManager = Resources::FindObjectsOfTypeAll<MenuEnvironmentManager*>()[0];
-        _stageManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyCenterStageManager*>()[0];
-        _lobbyStateDataModel = _placeManager->lobbyStateDataModel;
+        MultiplayerLobbyAvatarPlaceManager* _placeManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyAvatarPlaceManager*>()[0];
+        MenuEnvironmentManager* _menuEnvironmentManager = Resources::FindObjectsOfTypeAll<MenuEnvironmentManager*>()[0];
+        MultiplayerLobbyCenterStageManager* _stageManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyCenterStageManager*>()[0];
+        ILobbyStateDataModel* _lobbyStateDataModel = _placeManager->lobbyStateDataModel;
 
         self->innerCircleRadius = 1;
         self->minOuterCircleRadius = 4.4f;
         MultiplayerLobbyController_ActivateMultiplayerLobby(self);
 
-        HandleLobbyEnvironmentLoaded();
+        HandleLobbyEnvironmentLoaded(_lobbyStateDataModel, _menuEnvironmentManager, _placeManager, _stageManager);
         getLogger().debug("ActivateMultiplayerLobby Done");
     }
 

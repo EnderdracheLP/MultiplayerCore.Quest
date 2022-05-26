@@ -9,9 +9,10 @@ namespace MultiplayerCore::Players {
         getLogger().debug("Creating MpPlayerData");
     }
 
+    [[nodiscard("Attempting to discard a manually created instance of MpPlayerData")]]
     MpPlayerData* MpPlayerData::Init(StringW platformID, Platform platform)
     {
-        auto mpPlayerData = THROW_UNLESS(il2cpp_utils::New<MpPlayerData*, il2cpp_utils::CreationType::Manual>());
+        auto mpPlayerData = il2cpp_utils::NewSpecific<MpPlayerData*, il2cpp_utils::CreationType::Manual>();
 
         mpPlayerData->platformId = platformID;
         mpPlayerData->platform = platform;

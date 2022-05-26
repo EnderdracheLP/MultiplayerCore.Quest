@@ -1,5 +1,6 @@
 #include "main.hpp"
 #include "Hooks/Hooks.hpp"
+#include "Utils/MethodCache.hpp"
 #include "GlobalNamespace/MultiplayerOutroAnimationController.hpp"
 #include "GlobalNamespace/CreateServerFormController.hpp"
 #include "GlobalNamespace/FormattedFloatListSettingsController.hpp"
@@ -19,21 +20,25 @@ namespace MultiplayerCore {
 
     int targetIterations = 0;
 
-    MAKE_HOOK_MATCH(MultiplayerResultsPyramidPatch, &MultiplayerResultsPyramidView::SetupResults, void, MultiplayerResultsPyramidView* self, IReadOnlyList_1<MultiplayerPlayerResultsData*>* resultsData, UnityEngine::Transform* badgeStartTransform, UnityEngine::Transform* badgeMidTransform) {
+    MAKE_HOOK_MATCH_NO_CATCH(MultiplayerResultsPyramidPatch, &MultiplayerResultsPyramidView::SetupResults, void, MultiplayerResultsPyramidView* self, IReadOnlyList_1<MultiplayerPlayerResultsData*>* resultsData, UnityEngine::Transform* badgeStartTransform, UnityEngine::Transform* badgeMidTransform) {
         try {
-            static auto* Enumerable_Take_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "Take", 2));
-            static auto* Enumerable_Take = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_Take_Generic, { classof(MultiplayerPlayerResultsData*) }));
-            auto* takeResult = il2cpp_utils::RunMethodThrow<IEnumerable_1<MultiplayerPlayerResultsData*>*, false>(static_cast<Il2CppClass*>(nullptr),
+            static auto* Enumerable_Take = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(MethodCache::get_Enumerable_Take_Generic(), { classof(MultiplayerPlayerResultsData*) }));
+            auto* takeResult = il2cpp_utils::RunMethodRethrow<IEnumerable_1<MultiplayerPlayerResultsData*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_Take, reinterpret_cast<IEnumerable_1<MultiplayerPlayerResultsData*>*>(resultsData), 5);
 
 
-            static auto* Enumerable_ToList_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToList", 1));
-            static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_ToList_Generic, { classof(MultiplayerPlayerResultsData*) }));
-            List<MultiplayerPlayerResultsData*>* newResultsData = il2cpp_utils::RunMethodThrow<List_1<MultiplayerPlayerResultsData*>*, false>(static_cast<Il2CppClass*>(nullptr),
+            static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(MethodCache::get_Enumerable_ToList_Generic(), { classof(MultiplayerPlayerResultsData*) }));
+            List<MultiplayerPlayerResultsData*>* newResultsData = il2cpp_utils::RunMethodRethrow<List_1<MultiplayerPlayerResultsData*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_ToList, takeResult);
 
             //List<MultiplayerPlayerResultsData*>* newResultsData = Enumerable::ToList<MultiplayerPlayerResultsData*>(Enumerable::Take<MultiplayerPlayerResultsData*>(reinterpret_cast<IEnumerable_1<MultiplayerPlayerResultsData*>*>(resultsData), 5));
             MultiplayerResultsPyramidPatch(self, (IReadOnlyList_1<MultiplayerPlayerResultsData*>*)newResultsData, badgeStartTransform, badgeMidTransform);
+        }
+        catch (il2cpp_utils::RunMethodException const& e) {
+            getLogger().critical("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " at Line %d: %s", __LINE__, e.what());
+            getLogger().debug("returning usual results pyramid");
+            e.log_backtrace();
+            MultiplayerResultsPyramidPatch(self, resultsData, badgeStartTransform, badgeMidTransform);
         }
         catch (const std::runtime_error& e) {
             getLogger().critical("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " at Line %d: %s", __LINE__, e.what());
@@ -56,18 +61,14 @@ namespace MultiplayerCore {
                 GameObject* newPlayableGameObject = GameObject::New_ctor();
                 self->introPlayableDirector = newPlayableGameObject->AddComponent<PlayableDirector*>();
 
-                using SetPlayableAsset = function_ptr_t<void, Il2CppObject*, PlayableAsset*>;
-                static SetPlayableAsset setPlayableAsset = reinterpret_cast<SetPlayableAsset>(il2cpp_functions::resolve_icall("UnityEngine.Playables.PlayableDirector::SetPlayableAsset"));
-                setPlayableAsset(self->introPlayableDirector, realDirector->get_playableAsset());
+                MethodCache::SetPlayableAsset(self->introPlayableDirector, realDirector->get_playableAsset());
 
                 // Mute duplicated animations except one (otherwise audio is very loud)
                 TimelineAsset* mutedTimeline = reinterpret_cast<TimelineAsset*>(self->introPlayableDirector->get_playableAsset());
 
-                static auto* Enumerable_ToList_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToList", 1));
-                static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_ToList_Generic, { classof(TrackAsset*) }));
+                static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(MethodCache::get_Enumerable_ToList_Generic(), { classof(TrackAsset*) }));
 
-                //List<TrackAsset*>* outputTracks = Enumerable::ToList<TrackAsset*>(animationTimeline->GetOutputTracks());
-                List<TrackAsset*>* outputTracks = il2cpp_utils::RunMethodThrow<List_1<TrackAsset*>*, false>(static_cast<Il2CppClass*>(nullptr),
+                List<TrackAsset*>* outputTracks = il2cpp_utils::RunMethodRethrow<List_1<TrackAsset*>*, false>(static_cast<Il2CppClass*>(nullptr),
                     Enumerable_ToList, mutedTimeline->GetOutputTracks());
 
                 for (int i = 0; i < outputTracks->get_Count(); i++) {
@@ -84,6 +85,13 @@ namespace MultiplayerCore {
             //targetIterations--;
             if (targetIterations-1 != 0)
                 self->PlayIntroAnimation(maxDesiredIntroAnimationDuration, onCompleted);
+        }
+        catch (il2cpp_utils::RunMethodException const& e) {
+            // Reset director to real director
+            self->introPlayableDirector = realDirector;
+            getLogger().critical("REPORT TO ENDER: Hook IntroAnimationPatch Exception: %s", e.what());
+            e.log_backtrace();
+            IntroAnimationPatch(self, maxDesiredIntroAnimationDuration, onCompleted);
         }
         catch (const std::runtime_error& e) {
             // Reset director to real director
@@ -111,24 +119,24 @@ namespace MultiplayerCore {
         MultiplayerOutroAnimationController_BindOutroTimeline(self);
     }
 
-    MAKE_HOOK_MATCH(MultiplayerPlayersManager_get_allActiveAtGameStartPlayers, &MultiplayerPlayersManager::get_allActiveAtGameStartPlayers, IReadOnlyList_1<GlobalNamespace::IConnectedPlayer*>*, MultiplayerPlayersManager* self) {
+    MAKE_HOOK_MATCH_NO_CATCH(MultiplayerPlayersManager_get_allActiveAtGameStartPlayers, &MultiplayerPlayersManager::get_allActiveAtGameStartPlayers, IReadOnlyList_1<GlobalNamespace::IConnectedPlayer*>*, MultiplayerPlayersManager* self) {
         getLogger().debug("Start: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers");
         if (targetIterations == 0)
         {
             getLogger().debug("THIS SHOULD NEVER RUN");
             targetIterations = floor((reinterpret_cast<IReadOnlyCollection_1<GlobalNamespace::IConnectedPlayer*>*>(self->allActiveAtGameStartPlayers)->get_Count() - 1) / 4) + 1;
         }
-        static auto* Enumerable_ToList_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToList", 1));
-        static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_ToList_Generic, { classof(IConnectedPlayer*) }));
+        // static auto* Enumerable_ToList_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToList", 1));
+        static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(MethodCache::get_Enumerable_ToList_Generic(), { classof(IConnectedPlayer*) }));
 
-        static auto* Enumerable_Take_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "Take", 2));
-        static auto* Enumerable_Take = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_Take_Generic, { classof(IConnectedPlayer*) }));
+        // static auto* Enumerable_Take_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "Take", 2));
+        static auto* Enumerable_Take = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(MethodCache::get_Enumerable_Take_Generic(), { classof(IConnectedPlayer*) }));
 
         if (cpispt == BindTimeline) {
             cpispt = None;
             try {
                 getLogger().debug("Getting intro active players (skipping (target iterations-1)*4, Taking 4 then adding player)");
-                List_1<IConnectedPlayer*>* listActivePlayers = il2cpp_utils::RunMethodThrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
+                List_1<IConnectedPlayer*>* listActivePlayers = il2cpp_utils::RunMethodRethrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                     Enumerable_ToList, reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(self->allActiveAtGameStartPlayers));
                 //List<IConnectedPlayer*>* listActivePlayers = Enumerable::ToList<IConnectedPlayer*>(reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(allActivePlayer));
                 IConnectedPlayer* localPlayer = nullptr;
@@ -145,13 +153,13 @@ namespace MultiplayerCore {
                 // Skip x amount of players and then take 4
                 static auto* Enumerable_Skip_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "Skip", 2));
                 static auto* Enumerable_Skip = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_Skip_Generic, { classof(IConnectedPlayer*) }));
-                auto* skipResult = il2cpp_utils::RunMethodThrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
+                auto* skipResult = il2cpp_utils::RunMethodRethrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                     Enumerable_Skip, reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(listActivePlayers), (targetIterations - 1) * 4);
 
-                auto* takeResult = il2cpp_utils::RunMethodThrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
+                auto* takeResult = il2cpp_utils::RunMethodRethrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                     Enumerable_Take, skipResult, 4);
 
-                List_1<IConnectedPlayer*>* selectedActivePlayers = il2cpp_utils::RunMethodThrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
+                List_1<IConnectedPlayer*>* selectedActivePlayers = il2cpp_utils::RunMethodRethrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                     Enumerable_ToList, takeResult);
 
                 //List_1<IConnectedPlayer*>* selectedActivePlayers = Enumerable::ToList<IConnectedPlayer*>(Enumerable::Take<IConnectedPlayer*>(Enumerable::Skip<IConnectedPlayer*>(reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(listActivePlayers), (targetIterations - 1) * 4), 4));
@@ -167,6 +175,11 @@ namespace MultiplayerCore {
                 //return new list of players
                 return reinterpret_cast<IReadOnlyList_1<IConnectedPlayer*>*>(selectedActivePlayers);
             }
+            catch (il2cpp_utils::RunMethodException const& e) {
+                getLogger().critical("REPORT TO ENDER: Hook MultiplayerPlayersManager_get_allActiveAtGameStartPlayers Exception: %s", e.what());
+                e.log_backtrace();
+                return self->allActiveAtGameStartPlayers;
+            }
             catch (const std::runtime_error& e) {
                 getLogger().critical("REPORT TO ENDER: Hook MultiplayerPlayersManager_get_allActiveAtGameStartPlayers Exception: %s", e.what());
                 return self->allActiveAtGameStartPlayers;
@@ -175,13 +188,13 @@ namespace MultiplayerCore {
         else if (cpispt == BindOutroTimeline) {
             cpispt = None;
             getLogger().debug("Getting outro active players(first 4 in list)");
-            auto* result = il2cpp_utils::RunMethodThrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
+            auto* result = il2cpp_utils::RunMethodRethrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_Take, reinterpret_cast<List_1<IConnectedPlayer*>*>(self->allActiveAtGameStartPlayers), 4);
             
             getLogger().debug("Finish: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers(outro)");
             getLogger().debug("RESETTING TARGET ITERATIONS");
             targetIterations = 0;
-            return reinterpret_cast<IReadOnlyList_1<IConnectedPlayer*>*>(il2cpp_utils::RunMethodThrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
+            return reinterpret_cast<IReadOnlyList_1<IConnectedPlayer*>*>(il2cpp_utils::RunMethodRethrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_ToList, result));
         }
         cpispt = None;
@@ -196,17 +209,22 @@ namespace MultiplayerCore {
         return result;
     }
 
-    MAKE_HOOK_MATCH(CreateServerFormController_Setup, &CreateServerFormController::Setup, void, CreateServerFormController* self, int selectedNumberOfPlayers, bool netDiscoverable) {
+    MAKE_HOOK_MATCH_NO_CATCH(CreateServerFormController_Setup, &CreateServerFormController::Setup, void, CreateServerFormController* self, int selectedNumberOfPlayers, bool netDiscoverable) {
         try {
             std::vector<int> rangeVec;
             static auto* Enumerable_ToArray_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToArray", 1));
             static auto* Enumerable_ToArray = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_ToArray_Generic, { classof(int) }));
-            il2cpp_utils::RunMethodThrow<::Array<int>*, false>(static_cast<Il2CppClass*>(nullptr),
+            il2cpp_utils::RunMethodRethrow<::Array<int>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_ToArray, Enumerable::Range(2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120) - 1))->copy_to(rangeVec);
             //Enumerable::ToArray(Enumerable::Range(2, 9))->copy_to(rangeVec);
             std::vector<float> resultVec(rangeVec.begin(), rangeVec.end());
             self->maxPlayersList->values = il2cpp_utils::vectorToArray(resultVec);
-        } catch (const std::runtime_error& e) {
+        } 
+        catch (const il2cpp_utils::RunMethodException& e) {
+            getLogger().critical("REPORT TO ENDER: Hook CreateServerFormController_Setup Exception: %s", e.what());
+            e.log_backtrace();
+        }
+        catch (const std::runtime_error& e) {
             getLogger().critical("REPORT TO ENDER: Hook CreateServerFormController_Setup Exception: %s", e.what());
         }
         CreateServerFormController_Setup(self, selectedNumberOfPlayers, netDiscoverable);

@@ -12,7 +12,7 @@ namespace MultiplayerCore::Players {
         static event<GlobalNamespace::IConnectedPlayer*> playerConnectedEvent;
         static event<GlobalNamespace::IConnectedPlayer*> playerDisconnectedEvent;
 
-        static bool TryGetMpPlayerData(std::string playerId, MultiplayerCore::Players::MpPlayerData*& player);
-        static MultiplayerCore::Players::MpPlayerData* GetMpPlayerData(std::string playerId);
+        static bool TryGetMpPlayerData(std::string const& playerId, MultiplayerCore::Players::MpPlayerData*& player);
+        static MultiplayerCore::Players::MpPlayerData* GetMpPlayerData(std::string const& playerId);
     };
 } 

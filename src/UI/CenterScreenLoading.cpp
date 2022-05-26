@@ -19,6 +19,8 @@ namespace MultiplayerCore::UI{
     CenterScreenLoading* CenterScreenLoading::instance;
     int CenterScreenLoading::playersReady;
 
+    // sc2ads comment below, just to keep this in mind.
+    // The issue with assigning in Awake is that you could theoretically still have multiple instances on accident. Be careful with your usage.
     void CenterScreenLoading::Awake() {
         getLogger().debug("CenterScreenLoading::Awake");
         instance = this;
