@@ -228,7 +228,8 @@ namespace MultiplayerCore {
 
         // if (gotPlayerInfo) {
         //     // Clear the delegate if we have our playerInfo
-        //     il2cpp_utils::ClearDelegate({(Il2CppMethodPointer)reinterpret_cast<Il2CppDelegate*>(action)->method_ptr.ToPointer(), true});
+        //     Utilities::ClearDelegate(reinterpret_cast<Il2CppDelegate*>(action));
+        //     // il2cpp_utils::ClearDelegate({((MethodInfo*)(void*)((Il2CppDelegate*)(action))->method)->methodPointer, true});
         //     action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
         // }
 
