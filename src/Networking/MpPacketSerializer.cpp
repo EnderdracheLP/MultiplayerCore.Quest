@@ -10,11 +10,11 @@ namespace MultiplayerCore::Networking {
 
 	void MpPacketSerializer::Construct(GlobalNamespace::MultiplayerSessionManager* sessionManager) {
 		getLogger().debug("Constructing MpPacketSerializer");
+		INVOKE_CTOR();
 		this->_sessionManager = sessionManager;
 		getLogger().debug("Registering MpPacketSerializer");
 		_sessionManager->RegisterSerializer((GlobalNamespace::MultiplayerSessionManager_MessageType)MpPacketSerializer::Packet_ID, reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this));
 		getLogger().debug("MpPacketSerializer Registered Successfully");
-		INVOKE_CTOR();
 	}
 
 	void MpPacketSerializer::Deconstruct() {
