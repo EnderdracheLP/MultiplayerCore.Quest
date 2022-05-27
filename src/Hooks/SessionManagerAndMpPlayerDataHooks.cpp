@@ -50,7 +50,7 @@ namespace MultiplayerCore {
     event_handler<Networking::MpPacketSerializer*> _RegisterMpPacketsHandler = MultiplayerCore::event_handler<Networking::MpPacketSerializer*>(HandleRegisterMpPacketCallbacks);
 
     event<Networking::MpPacketSerializer*> Networking::MpNetworkingEvents::UnRegisterPackets;
-    event_handler<Networking::MpPacketSerializer*> _UnRegisterPacketsHandler = MultiplayerCore::event_handler<Networking::MpPacketSerializer*>(HandleUnregisterMpPacketCallbacks);
+    event_handler<Networking::MpPacketSerializer*> _UnRegisterMpPacketsHandler = MultiplayerCore::event_handler<Networking::MpPacketSerializer*>(HandleUnregisterMpPacketCallbacks);
 
     event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerConnectedHandler = event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerConnected);
     event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerDisconnectedHandler = event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerDisconnected);
