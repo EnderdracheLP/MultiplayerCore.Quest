@@ -39,8 +39,9 @@ namespace MultiplayerCore {
     Players::MpPlayerData* localPlayer;
     std::unordered_map<std::string, Players::MpPlayerData*> _playerData;
 
-    //TODO add event and handler for when the local player connects
-    event<GlobalNamespace::DisconnectedReason> Players::MpPlayerManager::disconnectedEvent;
+#pragma region Events_and_EventHandlers
+    event<GlobalNamespace::IConnectedPlayer*> Players::MpPlayerManager::connectingEvent;
+    event<GlobalNamespace::DisconnectedReason, GlobalNamespace::IConnectedPlayer*> Players::MpPlayerManager::disconnectedEvent;
     event<GlobalNamespace::IConnectedPlayer*> Players::MpPlayerManager::playerConnectedEvent;
     event<GlobalNamespace::IConnectedPlayer*> Players::MpPlayerManager::playerDisconnectedEvent;
 
@@ -50,12 +51,30 @@ namespace MultiplayerCore {
     event_handler<Networking::MpPacketSerializer*> _RegisterMpPacketsHandler = MultiplayerCore::event_handler<Networking::MpPacketSerializer*>(HandleRegisterMpPacketCallbacks);
 
     event<Networking::MpPacketSerializer*> Networking::MpNetworkingEvents::UnRegisterPackets;
-    event_handler<Networking::MpPacketSerializer*> _UnRegisterPacketsHandler = MultiplayerCore::event_handler<Networking::MpPacketSerializer*>(HandleUnregisterMpPacketCallbacks);
+    event_handler<Networking::MpPacketSerializer*> _UnRegisterMpPacketsHandler = MultiplayerCore::event_handler<Networking::MpPacketSerializer*>(HandleUnregisterMpPacketCallbacks);
 
     event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerConnectedHandler = event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerConnected);
     event_handler<GlobalNamespace::IConnectedPlayer*> _PlayerDisconnectedHandler = event_handler<GlobalNamespace::IConnectedPlayer*>(HandlePlayerDisconnected);
-    event_handler<GlobalNamespace::DisconnectedReason> _DisconnectedHandler = event_handler<GlobalNamespace::DisconnectedReason>(HandleDisconnect);
+    event_handler<GlobalNamespace::DisconnectedReason, GlobalNamespace::IConnectedPlayer*> _DisconnectedHandler = event_handler<GlobalNamespace::DisconnectedReason, GlobalNamespace::IConnectedPlayer*>(HandleDisconnect);
+    event_handler<GlobalNamespace::IConnectedPlayer*> _ConnectingHandler = event_handler<GlobalNamespace::IConnectedPlayer*>(HandleConnecting);
+#pragma endregion
 
+    bool Players::MpPlayerManager::TryGetMpPlayerData(std::string const& userId, Players::MpPlayerData*& player) {
+        if (_playerData.find(userId) != _playerData.end()) {
+            player = _playerData.at(userId);
+            return true;
+        }
+        return false;
+    }
+
+    Players::MpPlayerData* Players::MpPlayerManager::GetMpPlayerData(std::string const& userId) {
+        if (_playerData.find(userId) != _playerData.end()) {
+            return _playerData.at(userId);
+        }
+        return nullptr;
+    }
+
+#pragma region PacketCallbackHandlers
     // Handles a HandleMpBeatmapPacket used to transmit data about a custom song.
     static void HandleMpBeatmapPacket(Beatmaps::Packets::MpBeatmapPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
         getLogger().debug("Player '%s' selected song '%s'", static_cast<std::string>(player->get_userId()).c_str(), static_cast<std::string>(packet->levelHash).c_str());
@@ -71,22 +90,6 @@ namespace MultiplayerCore {
         );
 
         lobbyPlayersDataModel->SetPlayerBeatmapLevel(player->get_userId(), GlobalNamespace::PreviewDifficultyBeatmap::New_ctor(reinterpret_cast<IPreviewBeatmapLevel*>(preview), characteristic, packet->difficulty));
-    }
-
-
-    bool Players::MpPlayerManager::TryGetMpPlayerData(std::string const& userId, Players::MpPlayerData*& player) {
-        if (_playerData.find(userId) != _playerData.end()) {
-            player = _playerData.at(userId);
-            return true;
-        }
-        return false;
-    }
-
-    Players::MpPlayerData* Players::MpPlayerManager::GetMpPlayerData(std::string const& userId) {
-        if (_playerData.find(userId) != _playerData.end()) {
-            return _playerData.at(userId);
-        }
-        return nullptr;
     }
 
     static void HandlePlayerData(Players::MpPlayerData* playerData, IConnectedPlayer* player) {
@@ -109,6 +112,9 @@ namespace MultiplayerCore {
             getLogger().debug("MpPlayerData done");
         }
     }
+#pragma endregion
+
+#pragma region Event_Handler_Functions
 
     void HandleRegisterMpPacketCallbacks(Networking::MpPacketSerializer* _mpPacketSerializer) {
         //TODO Registering Callbacks currently causes a crash
@@ -120,7 +126,7 @@ namespace MultiplayerCore {
     }
 
     void HandleUnregisterMpPacketCallbacks(Networking::MpPacketSerializer* _mpPacketSerializer) {
-        //something.UnregisterCallback()
+        //TODO probably causes a crash too seeing as the above does
         _mpPacketSerializer->UnregisterCallback<Players::MpPlayerData*>();
         getLogger().debug("Callback MpPlayerDataPacket UnRegistered");
 
@@ -155,41 +161,41 @@ namespace MultiplayerCore {
         }
     }
 
+    void HandleConnecting(GlobalNamespace::IConnectedPlayer* player){
 
-    void HandleDisconnect(DisconnectedReason reason) {
+        getLogger().info("MPCore registering events");
+
+        if (!mpPacketSerializer) {
+            getLogger().debug("Creating MpPacketSerializer");
+            mpPacketSerializer = Networking::MpPacketSerializer::New_ctor<il2cpp_utils::CreationType::Manual>(_multiplayerSessionManager);
+        }
+        getLogger().debug("Calling Register packets event");
+        MultiplayerCore::Networking::MpNetworkingEvents::RegisterPackets += _RegisterMpPacketsHandler;
+        MultiplayerCore::Networking::MpNetworkingEvents::UnRegisterPackets += _UnRegisterMpPacketsHandler;
+        Networking::MpNetworkingEvents::RegisterPackets(mpPacketSerializer);
+
+        Players::MpPlayerManager::playerConnectedEvent += _PlayerConnectedHandler;
+        Players::MpPlayerManager::playerDisconnectedEvent += _PlayerDisconnectedHandler;
+        Players::MpPlayerManager::disconnectedEvent += _DisconnectedHandler;
+        getLogger().debug("MPCore connecting event has finished");
+    }
+
+
+    void HandleDisconnect(DisconnectedReason reason, IConnectedPlayer* player) {
         getLogger().info("Disconnected from server reason: '%s'", MultiplayerCore::EnumUtils::GetEnumName(reason).c_str());
         _playerData.clear();
-        getLogger().info("MPCore Removing connected/disconnected/disconnect events");
+        getLogger().info("MPCore Removing events");
         Players::MpPlayerManager::playerConnectedEvent -= _PlayerConnectedHandler;
         Players::MpPlayerManager::playerDisconnectedEvent -= _PlayerDisconnectedHandler;
         Players::MpPlayerManager::disconnectedEvent -= _DisconnectedHandler;
         Networking::MpNetworkingEvents::UnRegisterPackets(mpPacketSerializer);
         MultiplayerCore::Networking::MpNetworkingEvents::RegisterPackets -= _RegisterMpPacketsHandler;
         MultiplayerCore::Networking::MpNetworkingEvents::UnRegisterPackets -= _UnRegisterMpPacketsHandler;
+
+        Players::MpPlayerManager::connectingEvent -= _ConnectingHandler;
     }
-
-
-    MAKE_HOOK_MATCH(LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerConnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
-        getLogger().debug("LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected");
-        LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected(self, player);
-        getLogger().debug("LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected, triggering MQE event");
-        Players::MpPlayerManager::playerConnectedEvent(player);
-    }
-
-    MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerDisconnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
-        getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected");
-        LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected(self, player);
-        getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected, triggering MQE event");
-        Players::MpPlayerManager::playerDisconnectedEvent(player);
-    }
-
-    MAKE_HOOK_MATCH(LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected, &LobbyGameStateController::HandleMultiplayerSessionManagerDisconnected, void, LobbyGameStateController* self, DisconnectedReason disconnectedReason) {
-        getLogger().debug("LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected");
-        LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected(self, disconnectedReason);
-        Players::MpPlayerManager::disconnectedEvent(disconnectedReason);
-    }
-
-
+#pragma endregion
+    
     Players::Platform getPlatform(UserInfo::Platform platform) {
         switch (platform.value) {
         case UserInfo::Platform::Oculus:
@@ -211,15 +217,36 @@ namespace MultiplayerCore {
         }
     }
 
-    MAKE_HOOK_MATCH(SessionManagerStart, &MultiplayerSessionManager::Start, void, MultiplayerSessionManager* self) {
-        _multiplayerSessionManager = self;
-        SessionManagerStart(_multiplayerSessionManager);
+#pragma region EventTriggeringHooks
+    //Trigers the player connected event
+    MAKE_HOOK_MATCH(LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerConnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
+        getLogger().debug("LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected");
+        LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected(self, player);
+        getLogger().debug("LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected, triggering MPCore event");
+        Players::MpPlayerManager::playerConnectedEvent(player);
     }
 
+    //Trigers the player disconnect event
+    MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerDisconnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
+        getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected");
+        LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected(self, player);
+        getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected, triggering MPCore event");
+        Players::MpPlayerManager::playerDisconnectedEvent(player);
+    }
+
+    //Trigers the disconnect event
+    MAKE_HOOK_MATCH(LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected, &LobbyGameStateController::HandleMultiplayerSessionManagerDisconnected, void, LobbyGameStateController* self, DisconnectedReason disconnectedReason) {
+        getLogger().debug("LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected");
+        LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected(self, disconnectedReason);
+        getLogger().debug("LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected, Triggering MPCore event");
+        Players::MpPlayerManager::disconnectedEvent(disconnectedReason, _multiplayerSessionManager->get_localPlayer());
+    }
+
+    //Trigers the player connecting event
     MAKE_HOOK_MATCH(SessionManager_StartSession, &MultiplayerSessionManager::StartSession, void, MultiplayerSessionManager* self, MultiplayerSessionManager_SessionType sessionType, ConnectedPlayerManager* connectedPlayerManager) {
         SessionManager_StartSession(self, sessionType, connectedPlayerManager);
-        
-        getLogger().debug("MultiplayerSessionManager.StartSession, creating localPlayer");
+
+        getLogger().debug("SessionManager_StartSession, creating localPlayer");
         // static bool gotPlayerInfo = false;
         static auto localNetworkPlayerModel = UnityEngine::Resources::FindObjectsOfTypeAll<LocalNetworkPlayerModel*>().get(0);
         static auto UserInfoTask = localNetworkPlayerModel->platformUserModel->GetUserInfo();
@@ -249,27 +276,23 @@ namespace MultiplayerCore {
         //     action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
         // }
 
-        if (!mpPacketSerializer) {
-            getLogger().debug("Creating MpPacketSerializer");
-            mpPacketSerializer = Networking::MpPacketSerializer::New_ctor<il2cpp_utils::CreationType::Manual>(_multiplayerSessionManager);
-        }
-        getLogger().debug("Calling Register packets event");
-        MultiplayerCore::Networking::MpNetworkingEvents::RegisterPackets += _RegisterMpPacketsHandler;
-        MultiplayerCore::Networking::MpNetworkingEvents::UnRegisterPackets += _UnRegisterMpPacketsHandler;
-        Networking::MpNetworkingEvents::RegisterPackets(mpPacketSerializer);
-
-
         using namespace MultiplayerCore::Utils;
         self->SetLocalPlayerState("modded", true);
         self->SetLocalPlayerState(getMEStateStr(), MatchesVersion("MappingExtensions", "*"));
         self->SetLocalPlayerState(getNEStateStr(), MatchesVersion("NoodleExtensions", "*"));
         self->SetLocalPlayerState(getChromaStateStr(), MatchesVersion(ChromaID, ChromaVersionRange));
+        getLogger().debug("Registering the connecting handler and running the connecting event");
 
-
-        Players::MpPlayerManager::playerConnectedEvent += _PlayerConnectedHandler;
-        Players::MpPlayerManager::playerDisconnectedEvent += _PlayerDisconnectedHandler;
-        Players::MpPlayerManager::disconnectedEvent += _DisconnectedHandler;
+        Players::MpPlayerManager::connectingEvent += _ConnectingHandler;
+        Players::MpPlayerManager::connectingEvent(connectedPlayerManager->get_localPlayer());
+        
         getLogger().debug("SessionManager finished");
+    }
+#pragma endregion
+
+    MAKE_HOOK_MATCH(SessionManagerStart, &MultiplayerSessionManager::Start, void, MultiplayerSessionManager* self) {
+        _multiplayerSessionManager = self;
+        SessionManagerStart(_multiplayerSessionManager);
     }
 
     MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap, &LobbyPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap, void, LobbyPlayersDataModel* self, StringW userId) {
@@ -315,9 +338,7 @@ namespace MultiplayerCore {
     void Hooks::SessionManagerAndExtendedPlayerHooks() {
         INSTALL_HOOK(getLogger(), SessionManagerStart);
 
-
         INSTALL_HOOK_ORIG(getLogger(), SessionManager_StartSession);
-
         INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected);
         INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected);
         INSTALL_HOOK(getLogger(), LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected);

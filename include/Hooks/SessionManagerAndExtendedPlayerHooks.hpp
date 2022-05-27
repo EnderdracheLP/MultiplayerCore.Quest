@@ -11,7 +11,8 @@ namespace MultiplayerCore {
 
     extern void HandlePlayerConnected(GlobalNamespace::IConnectedPlayer* player);
     extern void HandlePlayerDisconnected(GlobalNamespace::IConnectedPlayer* player);
-    extern void HandleDisconnect(GlobalNamespace::DisconnectedReason reason);
+    extern void HandleDisconnect(GlobalNamespace::DisconnectedReason reason, GlobalNamespace::IConnectedPlayer* player);
+    extern void HandleConnecting(GlobalNamespace::IConnectedPlayer* player);
 
     extern void HandleRegisterMpPacketCallbacks(MultiplayerCore::Networking::MpPacketSerializer* _mpPacketSerializer);
     extern void HandleUnregisterMpPacketCallbacks(MultiplayerCore::Networking::MpPacketSerializer* _mpPacketSerializer);
