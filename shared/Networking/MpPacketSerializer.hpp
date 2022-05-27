@@ -62,7 +62,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
                     _sessionManager->Send(reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(message));
                 }
                 else {
-                    getLogger().critical("_sessionManager is null, this should never happen");
+                    getLogger().critical("REPORT IMMEDIATELY: _sessionManager is null, THIS should NEVER happen, this mod CANNOT work this way");
                 }
             }
             catch(il2cpp_utils::exceptions::StackTraceException const& e) {
@@ -87,7 +87,31 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
         template <class TPacket>
         void SendUnreliable(TPacket message) {
             static_assert(std::is_convertible_v<TPacket, LiteNetLib::Utils::INetSerializable*> || std::is_convertible_v<TPacket, MultiplayerCore::Networking::Abstractions::MpPacket*>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
-            _sessionManager->SendUnreliable(reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(message));
+            try {
+                if (_sessionManager) {
+                    _sessionManager->SendUnreliable(reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(message));
+                }
+                else {
+                    getLogger().critical("REPORT IMMEDIATELY: _sessionManager is null, THIS should NEVER happen, this mod CANNOT work this way");
+                }
+            }
+            catch(il2cpp_utils::exceptions::StackTraceException const& e) {
+                getLogger().warning("An exception was thrown sending packet");
+                getLogger().error("REPORT TO ENDER: %s", e.what());
+                e.log_backtrace();
+            }
+            catch (il2cpp_utils::RunMethodException const& e) {
+                getLogger().warning("An exception was thrown sending packet");
+                getLogger().error("REPORT TO ENDER: %s", e.what());
+                e.log_backtrace();
+            }
+            catch(std::exception const& e) {
+                getLogger().warning("An exception was thrown sending packet");
+                getLogger().error("REPORT TO ENDER: %s", e.what());
+            }
+            catch(...) {
+                getLogger().error("An unknown exception was thrown sending packet");
+            }
         }
 
         /*
