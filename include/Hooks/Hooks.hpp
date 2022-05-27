@@ -23,7 +23,7 @@ namespace MultiplayerCore {
 
     extern GlobalNamespace::LobbyGameStateController* lobbyGameStateController;
 
-    extern std::map<std::string, std::map<std::string, int>> entitlementDictionary;
+    extern std::unordered_map<std::string, std::map<std::string, int>> entitlementDictionary;
 
     extern GlobalNamespace::IPreviewBeatmapLevel* loadingPreviewBeatmapLevel;
     extern GlobalNamespace::BeatmapDifficulty loadingBeatmapDifficulty;

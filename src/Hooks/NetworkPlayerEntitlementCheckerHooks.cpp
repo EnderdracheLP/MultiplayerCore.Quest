@@ -21,7 +21,7 @@ namespace MultiplayerCore {
 
 #pragma region Fields
 
-    std::map<std::string, std::map<std::string, int>> entitlementDictionary;
+    std::unordered_map<std::string, std::map<std::string, int>> entitlementDictionary;
 
 #pragma endregion
 
