@@ -27,6 +27,7 @@
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 #include "GlobalNamespace/MultiplayerSessionManager_SessionType.hpp"
 #include "GlobalNamespace/LobbyPlayerData.hpp"
+#include "GlobalNamespace/ConnectedPlayerManager.hpp"
 
 #include "UnityEngine/Resources.hpp"
 
