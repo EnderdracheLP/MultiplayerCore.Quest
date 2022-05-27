@@ -7,12 +7,20 @@
 
 #include "Utilities.hpp"
 
+#include "GlobalNamespace/MultiplayerLobbyConnectionController.hpp"
 #include "GlobalNamespace/ConnectedPlayerManager.hpp"
 #include "GlobalNamespace/BloomFilterUtil.hpp"
+#include "GlobalNamespace/MultiplayerLevelLoader.hpp"
+#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 
 #include "GlobalNamespace/MultiplayerLevelSelectionFlowCoordinator.hpp"
 #include "GlobalNamespace/CenterStageScreenController.hpp"
-#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
+#include "GlobalNamespace/LobbySetupViewController.hpp"
+#include "GlobalNamespace/LevelSelectionNavigationController.hpp"
+#include "GlobalNamespace/GameServerPlayerTableCell.hpp"
+
+#include "GlobalNamespace/AdditionalContentModel.hpp"
+#include "GlobalNamespace/CreateServerFormData.hpp"
 
 // For Hooking Debug Loggers
 #include "BGNet/Logging/Debug.hpp"
@@ -21,6 +29,7 @@
 #include "custom-types/shared/register.hpp"
 #include "questui/shared/QuestUI.hpp"
 #include "questui/shared/BeatSaberUI.hpp"
+#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
 
 //#include "GlobalNamespace/LobbySetupViewController.hpp"
 //#include "GlobalNamespace/LobbySetupViewController_CannotStartGameReason.hpp"

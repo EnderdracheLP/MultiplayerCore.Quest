@@ -3,6 +3,13 @@
 #include "Utils/CustomData.hpp"
 #include "Utilities.hpp"
 
+#include "GlobalNamespace/NetworkPlayerEntitlementChecker.hpp"
+
+#include "System/Action_3.hpp"
+#include "System/Threading/Tasks/Task_1.hpp"
+
+#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
+
 //Dont think this would cause blackscreen
 
 using namespace GlobalNamespace;

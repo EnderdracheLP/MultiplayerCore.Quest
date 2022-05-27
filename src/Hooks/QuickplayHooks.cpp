@@ -8,10 +8,10 @@
 #include "GlobalNamespace/QuickPlaySetupData_QuickPlaySongPacksOverride.hpp"
 #include "GlobalNamespace/QuickPlaySetupData.hpp"
 
+#include "GlobalNamespace/QuickPlaySongPacksDropdown.hpp"
+
 #include "GlobalNamespace/BeatmapDifficultyDropdown.hpp"
 #include "GlobalNamespace/BeatmapDifficultyMask.hpp"
-#include "HMUI/SimpleTextDropdown.hpp"
-
 #include "GlobalNamespace/SongPackMaskModelSO.hpp"
 
 #include "GlobalNamespace/MultiplayerModeSelectionFlowCoordinator.hpp"
@@ -21,12 +21,11 @@
 
 #include "HMUI/ViewController_AnimationDirection.hpp"
 #include "HMUI/ViewController_AnimationType.hpp"
+#include "HMUI/SimpleTextDropdown.hpp"
 
+#include "System/Action_1.hpp"
 #include "Polyglot/Localization.hpp"
 #include "Polyglot/LanguageExtensions.hpp"
-
-#include "GlobalNamespace/QuickPlaySongPacksDropdown.hpp"
-
 //Nothing here causes blackscreen crash
 
 using namespace GlobalNamespace;

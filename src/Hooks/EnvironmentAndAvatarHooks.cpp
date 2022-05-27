@@ -23,6 +23,7 @@
 
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Transform.hpp"
+#include "UnityEngine/GameObject.hpp"
 
 //Nothing here causes blackscreen crash
 

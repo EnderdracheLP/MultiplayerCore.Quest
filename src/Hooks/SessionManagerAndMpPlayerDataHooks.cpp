@@ -16,14 +16,19 @@
 #include "Networking/MpPacketSerializer.hpp"
 #include "Networking/MpNetworkingEvents.hpp"
 
+#include "System/Threading/Tasks/Task.hpp"
+#include "System/Threading/Tasks/Task_1.hpp"
+#include "System/Action_1.hpp"
+
 #include "GlobalNamespace/BeatmapIdentifierNetSerializableHelper.hpp"
 #include "GlobalNamespace/IPlatformUserModel.hpp"
 #include "GlobalNamespace/LocalNetworkPlayerModel.hpp"
-#include "UnityEngine/Resources.hpp"
 #include "GlobalNamespace/UserInfo.hpp"
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 #include "GlobalNamespace/MultiplayerSessionManager_SessionType.hpp"
 #include "GlobalNamespace/LobbyPlayerData.hpp"
+
+#include "UnityEngine/Resources.hpp"
 
 #include "questui/shared/BeatSaberUI.hpp"
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"

@@ -2,11 +2,19 @@
 #include "Hooks/Hooks.hpp"
 #include "Utils/MethodCache.hpp"
 #include "GlobalNamespace/MultiplayerOutroAnimationController.hpp"
+#include "GlobalNamespace/MultiplayerIntroAnimationController.hpp"
 #include "GlobalNamespace/CreateServerFormController.hpp"
+#include "GlobalNamespace/CreateServerFormData.hpp"
 #include "GlobalNamespace/FormattedFloatListSettingsController.hpp"
+#include "GlobalNamespace/MultiplayerResultsPyramidView.hpp"
+#include "GlobalNamespace/MultiplayerPlayerResultsData.hpp"
+#include "GlobalNamespace/MultiplayerPlayersManager.hpp"
 
-//Nothing here causes blackscreen crash
+#include "UnityEngine/GameObject.hpp"
 
+#include "UnityEngine/Timeline/TimelineAsset.hpp"
+#include "UnityEngine/Timeline/TrackAsset.hpp"
+#include "UnityEngine/Timeline/AudioTrack.hpp"
 
 using namespace GlobalNamespace;
 using namespace System;
