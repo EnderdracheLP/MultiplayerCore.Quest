@@ -7,7 +7,7 @@ namespace MultiplayerCore::Utils {
         using namespace MultiplayerCore::Utils;
         if (beatmapOpt)
         {
-            std::string infodatPath = to_utf8(csstrtostr(beatmapOpt.value()->get_customLevelPath()));
+            std::string infodatPath = beatmapOpt.value()->get_customLevelPath();
             if (fileexists(infodatPath + "/Info.dat")) {
                 infodatPath += "/Info.dat";
             }
