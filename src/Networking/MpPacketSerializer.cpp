@@ -29,6 +29,7 @@ namespace MultiplayerCore::Networking {
 			getLogger().warning("REPORT TO ENDER in MpPacketSerializer: An Unknown exception was thrown");
 			getLogger().Backtrace(20);
 		}
+		INVOKE_CTOR();
 	}
 
 	void MpPacketSerializer::Deconstruct() {
