@@ -12,8 +12,11 @@ namespace MultiplayerCore {
             return levelId->StartsWith(RuntimeSongLoader::API::GetCustomLevelsPrefix().c_str()) ? levelId->Substring(RuntimeSongLoader::API::GetCustomLevelsPrefix().length()) : StringW();
         }
 
-        static inline void ClearDelegate(Il2CppDelegate* delegate) {
-            il2cpp_utils::ClearDelegate({((MethodInfo*)(void*)(delegate)->method)->methodPointer, true});
+        template<class T>
+        requires std::is_convertible_v<T, Il2CppMulticastDelegate*>
+        static inline void ClearDelegate(T delegate) {
+            getLogger().debug("Clearing type: %s pointer: %p", il2cpp_utils::ClassStandardName(classof(T)).c_str(), delegate);
+            il2cpp_utils::ClearDelegate({((MethodInfo*)(void*)(reinterpret_cast<Il2CppDelegate*>(delegate))->method)->methodPointer, true});
         }
     };
 }

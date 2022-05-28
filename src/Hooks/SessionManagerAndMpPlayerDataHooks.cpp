@@ -265,7 +265,8 @@ namespace MultiplayerCore {
         static bool gotPlayerInfo = false;
         static auto localNetworkPlayerModel = UnityEngine::Resources::FindObjectsOfTypeAll<LocalNetworkPlayerModel*>().get(0);
         static auto UserInfoTask = localNetworkPlayerModel->platformUserModel->GetUserInfo();
-        static auto action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
+        static System::Action_1<System::Threading::Tasks::Task*>* action;
+        if (!gotPlayerInfo) action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
             auto userInfo = userInfoTask->get_Result();
             if (userInfo) {
                 if (!localPlayer) localPlayer = Players::MpPlayerData::Init(userInfo->platformUserId, getPlatform(userInfo->platform));
@@ -274,22 +275,26 @@ namespace MultiplayerCore {
                     localPlayer->platform = getPlatform(userInfo->platform);
                 }
                 gotPlayerInfo = true;
+                QuestUI::MainThreadScheduler::Schedule([]{
+                    Utilities::ClearDelegate(action);
+                    action = nullptr;
+                });
             }
             else getLogger().error("Failed to get local network player!");
             }
         );
-        if (!gotPlayerInfo) {
-        // if (action) { 
+        // if (!gotPlayerInfo) {
+        if (action) { 
             reinterpret_cast<System::Threading::Tasks::Task*>(UserInfoTask)->ContinueWith(action);
             // action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
         }
 
-        if (gotPlayerInfo) {
-            // Clear the delegate if we have our playerInfo
-            Utilities::ClearDelegate(reinterpret_cast<Il2CppDelegate*>(action));
-            // il2cpp_utils::ClearDelegate({((MethodInfo*)(void*)((Il2CppDelegate*)(action))->method)->methodPointer, true});
-            action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
-        }
+        // if (gotPlayerInfo) {
+        //     // Clear the delegate if we have our playerInfo
+        //     Utilities::ClearDelegate(action);
+        //     // il2cpp_utils::ClearDelegate({((MethodInfo*)(void*)((Il2CppDelegate*)(action))->method)->methodPointer, true});
+        //     action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
+        // }
 
         using namespace MultiplayerCore::Utils;
         self->SetLocalPlayerState("modded", true);
