@@ -19,8 +19,10 @@
 #include "GlobalNamespace/ConnectedPlayerManager_ConnectedPlayer.hpp"
 #include "GlobalNamespace/AvatarPoseRestrictions.hpp"
 #include "GlobalNamespace/GameplayServerConfiguration.hpp"
+#include "GlobalNamespace/MultiplayerLayoutProvider.hpp"
 
 #include "System/Collections/Generic/List_1.hpp"
+#include "System/Action_2.hpp"
 
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Transform.hpp"
@@ -41,6 +43,8 @@ namespace MultiplayerCore {
     float outerCircleRadius;
 
     bool initialized;
+
+    static bool addEmptyPlayerSlotForEvenCount = false;
 
     void HandleLobbyEnvironmentLoaded(ILobbyStateDataModel* _lobbyStateDataModel, MenuEnvironmentManager* _menuEnvironmentManager, MultiplayerLobbyAvatarPlaceManager* _placeManager, MultiplayerLobbyCenterStageManager* _stageManager) {
         initialized = false;
@@ -86,6 +90,36 @@ namespace MultiplayerCore {
         getLogger().debug("ActivateMultiplayerLobby Done");
     }
 
+    MAKE_HOOK_MATCH(MultiplayerPlayerPlacement_GetAngleBetweenPlayersWithEvenAdjustment, &MultiplayerPlayerPlacement::GetAngleBetweenPlayersWithEvenAdjustment, float, int numberOfPlayers, MultiplayerPlayerLayout layout) {
+        if (addEmptyPlayerSlotForEvenCount && numberOfPlayers % 2 == 0 && layout != MultiplayerPlayerLayout::Duel)
+		{
+			numberOfPlayers++;
+		}
+        return 360.0f / (float)numberOfPlayers;
+    }
+
+    MAKE_HOOK_MATCH(MultiplayerLayoutProvider_CalculateLayout, &MultiplayerLayoutProvider::CalculateLayout, GlobalNamespace::MultiplayerPlayerLayout, MultiplayerLayoutProvider* self, int activePlayersCount) {
+        if (activePlayersCount == 2)
+		{
+			self->layout = MultiplayerPlayerLayout::Duel;
+		}
+		else
+		{
+			self->layout = MultiplayerPlayerLayout::Circle;
+		}
+		if (addEmptyPlayerSlotForEvenCount && activePlayersCount % 2 == 0 && self->layout != MultiplayerPlayerLayout::Duel)
+		{
+			activePlayersCount++;
+		}
+		self->activePlayerSpotsCount = activePlayersCount;
+		::System::Action_2<::GlobalNamespace::MultiplayerPlayerLayout, int>* action = self->playersLayoutWasCalculatedEvent;
+		if (action != nullptr)
+		{
+			action->Invoke(self->layout, activePlayersCount);
+		}
+		return self->layout;
+    }
+
 #pragma endregion
 
     MAKE_HOOK_MATCH(AvatarPoseRestrictions_HandleAvatarPoseControllerPositionsWillBeSet, &AvatarPoseRestrictions::HandleAvatarPoseControllerPositionsWillBeSet, void, AvatarPoseRestrictions* self, Quaternion headRotation, Vector3 headPosition, Vector3 leftHandPosition, Vector3 rightHandPosition, ByRef<Vector3> newHeadPosition, ByRef<Vector3> newLeftHandPosition, ByRef<Vector3> newRightHandPosition) {
@@ -97,5 +131,7 @@ namespace MultiplayerCore {
     void Hooks::EnvironmentHooks() {
         INSTALL_HOOK(getLogger(), MultiplayerLobbyController_ActivateMultiplayerLobby);
         INSTALL_HOOK_ORIG(getLogger(), AvatarPoseRestrictions_HandleAvatarPoseControllerPositionsWillBeSet);
+        INSTALL_HOOK_ORIG(getLogger(), MultiplayerPlayerPlacement_GetAngleBetweenPlayersWithEvenAdjustment);
+        INSTALL_HOOK_ORIG(getLogger(), MultiplayerLayoutProvider_CalculateLayout);
     }
 }
