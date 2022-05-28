@@ -18,6 +18,7 @@ namespace MultiplayerCore::Networking {
 	}
 
 	void MpPacketSerializer::Deconstruct() {
+		MultiplayerCore::mpPacketSerializer = nullptr;
 		getLogger().debug("Deconstructing MpPacketSerializer");
 		for (auto it = packetHandlers.begin(); it != packetHandlers.end(); it++) {
 			delete it->second;
