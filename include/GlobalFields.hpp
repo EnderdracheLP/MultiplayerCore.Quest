@@ -6,7 +6,7 @@
 
 namespace MultiplayerCore {
     // Plugin setup stuff
-    extern GlobalNamespace::MultiplayerSessionManager* _multiplayerSessionManager;
+    //extern GlobalNamespace::MultiplayerSessionManager* _multiplayerSessionManager;
     extern GlobalNamespace::LobbyPlayersDataModel* lobbyPlayersDataModel;
     extern GlobalNamespace::LobbyGameStateController* lobbyGameStateController;
 

@@ -14,6 +14,7 @@ namespace MultiplayerCore::Utils {
 
     static bool MatchesVersion(std::string const& modName, std::string const& versionRange) {
         auto const modList = Modloader::getMods();
+        // TODO: Possibly remove this
         auto modLoaded = Modloader::requireMod(modName);
         try {
             if (modLoaded) {

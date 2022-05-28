@@ -12,6 +12,7 @@
 #include "UnityEngine/UI/LayoutElement.hpp"
 
 #include "GlobalFields.hpp"
+#include "shared/GlobalFields.hpp"
 using namespace GlobalNamespace;
 using namespace QuestUI;
 using namespace RuntimeSongLoader::API;
@@ -75,6 +76,10 @@ namespace MultiQuestensions::UI {
             }
             needSongRefresh = true;
             DownloadedSongIds.erase(DownloadedSongIds.begin() + selectedIdx);
+        }
+        catch (il2cpp_utils::RunMethodException const& e) {
+            getLogger().critical("REPORT TO ENDER: Exception encountered trying to delete song: %s", e.what());
+            e.log_backtrace();
         }
         catch (const std::exception& e) {
             getLogger().critical("REPORT TO ENDER: Exception encountered trying to delete song: %s", e.what());

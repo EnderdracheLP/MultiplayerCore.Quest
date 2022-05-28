@@ -4,16 +4,23 @@
 #include "Networking/MpPacketSerializer.hpp"
 #include "UI/DownloadedSongsGSM.hpp"
 #include "UI/CenterScreenLoading.hpp"
-#include "CS_DataStore.hpp"
 
 #include "Utilities.hpp"
 
+#include "GlobalNamespace/MultiplayerLobbyConnectionController.hpp"
 #include "GlobalNamespace/ConnectedPlayerManager.hpp"
 #include "GlobalNamespace/BloomFilterUtil.hpp"
+#include "GlobalNamespace/MultiplayerLevelLoader.hpp"
+#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 
 #include "GlobalNamespace/MultiplayerLevelSelectionFlowCoordinator.hpp"
 #include "GlobalNamespace/CenterStageScreenController.hpp"
-#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
+#include "GlobalNamespace/LobbySetupViewController.hpp"
+#include "GlobalNamespace/LevelSelectionNavigationController.hpp"
+#include "GlobalNamespace/GameServerPlayerTableCell.hpp"
+
+#include "GlobalNamespace/AdditionalContentModel.hpp"
+#include "GlobalNamespace/CreateServerFormData.hpp"
 
 // For Hooking Debug Loggers
 #include "BGNet/Logging/Debug.hpp"
@@ -22,6 +29,7 @@
 #include "custom-types/shared/register.hpp"
 #include "questui/shared/QuestUI.hpp"
 #include "questui/shared/BeatSaberUI.hpp"
+#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
 
 //#include "GlobalNamespace/LobbySetupViewController.hpp"
 //#include "GlobalNamespace/LobbySetupViewController_CannotStartGameReason.hpp"
@@ -34,6 +42,9 @@ using namespace MultiplayerCore;
 #warning No Version set
 #define VERSION "0.1.0"
 #endif
+
+// Below define will enable DEBUG Hooks
+#define DEBUG
 
 ModInfo modInfo; // Stores the ID and version of our mod, and is sent to the modloader upon startup
 
@@ -128,35 +139,23 @@ MAKE_HOOK_MATCH(LobbyPlayersActivate, &LobbyPlayersDataModel::Activate, void, Lo
 }
 
 MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController::DidActivate, void, LobbySetupViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
-    try {
-        lobbySetupView = self;
-        LobbySetupViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
-        if (getConfig().config["autoDelete"].GetBool() && !DownloadedSongIds.empty()) {
-            using namespace RuntimeSongLoader::API;
-            std::string hash = DownloadedSongIds.back();
-            getLogger().debug("AutoDelete Song with Hash '%s'", hash.c_str());
-            std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash);
-            if (levelOpt.has_value()) {
-                std::string songPath = to_utf8(csstrtostr(levelOpt.value()->get_customLevelPath()));
-                getLogger().info("Deleting Song: %s", songPath.c_str());
-                DeleteSong(songPath, [&] {
-                    RefreshSongs(false);
-                    DownloadedSongIds.pop_back();
-                    });
-                if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
-            }
+    lobbySetupView = self;
+    LobbySetupViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+    if (getConfig().config["autoDelete"].GetBool() && !DownloadedSongIds.empty()) {
+        using namespace RuntimeSongLoader::API;
+        std::string hash = DownloadedSongIds.back();
+        getLogger().debug("AutoDelete Song with Hash '%s'", hash.c_str());
+        std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash);
+        if (levelOpt.has_value()) {
+            std::string songPath = to_utf8(csstrtostr(levelOpt.value()->get_customLevelPath()));
+            getLogger().info("Deleting Song: %s", songPath.c_str());
+            DeleteSong(songPath, [&] {
+                RefreshSongs(false);
+                DownloadedSongIds.pop_back();
+                });
+            if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
         }
     }
-    catch (il2cpp_utils::RunMethodException const& e) {
-        getLogger().error("REPORT TO ENDER RunMethodException in LobbySetupViewController_DidActivate: %s", e.what());
-    }
-    catch (const std::exception& e) {
-        getLogger().error("REPORT TO ENDER exception in LobbySetupViewController_DidActivate: %s", e.what());
-    }
-    catch (...) {
-        getLogger().warning("REPORT TO ENDER: An Unknown exception was thrown in LobbySetupViewController_DidActivate");
-    }
-
 }
 
 MAKE_HOOK_MATCH(MultiplayerLobbyConnectionController_CreateParty, &MultiplayerLobbyConnectionController::CreateParty, void, MultiplayerLobbyConnectionController* self, CreateServerFormData data) {
@@ -228,7 +227,7 @@ std::vector<std::string> DownloadedSongIds;
 
 static bool isDownloading = false;
 
-MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadLevel, void, MultiplayerLevelLoader* self, ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
+MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadLevel, void, MultiplayerLevelLoader* self, ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
     try {
         if (isDownloading) {
             getLogger().info("Already downloading level, skipping...");
@@ -255,6 +254,12 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
             else {
                 isDownloading = true;
                 std::string hash = Utilities::GetHash(levelId);
+                // TODO: Keep the below in mind, and tweak if necessary.
+                // Be mindful of your lambdas, once again.
+                // This catpures self as a pointer, could be gc'd.
+                // gameplaySetupData as a pointer, could be gc'd.
+                // cslInstance, as a pointer, as a singleton so presumably not gc'd, soft restart could change that though.
+                // everything else okay.
                 BeatSaver::API::GetBeatmapByHashAsync(hash,
                     [self, gameplaySetupData, initialStartTime, hash, levelId, cslInstance](std::optional<BeatSaver::Beatmap> beatmapOpt) {
                         if (beatmapOpt.has_value()) {
@@ -353,8 +358,13 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
             MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
         }
     }
+    catch (il2cpp_utils::exceptions::StackTraceException const& e) {
+        getLogger().error("REPORT TO ENDER: %s", e.what());
+        e.log_backtrace();
+    }
     catch (il2cpp_utils::RunMethodException const& e) {
         getLogger().error("REPORT TO ENDER: %s", e.what());
+        e.log_backtrace();
     }
     catch (const std::exception& e) {
         getLogger().error("REPORT TO ENDER: %s", e.what());
@@ -463,6 +473,7 @@ extern "C" void setup(ModInfo& info) {
     getLogger().info("Completed setup!");
 }
 
+#ifdef DEBUG
 MAKE_HOOK_MATCH(BGNetDebug_Log, &BGNet::Logging::Debug::Log, void, StringW message) {
     message ? getLogger().WithContext("BGNetDebug::Log").debug("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::Log").error("BGNetDebug::Log called with null message");
     BGNetDebug_Log(message);
@@ -482,6 +493,7 @@ MAKE_HOOK_MATCH(BGNetDebug_LogWarning, &BGNet::Logging::Debug::LogWarning, void,
     message ? getLogger().WithContext("BGNetDebug::LogWarning").warning("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::LogWarning").error("BGNetDebug::LogWarning called with null message");
     BGNetDebug_LogWarning(message);
 }
+#endif
 
 // Called later on in the game loading - a good time to install function hooks
 extern "C" void load() {
@@ -513,11 +525,13 @@ extern "C" void load() {
     INSTALL_HOOK(getLogger(), CenterStageScreenController_Setup);
 
 #pragma region Debug Hooks
-
+#ifdef DEBUG
+#warning Debug Hooks enabled!!!
     INSTALL_HOOK(getLogger(), BGNetDebug_Log);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogError);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogException);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogWarning);
+#endif
 #pragma endregion
 
 

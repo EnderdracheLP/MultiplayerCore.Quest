@@ -17,7 +17,7 @@
 
 #include "Abstractions/MpPacket.hpp"
 
-using CallbackDictionary = std::map<std::string, MultiplayerCore::CallbackBase*>;
+using CallbackDictionary = std::unordered_map<std::string, MultiplayerCore::CallbackBase*>;
 
 DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, Il2CppObject,
     classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*),
@@ -31,20 +31,20 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
     DECLARE_DTOR(Deconstruct);
 
     private:
-        static const uint8_t Packet_ID = 100u;
+        static constexpr uint8_t Packet_ID = 100u;
 
         CallbackDictionary packetHandlers;
 
     public:
         template <class TPacket>
         void RegisterCallback(CallbackWrapper<TPacket>* callback) {
-            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
+            static_assert(std::is_convertible_v<TPacket, LiteNetLib::Utils::INetSerializable*> || std::is_convertible_v<TPacket, MultiplayerCore::Networking::Abstractions::MpPacket*>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
             packetHandlers[static_cast<std::string>(csTypeOf(TPacket)->get_Name())] = callback;
         }
 
         template <class TPacket>
         void UnregisterCallback() {
-            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
+            static_assert(std::is_convertible_v<TPacket, LiteNetLib::Utils::INetSerializable*> || std::is_convertible_v<TPacket, MultiplayerCore::Networking::Abstractions::MpPacket*>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
             getLogger().debug("UnregisterCallback called");
 
             auto itr = packetHandlers.find(static_cast<std::string>(csTypeOf(TPacket)->get_Name()));
@@ -56,34 +56,70 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
 
         template <class TPacket>
         void Send(TPacket message) {
-            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
-            _sessionManager->Send(reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(message));
-        }
-
-        template <class TPacket>
-        void Send(SafePtr<TPacket> message) {
-            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
-            _sessionManager->Send(reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(static_cast<TPacket*>(message)));
+            static_assert(std::is_convertible_v<TPacket, LiteNetLib::Utils::INetSerializable*> || std::is_convertible_v<TPacket, MultiplayerCore::Networking::Abstractions::MpPacket*>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");          
+            try {
+                if (_sessionManager) {
+                    _sessionManager->Send(reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(message));
+                }
+                else {
+                    getLogger().critical("REPORT IMMEDIATELY: _sessionManager is null, THIS should NEVER happen, this mod CANNOT work this way");
+                }
+            }
+            catch(il2cpp_utils::exceptions::StackTraceException const& e) {
+                getLogger().warning("An exception was thrown sending packet");
+                getLogger().error("REPORT TO ENDER: %s", e.what());
+                e.log_backtrace();
+            }
+            catch (il2cpp_utils::RunMethodException const& e) {
+                getLogger().warning("An exception was thrown sending packet");
+                getLogger().error("REPORT TO ENDER: %s", e.what());
+                e.log_backtrace();
+            }
+            catch(std::exception const& e) {
+                getLogger().warning("An exception was thrown sending packet");
+                getLogger().error("REPORT TO ENDER: %s", e.what());
+            }
+            catch(...) {
+                getLogger().error("An unknown exception was thrown sending packet");
+            }
         }
 
         template <class TPacket>
         void SendUnreliable(TPacket message) {
-            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
-            _sessionManager->SendUnreliable(reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(message));
-        }
-
-        template <class TPacket>
-        void SendUnreliable(SafePtr<TPacket> message) {
-            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
-            _sessionManager->SendUnreliable(reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(static_cast<TPacket*>(message)));
+            static_assert(std::is_convertible_v<TPacket, LiteNetLib::Utils::INetSerializable*> || std::is_convertible_v<TPacket, MultiplayerCore::Networking::Abstractions::MpPacket*>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
+            try {
+                if (_sessionManager) {
+                    _sessionManager->SendUnreliable(reinterpret_cast<LiteNetLib::Utils::INetSerializable*>(message));
+                }
+                else {
+                    getLogger().critical("REPORT IMMEDIATELY: _sessionManager is null, THIS should NEVER happen, this mod CANNOT work this way");
+                }
+            }
+            catch(il2cpp_utils::exceptions::StackTraceException const& e) {
+                getLogger().warning("An exception was thrown sending packet");
+                getLogger().error("REPORT TO ENDER: %s", e.what());
+                e.log_backtrace();
+            }
+            catch (il2cpp_utils::RunMethodException const& e) {
+                getLogger().warning("An exception was thrown sending packet");
+                getLogger().error("REPORT TO ENDER: %s", e.what());
+                e.log_backtrace();
+            }
+            catch(std::exception const& e) {
+                getLogger().warning("An exception was thrown sending packet");
+                getLogger().error("REPORT TO ENDER: %s", e.what());
+            }
+            catch(...) {
+                getLogger().error("An unknown exception was thrown sending packet");
+            }
         }
 
         /*
-        Registers a Packet Callback, if you specify CreationType::Manual you'll be responsible for cleanup yourself
+        Registers a Packet Callback
         */
         template <class TPacket, ::il2cpp_utils::CreationType creationType = ::il2cpp_utils::CreationType::Temporary>
         void RegisterCallback(PacketCallback<TPacket> callback) {
-            static_assert(std::is_convertible_v<std::remove_pointer_t<TPacket>, LiteNetLib::Utils::INetSerializable> || std::is_convertible_v<std::remove_pointer_t<TPacket>, MultiplayerCore::Networking::Abstractions::MpPacket>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
+            static_assert(std::is_convertible_v<TPacket, LiteNetLib::Utils::INetSerializable*> || std::is_convertible_v<TPacket, MultiplayerCore::Networking::Abstractions::MpPacket*>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
             CallbackWrapper<TPacket, creationType>* newCallback = new CallbackWrapper<TPacket>(callback);
             this->RegisterCallback(newCallback);
         }

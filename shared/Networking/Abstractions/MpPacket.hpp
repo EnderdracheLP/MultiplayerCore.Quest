@@ -22,7 +22,7 @@ struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<void (Multi
 template<>
 struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<void (MultiplayerCore::Networking::Abstractions::MpPacket::*)(LiteNetLib::Utils::NetDataReader*)>(&MultiplayerCore::Networking::Abstractions::MpPacket::Deserialize)> {
     static const MethodInfo* get() {
-        static auto* writer = &::il2cpp_utils::GetClassFromName("MultiplayerCore.Networking.Abstractions", "MpPacket")->byval_arg;
-        return ::il2cpp_utils::FindMethod(classof(MultiplayerCore::Networking::Abstractions::MpPacket*), "Deserialize", std::vector<Il2CppClass*>(), ::std::vector<const Il2CppType*>{writer});
+        static auto* reader = &::il2cpp_utils::GetClassFromName("MultiplayerCore.Networking.Abstractions", "MpPacket")->byval_arg;
+        return ::il2cpp_utils::FindMethod(classof(MultiplayerCore::Networking::Abstractions::MpPacket*), "Deserialize", std::vector<Il2CppClass*>(), ::std::vector<const Il2CppType*>{reader});
     }
 };
