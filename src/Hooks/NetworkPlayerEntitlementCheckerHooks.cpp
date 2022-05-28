@@ -145,7 +145,6 @@ namespace MultiplayerCore {
         NetworkPlayerEntitlementChecker_Start(self);
     }
 
-    // TODO: Figure this part out
     MAKE_HOOK_MATCH(NetworkPlayerEntitlementChecker_OnDestroy, &NetworkPlayerEntitlementChecker::OnDestroy, void, NetworkPlayerEntitlementChecker* self) {
        if (entitlementAction) {
             // This is like hella confusing
