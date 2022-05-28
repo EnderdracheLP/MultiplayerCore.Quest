@@ -1,5 +1,6 @@
 #include "main.hpp"
 #include "GlobalFields.hpp"
+#include "shared/GlobalFields.hpp"
 #include "UI/CenterScreenLoading.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Resources.hpp"

@@ -2,6 +2,7 @@
 #include "Hooks/Hooks.hpp"
 #include "Utils/CustomData.hpp"
 #include "Utilities.hpp"
+#include "shared/GlobalFields.hpp"
 
 #include "GlobalNamespace/NetworkPlayerEntitlementChecker.hpp"
 

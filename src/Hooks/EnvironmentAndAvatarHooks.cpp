@@ -1,6 +1,7 @@
 #include "main.hpp"
 #include "Hooks/Hooks.hpp"
 #include "GlobalFields.hpp"
+#include "shared/GlobalFields.hpp"
 #include "Hooks/SessionManagerAndExtendedPlayerHooks.hpp"
 
 #include "GlobalNamespace/MultiplayerLobbyController.hpp"

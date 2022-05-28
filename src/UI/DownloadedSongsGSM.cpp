@@ -12,6 +12,7 @@
 #include "UnityEngine/UI/LayoutElement.hpp"
 
 #include "GlobalFields.hpp"
+#include "shared/GlobalFields.hpp"
 using namespace GlobalNamespace;
 using namespace QuestUI;
 using namespace RuntimeSongLoader::API;

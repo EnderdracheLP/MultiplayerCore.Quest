@@ -2,6 +2,8 @@
 #include "Hooks/Hooks.hpp"
 #include "Hooks/SessionManagerAndExtendedPlayerHooks.hpp"
 #include "GlobalFields.hpp"
+#include "shared/GlobalFields.hpp"
+
 
 #include "UI/CenterScreenLoading.hpp"
 #include "Utils/SemVerChecker.hpp"
