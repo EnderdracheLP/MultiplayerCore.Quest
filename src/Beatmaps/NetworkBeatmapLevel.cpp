@@ -5,6 +5,7 @@
 #include "songdownloader/shared/BeatSaverAPI.hpp"
 #include "questui/shared/BeatSaberUI.hpp"
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
+#include "Utilities.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel);
 
@@ -18,24 +19,29 @@ namespace MultiplayerCore::Beatmaps {
 		if (!coverImageTask) {
 			// Create a finished task with nullptr result
 			coverImageTask = System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));
-			// Manually set the state to started so the game will wait until I pulled the data from BeatSaver
-
+			
+			// Manually set the state to started so the game will wait until we pulled the data from BeatSaver
 			reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
-
+			getLogger().debug("Pulling coverImage from BeatSaver, hash: %s", static_cast<std::string>(_packet->levelHash).c_str());
 			BeatSaver::API::GetBeatmapByHashAsync(_packet->levelHash,
 				[this](std::optional<BeatSaver::Beatmap> beatmap) {
+					getLogger().debug("GetBeatmapByHashAsync for coverImage finished, was beatmap found: %s", beatmap.has_value() ? "true" : "false");
 					if (beatmap.has_value()) {
-						BeatSaver::API::GetCoverImageAsync(*beatmap, [this](std::vector<uint8_t> bytes) {
+						getLogger().debug("Running GetCoverImageAsync");
+						BeatSaver::API::GetCoverImageAsync(beatmap.value(), [this](std::vector<uint8_t> bytes) {
 							QuestUI::MainThreadScheduler::Schedule([this, bytes] {
 								getLogger().debug("Got coverImage from BeatSaver");
 								// If we got our CoverImage set it
 								coverImageTask->TrySetResult(QuestUI::BeatSaberUI::VectorToSprite(bytes));
 								// TODO: Probably specify some kind of timeout, to avoid people with slow internet not being able to see the current selection
-								// reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+								reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
 								}
 							);
 							}
 						);
+					} else {
+						// If we don't have any info, we'll just use our nullptr task
+						reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
 					}
 				}
 			);
