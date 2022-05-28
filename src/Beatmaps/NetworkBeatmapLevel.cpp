@@ -19,6 +19,7 @@ namespace MultiplayerCore::Beatmaps {
 			// Create a finished task with nullptr result
 			coverImageTask = System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));
 			// Manually set the state to started so the game will wait until I pulled the data from BeatSaver
+
 			reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
 
 			BeatSaver::API::GetBeatmapByHashAsync(_packet->levelHash,

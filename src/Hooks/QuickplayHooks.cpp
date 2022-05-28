@@ -58,7 +58,7 @@ namespace MultiplayerCore {
     MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish, &MultiplayerModeSelectionFlowCoordinator::HandleJoinQuickPlayViewControllerDidFinish, void, MultiplayerModeSelectionFlowCoordinator* self, bool success) {
         Il2CppString* levelPackName = self->joinQuickPlayViewController->multiplayerModeSettings->quickPlaySongPackMaskSerializedName;
         static System::Action_1<int>* action;
-        if (/*(getConfig().config["CustomsWarning"].GetBool() || getConfig().config["LastWarningVersion"].GetString() != modInfo.version) && */success && 
+        if ((getConfig().config["CustomsWarning"].GetBool() || getConfig().config["LastWarningVersion"].GetString() != modInfo.version) && success && 
             self->songPackMaskModel->ToSongPackMask(
                 levelPackName
             ).Contains(
@@ -101,7 +101,7 @@ namespace MultiplayerCore {
         INSTALL_HOOK(getLogger(), QuickPlaySongPacksDropdown_LazyInit);
         INSTALL_HOOK(getLogger(), JoinQuickPlayViewController_setup);
 
-        // if(getConfig().config["CustomsWarning"].GetBool() || getConfig().config["LastWarningVersion"].GetString() != modInfo.version)
+        if(getConfig().config["CustomsWarning"].GetBool() || getConfig().config["LastWarningVersion"].GetString() != modInfo.version)
             INSTALL_HOOK(getLogger(), MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish);
     }
 }

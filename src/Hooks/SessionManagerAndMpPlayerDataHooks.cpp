@@ -283,18 +283,9 @@ namespace MultiplayerCore {
             else getLogger().error("Failed to get local network player!");
             }
         );
-        // if (!gotPlayerInfo) {
         if (action) { 
             reinterpret_cast<System::Threading::Tasks::Task*>(UserInfoTask)->ContinueWith(action);
-            // action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
         }
-
-        // if (gotPlayerInfo) {
-        //     // Clear the delegate if we have our playerInfo
-        //     Utilities::ClearDelegate(action);
-        //     // il2cpp_utils::ClearDelegate({((MethodInfo*)(void*)((Il2CppDelegate*)(action))->method)->methodPointer, true});
-        //     action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
-        // }
 
         using namespace MultiplayerCore::Utils;
         self->SetLocalPlayerState("modded", true);

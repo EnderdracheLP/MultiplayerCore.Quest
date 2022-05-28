@@ -146,7 +146,6 @@ namespace MultiplayerCore {
                 getLogger().debug("Getting intro active players (skipping (target iterations-1)*4, Taking 4 then adding player)");
                 List_1<IConnectedPlayer*>* listActivePlayers = il2cpp_utils::RunMethodRethrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                     Enumerable_ToList, reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(self->allActiveAtGameStartPlayers));
-                //List<IConnectedPlayer*>* listActivePlayers = Enumerable::ToList<IConnectedPlayer*>(reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(allActivePlayer));
                 IConnectedPlayer* localPlayer = nullptr;
 
                 // Check if active players contains local player and remove local player
@@ -169,9 +168,6 @@ namespace MultiplayerCore {
 
                 List_1<IConnectedPlayer*>* selectedActivePlayers = il2cpp_utils::RunMethodRethrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                     Enumerable_ToList, takeResult);
-
-                //List_1<IConnectedPlayer*>* selectedActivePlayers = Enumerable::ToList<IConnectedPlayer*>(Enumerable::Take<IConnectedPlayer*>(Enumerable::Skip<IConnectedPlayer*>(reinterpret_cast<IEnumerable_1<IConnectedPlayer*>*>(listActivePlayers), (targetIterations - 1) * 4), 4));
-                //List_1<IConnectedPlayer*>* selectedActivePlayers = Enumerable::ToList<IConnectedPlayer*>(Enumerable::Take<IConnectedPlayer*>(skipResult, 4));
 
                 // Add back local player if not null
                 if (targetIterations == 1 && localPlayer != nullptr) {
