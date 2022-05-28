@@ -81,8 +81,8 @@ namespace MultiplayerCore {
             IntroAnimationPatch(self, maxDesiredIntroAnimationDuration, onCompleted);
             // Reset director to real director
             self->dyn__introPlayableDirector() = realDirector;
-            //targetIterations--;
-            if (targetIterations-1 != 0)
+            targetIterations--;
+            if (targetIterations != 0)
                 self->PlayIntroAnimation(maxDesiredIntroAnimationDuration, onCompleted);
         }
         catch (const std::runtime_error& e) {
@@ -113,11 +113,6 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(MultiplayerPlayersManager_get_allActiveAtGameStartPlayers, &MultiplayerPlayersManager::get_allActiveAtGameStartPlayers, IReadOnlyList_1<GlobalNamespace::IConnectedPlayer*>*, MultiplayerPlayersManager* self) {
         getLogger().debug("Start: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers");
-        if (targetIterations == 0)
-        {
-            getLogger().debug("THIS SHOULD NEVER RUN");
-            targetIterations = floor((reinterpret_cast<IReadOnlyCollection_1<GlobalNamespace::IConnectedPlayer*>*>(self->dyn__allActiveAtGameStartPlayers())->get_Count() - 1) / 4) + 1;
-        }
         static auto* Enumerable_ToList_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToList", 1));
         static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(Enumerable_ToList_Generic, { classof(IConnectedPlayer*) }));
 
@@ -177,10 +172,6 @@ namespace MultiplayerCore {
             getLogger().debug("Getting outro active players(first 4 in list)");
             auto* result = il2cpp_utils::RunMethodThrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_Take, reinterpret_cast<List_1<IConnectedPlayer*>*>(self->dyn__allActiveAtGameStartPlayers()), 4);
-            
-            getLogger().debug("Finish: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers(outro)");
-            getLogger().debug("RESETTING TARGET ITERATIONS");
-            targetIterations = 0;
             return reinterpret_cast<IReadOnlyList_1<IConnectedPlayer*>*>(il2cpp_utils::RunMethodThrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_ToList, result));
         }
