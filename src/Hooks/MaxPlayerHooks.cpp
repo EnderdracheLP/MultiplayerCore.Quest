@@ -189,11 +189,7 @@ namespace MultiplayerCore {
             getLogger().debug("Getting outro active players(first 4 in list)");
             auto* result = il2cpp_utils::RunMethodRethrow<IEnumerable_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_Take, reinterpret_cast<List_1<IConnectedPlayer*>*>(self->allActiveAtGameStartPlayers), 4);
-            /*
-            getLogger().debug("Finish: MultiplayerPlayersManager_get_allActiveAtGameStartPlayers(outro)");
-            getLogger().debug("RESETTING TARGET ITERATIONS");
-            targetIterations = 0;
-            */
+
             return reinterpret_cast<IReadOnlyList_1<IConnectedPlayer*>*>(il2cpp_utils::RunMethodRethrow<List_1<IConnectedPlayer*>*, false>(static_cast<Il2CppClass*>(nullptr),
                 Enumerable_ToList, result));
         }
