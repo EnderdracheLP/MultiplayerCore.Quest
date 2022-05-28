@@ -32,6 +32,7 @@
 #include "GlobalNamespace/ConnectedPlayerManager.hpp"
 
 #include "UnityEngine/Resources.hpp"
+#include "UnityEngine/Application.hpp"
 
 #include "questui/shared/BeatSaberUI.hpp"
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
@@ -207,8 +208,14 @@ namespace MultiplayerCore {
     Players::Platform getPlatform(UserInfo::Platform platform) {
         switch (platform.value) {
         case UserInfo::Platform::Oculus:
-            getLogger().debug("Platform: Oculus = OculusQuest");
-            return Players::Platform::OculusQuest; // If platform is Oculus, we assume the user is using Quest
+            if (UnityEngine::Application::get_isMobilePlatform()) {
+                getLogger().debug("Platform: Oculus = OculusQuest");
+                return Players::Platform::OculusQuest;
+            }
+            else {
+                getLogger().debug("Platform: Oculus = OculusPC");
+                return Players::Platform::OculusPC;
+            }
         case UserInfo::Platform::PS4:
             getLogger().debug("Platform: PS4");
             return Players::Platform::PS4;
@@ -255,7 +262,7 @@ namespace MultiplayerCore {
         SessionManager_StartSession(self, sessionType, connectedPlayerManager);
 
         getLogger().debug("SessionManager_StartSession, creating localPlayer");
-        // static bool gotPlayerInfo = false;
+        static bool gotPlayerInfo = false;
         static auto localNetworkPlayerModel = UnityEngine::Resources::FindObjectsOfTypeAll<LocalNetworkPlayerModel*>().get(0);
         static auto UserInfoTask = localNetworkPlayerModel->platformUserModel->GetUserInfo();
         static auto action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
@@ -266,23 +273,23 @@ namespace MultiplayerCore {
                     localPlayer->platformId = userInfo->platformUserId;
                     localPlayer->platform = getPlatform(userInfo->platform);
                 }
-                // gotPlayerInfo = true;
+                gotPlayerInfo = true;
             }
             else getLogger().error("Failed to get local network player!");
             }
         );
-        // if (!gotPlayerInfo)
-        if (action) { 
+        if (!gotPlayerInfo) {
+        // if (action) { 
             reinterpret_cast<System::Threading::Tasks::Task*>(UserInfoTask)->ContinueWith(action);
-            action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
+            // action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
         }
 
-        // if (gotPlayerInfo) {
-        //     // Clear the delegate if we have our playerInfo
-        //     Utilities::ClearDelegate(reinterpret_cast<Il2CppDelegate*>(action));
-        //     // il2cpp_utils::ClearDelegate({((MethodInfo*)(void*)((Il2CppDelegate*)(action))->method)->methodPointer, true});
-        //     action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
-        // }
+        if (gotPlayerInfo) {
+            // Clear the delegate if we have our playerInfo
+            Utilities::ClearDelegate(reinterpret_cast<Il2CppDelegate*>(action));
+            // il2cpp_utils::ClearDelegate({((MethodInfo*)(void*)((Il2CppDelegate*)(action))->method)->methodPointer, true});
+            action = nullptr; // Setting to nullptr, as all this should only ever run once after the game has started
+        }
 
         using namespace MultiplayerCore::Utils;
         self->SetLocalPlayerState("modded", true);
