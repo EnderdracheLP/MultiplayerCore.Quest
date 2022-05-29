@@ -8,6 +8,8 @@
 
 #include "GlobalNamespace/CustomPreviewBeatmapLevel.hpp"
 #include "System/Threading/Tasks/Task_1.hpp"
+#include "System/Threading/Tasks/Task.hpp"
+#include "System/Action_1.hpp"
 #include "UnityEngine/Sprite.hpp"
 
 
@@ -19,7 +21,7 @@ DECLARE_CLASS_CODEGEN(MultiQuestensions::UI, DownloadedSongsGSM, UnityEngine::Mo
     DECLARE_INSTANCE_METHOD(void, DidActivate, bool firstActivation);
     DECLARE_INSTANCE_METHOD(void, OnEnable);
     DECLARE_INSTANCE_METHOD(void, Refresh);
-    DECLARE_INSTANCE_METHOD(void, CreateCell, System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask, GlobalNamespace::CustomPreviewBeatmapLevel* level);
+    DECLARE_INSTANCE_METHOD(void, CreateCell, System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask, GlobalNamespace::CustomPreviewBeatmapLevel* level, System::Action_1<System::Threading::Tasks::Task*>* action);
     DECLARE_INSTANCE_METHOD(void, Delete);
 
     static DownloadedSongsGSM* instance;
