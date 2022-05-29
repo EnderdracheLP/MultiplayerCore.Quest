@@ -284,7 +284,7 @@ MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoad
                                                                 [self, gameplaySetupData, initialStartTime, hash, levelId](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
                                                                     auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
                                                                     if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
-                                                                    else {
+                                                                    else if (!getConfig().config["autoDelete"].GetBool()) {
                                                                         getLogger().warning("DownloadedSongsGSM was null, adding to queue");
                                                                         MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
                                                                     }
@@ -321,7 +321,7 @@ MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoad
                                                     [self, gameplaySetupData, initialStartTime, hash, levelId](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
                                                         auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
                                                         if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
-                                                        else {
+                                                        else if (!getConfig().config["autoDelete"].GetBool()) {
                                                             getLogger().warning("DownloadedSongsGSM was null, adding to queue");
                                                             MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
                                                         }
