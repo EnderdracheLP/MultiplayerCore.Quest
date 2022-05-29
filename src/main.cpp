@@ -22,9 +22,6 @@
 #include "GlobalNamespace/AdditionalContentModel.hpp"
 #include "GlobalNamespace/CreateServerFormData.hpp"
 
-// For Hooking Debug Loggers
-#include "BGNet/Logging/Debug.hpp"
-
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "custom-types/shared/register.hpp"
 #include "questui/shared/QuestUI.hpp"
@@ -474,6 +471,10 @@ extern "C" void setup(ModInfo& info) {
 }
 
 #ifdef DEBUG
+// For Hooking Debug Loggers
+#include "BGNet/Logging/Debug.hpp"
+#include "UnityEngine/Debug.hpp"
+
 MAKE_HOOK_MATCH(BGNetDebug_Log, &BGNet::Logging::Debug::Log, void, StringW message) {
     message ? getLogger().WithContext("BGNetDebug::Log").debug("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::Log").error("BGNetDebug::Log called with null message");
     BGNetDebug_Log(message);
@@ -492,6 +493,37 @@ MAKE_HOOK_MATCH(BGNetDebug_LogException, &BGNet::Logging::Debug::LogException, v
 MAKE_HOOK_MATCH(BGNetDebug_LogWarning, &BGNet::Logging::Debug::LogWarning, void, StringW message) {
     message ? getLogger().WithContext("BGNetDebug::LogWarning").warning("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::LogWarning").error("BGNetDebug::LogWarning called with null message");
     BGNetDebug_LogWarning(message);
+}
+
+MAKE_HOOK_FIND_VERBOSE(Debug_Log, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "Log", 1), void, Il2CppObject* message) {
+// MAKE_HOOK_MATCH(Debug_Log, &UnityEngine::Debug::Log, void, Il2CppObject* message) {
+    std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
+    messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::Log").warning("%s", 
+    to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
+    getLogger().WithContext("UnityEngine::Debug::Log")
+    .error("UnityEngine::Debug::Log can't read message, is message valid? '%s', type of class '%s'", 
+    (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
+    Debug_Log(message);
+}
+
+MAKE_HOOK_FIND_VERBOSE(Debug_LogError, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "LogError", 1), void, Il2CppObject* message) {
+    std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
+    messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::LogError").warning("%s", 
+    to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
+    getLogger().WithContext("UnityEngine::Debug::LogError")
+    .error("UnityEngine::Debug::LogError can't read message, is message valid? '%s', type of class '%s'", 
+    (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
+    Debug_LogError(message);
+}
+
+MAKE_HOOK_FIND_VERBOSE(Debug_LogWarning, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "LogWarning", 1), void, Il2CppObject* message) {
+    std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
+    messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::LogError").warning("%s", 
+    to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
+    getLogger().WithContext("UnityEngine::Debug::LogError")
+    .error("UnityEngine::Debug::LogError can't read message, is message valid? '%s', type of class '%s'", 
+    (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
+    Debug_LogWarning(message);
 }
 #endif
 
@@ -531,6 +563,10 @@ extern "C" void load() {
     INSTALL_HOOK(getLogger(), BGNetDebug_LogError);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogException);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogWarning);
+
+    INSTALL_HOOK(getLogger(), Debug_Log);
+    INSTALL_HOOK(getLogger(), Debug_LogError);
+    INSTALL_HOOK(getLogger(), Debug_LogWarning);
 #endif
 #pragma endregion
 
