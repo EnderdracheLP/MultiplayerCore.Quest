@@ -12,5 +12,7 @@ namespace MultiplayerCore {
         static const MethodInfo* get_Enumerable_ToList_Generic();
 
         static const MethodInfo* get_Enumerable_Take_Generic();
+
+        static const MethodInfo* get_Enumerable_ToArray_Generic();
     };
 }

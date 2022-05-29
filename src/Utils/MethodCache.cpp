@@ -17,4 +17,9 @@ namespace MultiplayerCore {
         static auto* Enumerable_Take_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "Take", 2));
         return Enumerable_Take_Generic;
     }
+
+    const MethodInfo* MethodCache::get_Enumerable_ToArray_Generic() {
+        static auto* Enumerable_ToArray_Generic = THROW_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(Enumerable*), "ToArray", 1));
+        return Enumerable_ToArray_Generic;
+    }
 }
