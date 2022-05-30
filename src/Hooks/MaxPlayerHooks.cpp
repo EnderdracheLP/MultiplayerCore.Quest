@@ -17,6 +17,7 @@
 #include "GlobalNamespace/MultiplayerLocalActivePlayerIntroAnimator.hpp"
 #include "GlobalNamespace/MultiplayerLocalInactivePlayerOutroAnimator.hpp"
 #include "GlobalNamespace/MultiplayerLocalInactivePlayerFacade.hpp"
+#include "GlobalNamespace/IConnectedPlayer.hpp"
 
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Debug.hpp"

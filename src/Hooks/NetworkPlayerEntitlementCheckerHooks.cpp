@@ -5,6 +5,8 @@
 #include "shared/GlobalFields.hpp"
 
 #include "GlobalNamespace/NetworkPlayerEntitlementChecker.hpp"
+#include "GlobalNamespace/IConnectedPlayer.hpp"
+#include "GlobalNamespace/IMenuRpcManager.hpp"
 
 #include "System/Action_3.hpp"
 #include "System/Threading/Tasks/Task_1.hpp"

@@ -3,6 +3,7 @@
 
 #include "GlobalNamespace/ThreadStaticPacketPool_1.hpp"
 #include "GlobalNamespace/PacketPool_1.hpp"
+#include "GlobalNamespace/IConnectedPlayer.hpp"
 #include "LiteNetLib/Utils/NetDataReader.hpp"
 
 template <class T, ::il2cpp_utils::CreationType creationType = ::il2cpp_utils::CreationType::Temporary>
