@@ -64,16 +64,16 @@ namespace MultiplayerCore {
                 MethodCache::SetPlayableAsset(self->introPlayableDirector, originalDirector->get_playableAsset());
 
                 // Cleanup gameobject
-                onCompleted = il2cpp_utils::MakeDelegate<System::Action*>(classof(System::Action*), (std::function<void()>)[self, newPlayableGameObject, &onCompleted] {
-                    GameObject::Destroy(newPlayableGameObject);
+                // onCompleted = il2cpp_utils::MakeDelegate<System::Action*>(classof(System::Action*), (std::function<void()>)[self, newPlayableGameObject, &onCompleted] {
+                //     GameObject::Destroy(newPlayableGameObject);
 
-                    // Make sure old action happens by calling it
-                    self->onCompleted->Invoke();
+                //     // Make sure old action happens by calling it
+                //     self->onCompleted->Invoke(); //  TODO: This crashes
 
-                    QuestUI::MainThreadScheduler::Schedule([onCompleted]{
-                        MultiplayerCore::Utilities::ClearDelegate(onCompleted);
-                    });
-                });
+                //     QuestUI::MainThreadScheduler::Schedule([onCompleted]{
+                //         MultiplayerCore::Utilities::ClearDelegate(onCompleted);
+                //     });
+                // });
             }
 
             // Mute audio if animation is not first animation, so audio only plays once
