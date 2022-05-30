@@ -2,22 +2,11 @@ name: NDK build
 
 on:
   workflow_dispatch:
-  push:
-    paths-ignore:
-      - '**.yml'
-      - '!.github/workflows/BuildMod.yml'
-      - '**.json'
-      - '!qpm.json'
-      - '**.ps1'
-      - '!build.ps1'
-      - '!buildQMOD.ps1'
-      - '**.md'
-      - '.gitignore'
-      - '**.zip'
+  pull_request:
 
 env:
      module_id: MultiplayerCore
-     version: 0.1.0-Dev.${{ github.run_number }}
+     version_num: 0.1.0
 #     ndkname: android-ndk-r24
     
 jobs:
@@ -58,6 +47,17 @@ jobs:
 #      run: |
 #        cd ndk
 #        pwd > ${GITHUB_WORKSPACE}/ndkpath.txt
+
+    # extract branch name on pull request
+    - name: Print branch name
+      # if: github.event_name == 'pull_request'
+      run: |
+        echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_HEAD_REF})"
+        echo "::set-env name=version::$(echo $version_num-$BRANCH_NAME.${{ github.run_number }})"
+
+    # print branch name
+    - name: Get branch name
+      run: echo 'The branch name is' $BRANCH_NAME
 
     - name: Create ndkpath.txt
       run: |
