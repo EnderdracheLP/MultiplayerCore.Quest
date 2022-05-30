@@ -5,7 +5,7 @@
 #include "GlobalNamespace/PacketPool_1.hpp"
 #include "LiteNetLib/Utils/NetDataReader.hpp"
 
-template <class T>
+template <class T, ::il2cpp_utils::CreationType creationType = ::il2cpp_utils::CreationType::Temporary>
 using PacketCallback = function_ptr_t<void, T, GlobalNamespace::IConnectedPlayer*>;
 
 namespace MultiplayerCore {
@@ -96,8 +96,9 @@ namespace MultiplayerCore {
 					getLogger().debug("REPORT TO ENDER: Unknown exception Deserializing Packet");
 				}
 			}
-			if constexpr (creationType == ::il2cpp_utils::CreationType::Manual)
-				gc_free_specific(packet);
+			// Freeing the packet explicitly here would probably just cause issues, the packet will have to be freed by whoever last uses it
+			// if constexpr (creationType == ::il2cpp_utils::CreationType::Manual)
+			// 	gc_free_specific(packet);
 		}
 	};
 }

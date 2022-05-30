@@ -77,9 +77,9 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(MultiplayerLobbyController_ActivateMultiplayerLobby, &MultiplayerLobbyController::ActivateMultiplayerLobby, void, MultiplayerLobbyController* self) {
         getLogger().debug("ActivateMultiplayerLobby Start");
-        MultiplayerLobbyAvatarPlaceManager* _placeManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyAvatarPlaceManager*>()[0];
-        MenuEnvironmentManager* _menuEnvironmentManager = Resources::FindObjectsOfTypeAll<MenuEnvironmentManager*>()[0];
-        MultiplayerLobbyCenterStageManager* _stageManager = Resources::FindObjectsOfTypeAll<MultiplayerLobbyCenterStageManager*>()[0];
+        MultiplayerLobbyAvatarPlaceManager* _placeManager = self->multiplayerLobbyAvatarPlaceManager;
+        MenuEnvironmentManager* _menuEnvironmentManager = self->menuEnvironmentManager;
+        MultiplayerLobbyCenterStageManager* _stageManager = self->multiplayerLobbyCenterStageManager;
         ILobbyStateDataModel* _lobbyStateDataModel = _placeManager->lobbyStateDataModel;
 
         self->innerCircleRadius = 1;

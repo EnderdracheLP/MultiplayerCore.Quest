@@ -36,8 +36,8 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
         CallbackDictionary packetHandlers;
 
     public:
-        template <class TPacket>
-        void RegisterCallback(CallbackWrapper<TPacket>* callback) {
+        template <class TPacket, ::il2cpp_utils::CreationType creationType = ::il2cpp_utils::CreationType::Temporary>
+        void RegisterCallback(CallbackWrapper<TPacket, creationType>* callback) {
             static_assert(std::is_convertible_v<TPacket, LiteNetLib::Utils::INetSerializable*> || std::is_convertible_v<TPacket, MultiplayerCore::Networking::Abstractions::MpPacket*>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
             packetHandlers[static_cast<std::string>(csTypeOf(TPacket)->get_Name())] = callback;
         }
@@ -118,9 +118,9 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
         Registers a Packet Callback
         */
         template <class TPacket, ::il2cpp_utils::CreationType creationType = ::il2cpp_utils::CreationType::Temporary>
-        void RegisterCallback(PacketCallback<TPacket> callback) {
+        void RegisterCallback(PacketCallback<TPacket, creationType> callback) {
             static_assert(std::is_convertible_v<TPacket, LiteNetLib::Utils::INetSerializable*> || std::is_convertible_v<TPacket, MultiplayerCore::Networking::Abstractions::MpPacket*>, "Make sure your Type Implements and is Convertible to LiteNetLib::Utils::INetSerializable*");
-            CallbackWrapper<TPacket, creationType>* newCallback = new CallbackWrapper<TPacket>(callback);
+            CallbackWrapper<TPacket, creationType>* newCallback = new CallbackWrapper<TPacket, creationType>(callback);
             this->RegisterCallback(newCallback);
         }
 )
