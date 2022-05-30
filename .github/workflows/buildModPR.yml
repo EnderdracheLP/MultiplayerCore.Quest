@@ -1,4 +1,4 @@
-name: NDK build
+name: NDK build PR
 
 on:
   workflow_dispatch:
