@@ -18,6 +18,7 @@
 #include "GlobalNamespace/LobbySetupViewController.hpp"
 #include "GlobalNamespace/LevelSelectionNavigationController.hpp"
 #include "GlobalNamespace/GameServerPlayerTableCell.hpp"
+#include "GlobalNamespace/IMenuRpcManager.hpp"
 
 #include "GlobalNamespace/AdditionalContentModel.hpp"
 #include "GlobalNamespace/CreateServerFormData.hpp"

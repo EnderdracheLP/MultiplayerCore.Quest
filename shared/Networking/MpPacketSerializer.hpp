@@ -11,6 +11,7 @@
 #include "System/Collections/Generic/List_1.hpp"
 #include "GlobalNamespace/INetworkPacketSubSerializer_1.hpp"
 #include "GlobalNamespace/IConnectedPlayer.hpp"
+#include "GlobalNamespace/MultiplayerSessionManager.hpp"
 #include "System/Type.hpp"
 
 #include "GlobalNamespace/MultiplayerSessionManager_MessageType.hpp"

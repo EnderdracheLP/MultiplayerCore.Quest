@@ -2,6 +2,7 @@
 #include "custom-types/shared/register.hpp"
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "GlobalNamespace/VarIntExtensions.hpp"
+#include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 using namespace GlobalNamespace;
 
 #include "Utilities.hpp"

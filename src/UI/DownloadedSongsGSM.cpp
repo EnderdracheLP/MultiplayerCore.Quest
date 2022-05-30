@@ -6,6 +6,8 @@
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
 #include "songloader/shared/API.hpp"
 
+#include "GlobalNamespace/IMenuRpcManager.hpp"
+
 #include "HMUI/ModalView.hpp"
 
 #include "UnityEngine/UI/ContentSizeFitter.hpp"

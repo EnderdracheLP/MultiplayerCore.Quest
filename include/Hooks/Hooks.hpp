@@ -3,6 +3,8 @@
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 
 #include "GlobalNamespace/LobbyGameStateController.hpp"
+#include "GlobalNamespace/BeatmapDifficulty.hpp"
+#include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 
 #include "songdownloader/shared/BeatSaverAPI.hpp"
 
