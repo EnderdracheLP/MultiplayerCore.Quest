@@ -35,8 +35,6 @@
 #include <set>
 #include <string>
 
-#define USE_CODEGEN_FIELDS
-
 // Define these functions here so that we can easily read configuration and log information from other files
 Configuration& getConfig();
 Logger& getLogger();
