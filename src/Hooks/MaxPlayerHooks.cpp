@@ -63,7 +63,8 @@ namespace MultiplayerCore {
                 self->introPlayableDirector = newPlayableGameObject->AddComponent<PlayableDirector*>();
                 MethodCache::SetPlayableAsset(self->introPlayableDirector, originalDirector->get_playableAsset());
 
-                // Cleanup gameobject
+                // NOTE: We don't do that on Quest right now, doesn't seem to cause any issues so far
+                // // Cleanup gameobject
                 // onCompleted = il2cpp_utils::MakeDelegate<System::Action*>(classof(System::Action*), (std::function<void()>)[self, newPlayableGameObject, &onCompleted] {
                 //     GameObject::Destroy(newPlayableGameObject);
 
