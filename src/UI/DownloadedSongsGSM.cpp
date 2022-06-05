@@ -1,17 +1,18 @@
 #include "main.hpp"
 #include "UI/DownloadedSongsGSM.hpp"
+#include "Utilities.hpp"
 
 #include "questui/shared/BeatSaberUI.hpp"
+#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
 #include "songloader/shared/API.hpp"
 
 #include "HMUI/ModalView.hpp"
-#include "System/Threading/Tasks/Task.hpp"
-#include "System/Action_1.hpp"
 
 #include "UnityEngine/UI/ContentSizeFitter.hpp"
 #include "UnityEngine/UI/LayoutElement.hpp"
 
 #include "GlobalFields.hpp"
+#include "shared/GlobalFields.hpp"
 using namespace GlobalNamespace;
 using namespace QuestUI;
 using namespace RuntimeSongLoader::API;
@@ -27,9 +28,10 @@ namespace MultiQuestensions::UI {
     DownloadedSongsGSM* DownloadedSongsGSM::instance;
     std::vector<std::string> DownloadedSongsGSM::mapQueue;
 
-    void DownloadedSongsGSM::CreateCell(System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask, CustomPreviewBeatmapLevel* level) {
+    void DownloadedSongsGSM::CreateCell(System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask, CustomPreviewBeatmapLevel* level, System::Action_1<System::Threading::Tasks::Task*>* action) {
         getLogger().debug("CreateCell");
         UnityEngine::Sprite* cover = coverTask->get_Result();
+        // If we have a coverImage and a level we add them to the list
         if (cover && level) {
             // "<size=80%><noparse>" + map.GetMetadata().GetSongAuthorName() + "</noparse>" + " <size=90%>[<color=#67c16f><noparse>" + map.GetMetadata().GetLevelAuthorName() + "</noparse></color>]"
             list->data.emplace_back(CustomListTableData::CustomCellInfo{
@@ -38,6 +40,7 @@ namespace MultiQuestensions::UI {
                 cover
                 });
         }
+        // else if we have the level but no coverImage we add the level and use the default coverImage
         else if (level) {
             list->data.emplace_back(CustomListTableData::CustomCellInfo{
             level->get_songName() ? to_utf8(csstrtostr(level->get_songName())) : "Error: songName null",
@@ -49,10 +52,15 @@ namespace MultiQuestensions::UI {
             InsertCell(mapQueue.back());
             mapQueue.pop_back();
         }
+        // Refresh our view, though this doesn't always work perfectly first try though will at least show the next time our view ie re-enabled
         if (list && list->tableView)
             list->tableView->RefreshCellsContent();
         else getLogger().error("Nullptr in UI: list '%p', list->tableView '%p'", list, list->tableView);
-        getLogger().debug("CreateCell Finished");
+        getLogger().debug("CreateCell Finished, deleting delegate");
+        QuestUI::MainThreadScheduler::Schedule([&]{
+            MultiplayerCore::Utilities::ClearDelegate(action);
+        });
+        
     }
 
     // TODO: Add index check, check if index is out of bounds
@@ -68,7 +76,7 @@ namespace MultiQuestensions::UI {
                         RefreshSongs(false);
                     }
                     });
-                if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(level.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
+                if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(level.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
             }
             else {
                 getLogger().debug("Level to Delete not found");
@@ -76,8 +84,12 @@ namespace MultiQuestensions::UI {
             needSongRefresh = true;
             DownloadedSongIds.erase(DownloadedSongIds.begin() + selectedIdx);
         }
+        catch (il2cpp_utils::RunMethodException const& e) {
+            getLogger().error("REPORT TO ENDER: Exception encountered trying to delete song: %s", e.what());
+            e.log_backtrace();
+        }
         catch (const std::exception& e) {
-            getLogger().critical("REPORT TO ENDER: Exception encountered trying to delete song: %s", e.what());
+            getLogger().error("REPORT TO ENDER: Exception encountered trying to delete song: %s", e.what());
         }
         list->tableView->ClearSelection();
         list->data.erase(list->data.begin() + selectedIdx);
@@ -89,21 +101,6 @@ namespace MultiQuestensions::UI {
     void DownloadedSongsGSM::DidActivate(bool firstActivation) {
         if (firstActivation) {
             instance = this;
-
-            // auto vertical = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(get_transform());
-            // auto vertical2 = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(vertical->get_transform());
-            // vertical2->set_childAlignment(UnityEngine::TextAnchor::UpperCenter);
-            // auto vert2CSF = vertical2->get_gameObject()->AddComponent<UnityEngine::UI::ContentSizeFitter*>();
-            // vert2CSF->set_horizontalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
-            // vert2CSF->set_verticalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
-            // // vertical2->get_gameObject()->AddComponent<UnityEngine::UI::LayoutElement*>()
-            // //     ->set_preferredHeight(1);
-            // auto vertical3 = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(vertical->get_transform());
-            // auto vert3CSF = vertical2->get_gameObject()->AddComponent<UnityEngine::UI::ContentSizeFitter*>();
-            // vert3CSF->set_horizontalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
-            // vert3CSF->set_verticalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
-            // // vertical2->get_gameObject()->AddComponent<LayoutElement*>()
-            // //     ->set_minWidth(45);
 
             modal = BeatSaberUI::CreateModal(get_transform(), { 55, 25 }, [this](HMUI::ModalView* self) {
                 list->tableView->ClearSelection();
@@ -127,7 +124,7 @@ namespace MultiQuestensions::UI {
                 Refresh();
                 modal->Hide(true, nullptr);
                 cellIsSelected = false;
-                });
+            });
 
             auto vertical = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(get_transform());
             vertical->get_gameObject()->AddComponent<UnityEngine::UI::ContentSizeFitter*>()
@@ -139,12 +136,12 @@ namespace MultiQuestensions::UI {
                 cellIsSelected = true;
                 selectedIdx = idx;
                 modal->Show(true, true, nullptr);
-                });
+            });
 
             auto autoDelete = QuestUI::BeatSaberUI::CreateToggle(vertical->get_transform(), "Auto-Delete Songs", getConfig().config["autoDelete"].GetBool(), [](bool value) {
                 getConfig().config["autoDelete"].SetBool(value);
                 getConfig().Write();
-                });
+            });
             QuestUI::BeatSaberUI::AddHoverHint(autoDelete->get_gameObject(), "Automatically deletes downloaded songs after playing them.");
         }
 
@@ -158,8 +155,9 @@ namespace MultiQuestensions::UI {
             lastDownloaded = levelOpt.value();
             getLogger().info("Song with Hash '%s' added to list", hash.c_str());
             System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask = lastDownloaded->GetCoverImageAsync(System::Threading::CancellationToken::get_None());
-            auto action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void()>)[coverTask, this] {
-                CreateCell(coverTask, lastDownloaded/*, list->NumberOfCells() + 1*/);
+            static System::Action_1<System::Threading::Tasks::Task*>* action;
+            action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>(classof(System::Action_1<System::Threading::Tasks::Task*>*), (std::function<void()>)[coverTask, this] {
+                CreateCell(coverTask, lastDownloaded, action);
                 }
             );
             reinterpret_cast<System::Threading::Tasks::Task*>(coverTask)->ContinueWith(action);

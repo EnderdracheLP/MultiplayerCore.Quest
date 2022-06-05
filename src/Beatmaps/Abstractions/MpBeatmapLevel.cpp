@@ -1,3 +1,5 @@
+// TODO: Possibly remove the whole type as for right now I just can't use it the intended way
+
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
 
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
@@ -29,7 +31,7 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
 		return StringW();
 	}
 
-
+	// Never actually called, because I have no way of making things virtual in CT, so every type that inherits just implements the method itself
 	StringW MpBeatmapLevel::get_levelID() {
 		return StringW("custom_level_") + get_levelHash();
 	}

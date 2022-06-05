@@ -4,24 +4,29 @@
 #include "Networking/MpPacketSerializer.hpp"
 #include "UI/DownloadedSongsGSM.hpp"
 #include "UI/CenterScreenLoading.hpp"
-#include "CS_DataStore.hpp"
 
 #include "Utilities.hpp"
 
+#include "GlobalNamespace/MultiplayerLobbyConnectionController.hpp"
 #include "GlobalNamespace/ConnectedPlayerManager.hpp"
 #include "GlobalNamespace/BloomFilterUtil.hpp"
+#include "GlobalNamespace/MultiplayerLevelLoader.hpp"
+#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 
 #include "GlobalNamespace/MultiplayerLevelSelectionFlowCoordinator.hpp"
 #include "GlobalNamespace/CenterStageScreenController.hpp"
-#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
+#include "GlobalNamespace/LobbySetupViewController.hpp"
+#include "GlobalNamespace/LevelSelectionNavigationController.hpp"
+#include "GlobalNamespace/GameServerPlayerTableCell.hpp"
 
-// For Hooking Debug Loggers
-#include "BGNet/Logging/Debug.hpp"
+#include "GlobalNamespace/AdditionalContentModel.hpp"
+#include "GlobalNamespace/CreateServerFormData.hpp"
 
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "custom-types/shared/register.hpp"
 #include "questui/shared/QuestUI.hpp"
 #include "questui/shared/BeatSaberUI.hpp"
+#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
 
 //#include "GlobalNamespace/LobbySetupViewController.hpp"
 //#include "GlobalNamespace/LobbySetupViewController_CannotStartGameReason.hpp"
@@ -34,6 +39,9 @@ using namespace MultiplayerCore;
 #warning No Version set
 #define VERSION "0.1.0"
 #endif
+
+// Below define will enable DEBUG Hooks
+#define DEBUG
 
 ModInfo modInfo; // Stores the ID and version of our mod, and is sent to the modloader upon startup
 
@@ -89,29 +97,29 @@ namespace MultiplayerCore {
     }
 
     bool AllPlayersModded() {
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getModdedStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getModdedStateStr())) return false;
         }
         return true;
     }
 
     bool AllPlayersHaveNE() {
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getNEStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getNEStateStr())) return false;
         }
         return true;
     }
 
     bool AllPlayersHaveME() {
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getMEStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getMEStateStr())) return false;
         }
         return true;
     }
 
     bool AllPlayersHaveChroma() {
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            if (!_multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i)->HasState(getChromaStateStr())) return false;
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getChromaStateStr())) return false;
         }
         return true;
     }
@@ -128,39 +136,27 @@ MAKE_HOOK_MATCH(LobbyPlayersActivate, &LobbyPlayersDataModel::Activate, void, Lo
 }
 
 MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController::DidActivate, void, LobbySetupViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
-    try {
-        lobbySetupView = self;
-        LobbySetupViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
-        if (getConfig().config["autoDelete"].GetBool() && !DownloadedSongIds.empty()) {
-            using namespace RuntimeSongLoader::API;
-            std::string hash = DownloadedSongIds.back();
-            getLogger().debug("AutoDelete Song with Hash '%s'", hash.c_str());
-            std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash);
-            if (levelOpt.has_value()) {
-                std::string songPath = to_utf8(csstrtostr(levelOpt.value()->get_customLevelPath()));
-                getLogger().info("Deleting Song: %s", songPath.c_str());
-                DeleteSong(songPath, [&] {
-                    RefreshSongs(false);
-                    DownloadedSongIds.pop_back();
-                    });
-                if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
-            }
+    lobbySetupView = self;
+    LobbySetupViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+    if (getConfig().config["autoDelete"].GetBool() && !DownloadedSongIds.empty()) {
+        using namespace RuntimeSongLoader::API;
+        std::string hash = DownloadedSongIds.back();
+        getLogger().debug("AutoDelete Song with Hash '%s'", hash.c_str());
+        std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash);
+        if (levelOpt.has_value()) {
+            std::string songPath = to_utf8(csstrtostr(levelOpt.value()->get_customLevelPath()));
+            getLogger().info("Deleting Song: %s", songPath.c_str());
+            DeleteSong(songPath, [&] {
+                RefreshSongs(false);
+                DownloadedSongIds.pop_back();
+                });
+            if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
         }
     }
-    catch (il2cpp_utils::RunMethodException const& e) {
-        getLogger().error("REPORT TO ENDER RunMethodException in LobbySetupViewController_DidActivate: %s", e.what());
-    }
-    catch (const std::exception& e) {
-        getLogger().error("REPORT TO ENDER exception in LobbySetupViewController_DidActivate: %s", e.what());
-    }
-    catch (...) {
-        getLogger().warning("REPORT TO ENDER: An Unknown exception was thrown in LobbySetupViewController_DidActivate");
-    }
-
 }
 
 MAKE_HOOK_MATCH(MultiplayerLobbyConnectionController_CreateParty, &MultiplayerLobbyConnectionController::CreateParty, void, MultiplayerLobbyConnectionController* self, CreateServerFormData data) {
-    data.songPacks = SongPackMask::get_all() | SongPackMask(BloomFilterUtil::ToBloomFilter<BitMask128>(getCustomLevelSongPackMaskStr(), 2, 13)); // TODO: Figure out why the Il2CppString constructor crashes
+    data.songPacks = SongPackMask::get_all() | SongPackMask(BloomFilterUtil::ToBloomFilter<BitMask128>(getCustomLevelSongPackMaskStr(), 2, 13));
     MultiplayerLobbyConnectionController_CreateParty(self, data);
 }
 
@@ -171,7 +167,7 @@ MAKE_HOOK_MATCH(LevelSelectionNavigationController_Setup, &LevelSelectionNavigat
     SelectLevelCategoryViewController::LevelCategory startLevelCategory, IPreviewBeatmapLevel* beatmapLevelToBeSelectedAfterPresent, bool enableCustomLevels) {
     getLogger().info("LevelSelectionNavigationController_Setup setting custom songs . . .");
     LevelSelectionNavigationController_Setup(self, songPackMask, allowedBeatmapDifficultyMask, notAllowedCharacteristics, hidePacksIfOneOrNone, hidePracticeButton,
-        actionButtonText, levelPackToBeSelectedAfterPresent, startLevelCategory, beatmapLevelToBeSelectedAfterPresent, songPackMask.Contains(getCustomLevelSongPackMaskStr()) /*songPackMask.Contains(BloomFilterUtil::ToBloomFilter<BitMask128>(getCustomLevelSongPackMaskStr(), 2, 13))*/);
+        actionButtonText, levelPackToBeSelectedAfterPresent, startLevelCategory, beatmapLevelToBeSelectedAfterPresent, songPackMask.Contains(getCustomLevelSongPackMaskStr()));
 }
 
 static bool isMissingLevel = false;
@@ -228,7 +224,7 @@ std::vector<std::string> DownloadedSongIds;
 
 static bool isDownloading = false;
 
-MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadLevel, void, MultiplayerLevelLoader* self, ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
+MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadLevel, void, MultiplayerLevelLoader* self, ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
     try {
         if (isDownloading) {
             getLogger().info("Already downloading level, skipping...");
@@ -246,15 +242,21 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
         if (IsCustomLevel(levelId)) {
             if (HasSong(levelId)) {
                 getLogger().debug("MultiplayerLevelLoader_LoadLevel, HasSong, calling original");
-                if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
+                if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
                 MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
-                reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
+                reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->beatmapLevel->set_beatmapLevel(self->beatmapLevelsModel->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
                 //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                 return;
             }
             else {
                 isDownloading = true;
                 std::string hash = Utilities::GetHash(levelId);
+                // TODO: Keep the below in mind, and tweak if necessary.
+                // Be mindful of your lambdas, once again.
+                // This catpures self as a pointer, could be gc'd.
+                // gameplaySetupData as a pointer, could be gc'd.
+                // cslInstance, as a pointer, as a singleton so presumably not gc'd, soft restart could change that though.
+                // everything else okay.
                 BeatSaver::API::GetBeatmapByHashAsync(hash,
                     [self, gameplaySetupData, initialStartTime, hash, levelId, cslInstance](std::optional<BeatSaver::Beatmap> beatmapOpt) {
                         if (beatmapOpt.has_value()) {
@@ -279,16 +281,16 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                                 [self, gameplaySetupData, initialStartTime, hash, levelId](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
                                                                     auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
                                                                     if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
-                                                                    else {
+                                                                    else if (!getConfig().config["autoDelete"].GetBool()) {
                                                                         getLogger().warning("DownloadedSongsGSM was null, adding to queue");
                                                                         MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
                                                                     }
                                                                     getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
-                                                                    self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
+                                                                    self->loaderState = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
                                                                     getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
-                                                                    reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(levelId.c_str()));
+                                                                    reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->beatmapLevel->set_beatmapLevel(self->beatmapLevelsModel->GetLevelPreviewForLevelId(levelId.c_str()));
                                                                     MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
-                                                                    if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
+                                                                    if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
                                                                     //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                                     isDownloading = false;
                                                                     return;
@@ -316,16 +318,16 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
                                                     [self, gameplaySetupData, initialStartTime, hash, levelId](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
                                                         auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
                                                         if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
-                                                        else {
+                                                        else if (!getConfig().config["autoDelete"].GetBool()) {
                                                             getLogger().warning("DownloadedSongsGSM was null, adding to queue");
                                                             MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
                                                         }
                                                         getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
-                                                        self->dyn__loaderState() = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
+                                                        self->loaderState = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
                                                         getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
-                                                        reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->dyn__beatmapLevel()->set_beatmapLevel(self->dyn__beatmapLevelsModel()->GetLevelPreviewForLevelId(levelId.c_str()));
+                                                        reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->beatmapLevel->set_beatmapLevel(self->beatmapLevelsModel->GetLevelPreviewForLevelId(levelId.c_str()));
                                                         MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
-                                                        if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
+                                                        if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
                                                         //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                                         isDownloading = false;
                                                         return;
@@ -353,8 +355,13 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
             MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
         }
     }
+    catch (il2cpp_utils::exceptions::StackTraceException const& e) {
+        getLogger().error("REPORT TO ENDER: %s", e.what());
+        e.log_backtrace();
+    }
     catch (il2cpp_utils::RunMethodException const& e) {
         getLogger().error("REPORT TO ENDER: %s", e.what());
+        e.log_backtrace();
     }
     catch (const std::exception& e) {
         getLogger().error("REPORT TO ENDER: %s", e.what());
@@ -368,29 +375,29 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoader::LoadL
 // Checks entitlement and stalls lobby until fullfilled, unless a game is already in progress.
 static ConstString in_gameplay("in_gameplay");
 MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void, MultiplayerLevelLoader* self) {
-    if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::LoadingBeatmap) {
+    if (self->loaderState == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::LoadingBeatmap) {
         MultiplayerLevelLoader_Tick(self);
-        if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
-            if (lobbyGameStateController) lobbyGameStateController->dyn__menuRpcManager()->SetIsEntitledToLevel(
-                self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::Ok);
-            getLogger().debug("Loaded Level %s", static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
+        if (self->loaderState == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
+            if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
+                self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::Ok);
+            getLogger().debug("Loaded Level %s", static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
         }
     }
-    else if (self->dyn__loaderState() == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
-        std::string LevelID = static_cast<std::string>(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
+    else if (self->loaderState == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
+        std::string LevelID = static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
         MultiplayerCore::UI::CenterScreenLoading::playersReady = 0;
         getLogger().debug("Checking all players have the map downloaded/OK entitlement");
-        if(HasSong(self->dyn__gameplaySetupData()->get_beatmapLevel()->get_beatmapLevel()->get_levelID()))
+        if(HasSong(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID()))
             MultiplayerCore::UI::CenterScreenLoading::playersReady++;
-        for (int i = 0; i < _multiplayerSessionManager->dyn__connectedPlayers()->get_Count(); i++) {
-            IConnectedPlayer* p = _multiplayerSessionManager->dyn__connectedPlayers()->get_Item(i);
+        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
+            IConnectedPlayer* p = _multiplayerSessionManager->connectedPlayers->get_Item(i);
             StringW csUserID = p->get_userId();
             std::string UserID =  static_cast<std::string>(csUserID);
             if (entitlementDictionary[UserID][LevelID] == EntitlementsStatus::Ok || p->HasState(in_gameplay)){
             MultiplayerCore::UI::CenterScreenLoading::playersReady++;
             } 
         }
-        if (MultiplayerCore::UI::CenterScreenLoading::playersReady == _multiplayerSessionManager->dyn__connectedPlayers()->get_Count()+1) {
+        if (MultiplayerCore::UI::CenterScreenLoading::playersReady == _multiplayerSessionManager->connectedPlayers->get_Count()+1) {
             getLogger().debug("All players have OK entitilement");
             MultiplayerLevelLoader_Tick(self);
         }
@@ -463,6 +470,11 @@ extern "C" void setup(ModInfo& info) {
     getLogger().info("Completed setup!");
 }
 
+#ifdef DEBUG
+// For Hooking Debug Loggers
+#include "BGNet/Logging/Debug.hpp"
+#include "UnityEngine/Debug.hpp"
+
 MAKE_HOOK_MATCH(BGNetDebug_Log, &BGNet::Logging::Debug::Log, void, StringW message) {
     message ? getLogger().WithContext("BGNetDebug::Log").debug("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::Log").error("BGNetDebug::Log called with null message");
     BGNetDebug_Log(message);
@@ -482,6 +494,38 @@ MAKE_HOOK_MATCH(BGNetDebug_LogWarning, &BGNet::Logging::Debug::LogWarning, void,
     message ? getLogger().WithContext("BGNetDebug::LogWarning").warning("%s", to_utf8(csstrtostr(message)).c_str()) : getLogger().WithContext("BGNetDebug::LogWarning").error("BGNetDebug::LogWarning called with null message");
     BGNetDebug_LogWarning(message);
 }
+
+MAKE_HOOK_FIND_VERBOSE(Debug_Log, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "Log", 1), void, Il2CppObject* message) {
+// MAKE_HOOK_MATCH(Debug_Log, &UnityEngine::Debug::Log, void, Il2CppObject* message) {
+    std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
+    messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::Log").warning("%s", 
+    to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
+    getLogger().WithContext("UnityEngine::Debug::Log")
+    .error("UnityEngine::Debug::Log can't read message, is message valid? '%s', type of class '%s'", 
+    (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
+    Debug_Log(message);
+}
+
+MAKE_HOOK_FIND_VERBOSE(Debug_LogError, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "LogError", 1), void, Il2CppObject* message) {
+    std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
+    messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::LogError").warning("%s", 
+    to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
+    getLogger().WithContext("UnityEngine::Debug::LogError")
+    .error("UnityEngine::Debug::LogError can't read message, is message valid? '%s', type of class '%s'", 
+    (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
+    Debug_LogError(message);
+}
+
+MAKE_HOOK_FIND_VERBOSE(Debug_LogWarning, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "LogWarning", 1), void, Il2CppObject* message) {
+    std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
+    messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::LogError").warning("%s", 
+    to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
+    getLogger().WithContext("UnityEngine::Debug::LogError")
+    .error("UnityEngine::Debug::LogError can't read message, is message valid? '%s', type of class '%s'", 
+    (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
+    Debug_LogWarning(message);
+}
+#endif
 
 // Called later on in the game loading - a good time to install function hooks
 extern "C" void load() {
@@ -513,11 +557,17 @@ extern "C" void load() {
     INSTALL_HOOK(getLogger(), CenterStageScreenController_Setup);
 
 #pragma region Debug Hooks
-
+#ifdef DEBUG
+#warning Debug Hooks enabled!!!
     INSTALL_HOOK(getLogger(), BGNetDebug_Log);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogError);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogException);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogWarning);
+
+    INSTALL_HOOK(getLogger(), Debug_Log);
+    INSTALL_HOOK(getLogger(), Debug_LogError);
+    INSTALL_HOOK(getLogger(), Debug_LogWarning);
+#endif
 #pragma endregion
 
 

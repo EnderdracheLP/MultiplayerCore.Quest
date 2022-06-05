@@ -1,6 +1,7 @@
 #include "main.hpp"
 #include "Hooks/Hooks.hpp"
 #include "GlobalFields.hpp"
+#include "Utilities.hpp"
 
 #include "GlobalNamespace/QuickPlaySetupData_QuickPlaySongPacksOverride_PredefinedPack.hpp"
 #include "GlobalNamespace/QuickPlaySetupData_QuickPlaySongPacksOverride_LocalizedCustomPack.hpp"
@@ -8,12 +9,10 @@
 #include "GlobalNamespace/QuickPlaySetupData_QuickPlaySongPacksOverride.hpp"
 #include "GlobalNamespace/QuickPlaySetupData.hpp"
 
+#include "GlobalNamespace/QuickPlaySongPacksDropdown.hpp"
+
 #include "GlobalNamespace/BeatmapDifficultyDropdown.hpp"
 #include "GlobalNamespace/BeatmapDifficultyMask.hpp"
-#include "HMUI/SimpleTextDropdown.hpp"
-
-#include "CodegenExtensions/TempBloomFilterUtil.hpp"
-
 #include "GlobalNamespace/SongPackMaskModelSO.hpp"
 
 #include "GlobalNamespace/MultiplayerModeSelectionFlowCoordinator.hpp"
@@ -23,13 +22,13 @@
 
 #include "HMUI/ViewController_AnimationDirection.hpp"
 #include "HMUI/ViewController_AnimationType.hpp"
+#include "HMUI/SimpleTextDropdown.hpp"
 
+#include "System/Action_1.hpp"
 #include "Polyglot/Localization.hpp"
 #include "Polyglot/LanguageExtensions.hpp"
 
-#include "GlobalNamespace/QuickPlaySongPacksDropdown.hpp"
-
-//Nothing here causes blackscreen crash
+#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
 
 using namespace GlobalNamespace;
 using namespace HMUI;
@@ -43,53 +42,58 @@ bool gotSongPackOverrides = false;
 namespace MultiplayerCore {
     // Check for our custom packs
     MAKE_HOOK_MATCH(QuickPlaySongPacksDropdown_LazyInit, &QuickPlaySongPacksDropdown::LazyInit, void, QuickPlaySongPacksDropdown* self) {
-        gotSongPackOverrides = (self->dyn__quickPlaySongPacksOverride() != nullptr);
+        gotSongPackOverrides = (self->quickPlaySongPacksOverride != nullptr);
         QuickPlaySongPacksDropdown_LazyInit(self);
     }
 
     //Adds All dificulty to quickplay
     MAKE_HOOK_MATCH(JoinQuickPlayViewController_setup, &JoinQuickPlayViewController::Setup, void, JoinQuickPlayViewController* self, GlobalNamespace::QuickPlaySetupData* quickPlaySetupData, ::GlobalNamespace::MultiplayerModeSettings* multiplayerModeSettings){
-        auto &Difficulties = self->dyn__beatmapDifficultyDropdown();
-        Difficulties->set_includeAllDifficulties(true);
+        self->beatmapDifficultyDropdown->set_includeAllDifficulties(true);
         
         JoinQuickPlayViewController_setup(self, quickPlaySetupData, multiplayerModeSettings);
-        Difficulties->dyn__simpleTextDropdown()->SelectCellWithIdx(0);
+        self->beatmapDifficultyDropdown->simpleTextDropdown->SelectCellWithIdx(0);
     }
 
     //Adds warning screen about custom quickplay
     MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish, &MultiplayerModeSelectionFlowCoordinator::HandleJoinQuickPlayViewControllerDidFinish, void, MultiplayerModeSelectionFlowCoordinator* self, bool success) {
-        Il2CppString* levelPackName = self->dyn__joinQuickPlayViewController()->dyn__multiplayerModeSettings()->dyn_quickPlaySongPackMaskSerializedName();
+        Il2CppString* levelPackName = self->joinQuickPlayViewController->multiplayerModeSettings->quickPlaySongPackMaskSerializedName;
+        static System::Action_1<int>* action;
         if ((getConfig().config["CustomsWarning"].GetBool() || getConfig().config["LastWarningVersion"].GetString() != modInfo.version) && success && 
-            self->dyn__songPackMaskModel()->ToSongPackMask(
+            self->songPackMaskModel->ToSongPackMask(
                 levelPackName
             ).Contains(
                 getCustomLevelSongPackMaskStr())
             ) {
-            self->dyn__simpleDialogPromptViewController()->Init(
-                il2cpp_utils::newcsstr("Custom Song Quickplay"),
-                il2cpp_utils::newcsstr("<color=#EB4949>This category includes songs of varying difficulty.\nIt may be more enjoyable to play in a private lobby with friends."),
-                il2cpp_utils::newcsstr("Continue"),
-                il2cpp_utils::newcsstr("Cancel"),
-                il2cpp_utils::MakeDelegate<System::Action_1<int>*>(classof(System::Action_1<int>*), (std::function<void(int)>)[self, success](int btnId) {
-                    switch (btnId)
-                    {
-                    default:
-                    case 0: // Continue
-                        getLogger().debug("Warned once, now removing");
-                        getConfig().config["CustomsWarning"].SetBool(false);
-                        getConfig().config["LastWarningVersion"].SetString(modInfo.version, getConfig().config.GetAllocator());
-                        getConfig().Write();
-                        MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish(self, success);
+            action = il2cpp_utils::MakeDelegate<System::Action_1<int>*>(classof(System::Action_1<int>*), (std::function<void(int)>)[self, success](int btnId) {
+                        switch (btnId)
+                        {
+                        default:
+                        case 0: // Continue
+                            getLogger().debug("Warned once, now removing");
+                            getConfig().config["CustomsWarning"].SetBool(false);
+                            getConfig().config["LastWarningVersion"].SetString(modInfo.version, getConfig().config.GetAllocator());
+                            getConfig().Write();
+                            MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish(self, success);
+                            break;
+                        case 1: // Cancel
+                            //self->DismissViewController(self->dyn__simpleDialogPromptViewController(), HMUI::ViewController::AnimationDirection::Vertical, nullptr, false);
+                            self->ReplaceTopViewController(self->joinQuickPlayViewController, nullptr, HMUI::ViewController::AnimationType::In, HMUI::ViewController::AnimationDirection::Vertical);
+                            break;
+                        }
+                        QuestUI::MainThreadScheduler::Schedule([]{
+                            Utilities::ClearDelegate(action);
+                            action = nullptr;
+                        });
                         return;
-                    case 1: // Cancel
-                        //self->DismissViewController(self->dyn__simpleDialogPromptViewController(), HMUI::ViewController::AnimationDirection::Vertical, nullptr, false);
-                        self->ReplaceTopViewController(self->dyn__joinQuickPlayViewController(), nullptr, HMUI::ViewController::AnimationType::In, HMUI::ViewController::AnimationDirection::Vertical);
-                        return;
-                    }
-                    }
-                )
+                    });
+            self->simpleDialogPromptViewController->Init(
+                "Custom Song Quickplay",
+                "<color=#EB4949>This category includes songs of varying difficulty.\nIt may be more enjoyable to play in a private lobby with friends.",
+                "Continue",
+                "Cancel",
+                action
             );
-            self->ReplaceTopViewController(self->dyn__simpleDialogPromptViewController(), nullptr, HMUI::ViewController::AnimationType::In, HMUI::ViewController::AnimationDirection::Vertical);
+            self->ReplaceTopViewController(self->simpleDialogPromptViewController, nullptr, HMUI::ViewController::AnimationType::In, HMUI::ViewController::AnimationDirection::Vertical);
         } else MultiplayerModeSelectionFlowCoordinator_HandleJoinQuickPlayViewControllerDidFinish(self, success);
     }
 
