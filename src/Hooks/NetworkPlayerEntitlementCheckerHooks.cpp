@@ -149,8 +149,7 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(NetworkPlayerEntitlementChecker_OnDestroy, &NetworkPlayerEntitlementChecker::OnDestroy, void, NetworkPlayerEntitlementChecker* self) {
        if (entitlementAction) {
-            // This is like hella confusing
-            il2cpp_utils::ClearDelegate({((MethodInfo*)(void*)((Il2CppDelegate*)(entitlementAction))->method)->methodPointer, true});
+            Utilities::ClearDelegate(entitlementAction);
             entitlementAction = nullptr;
        }
        NetworkPlayerEntitlementChecker_OnDestroy(self);
