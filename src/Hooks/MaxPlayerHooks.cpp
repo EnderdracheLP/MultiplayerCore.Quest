@@ -48,7 +48,7 @@ namespace MultiplayerCore {
     static ConstString noFacadeError("Neither active or inactive facade exists, this should not happen");
 
 #pragma region IntroAnimationPatch
-    MAKE_HOOK_MATCH(IntroAnimationPatch, &MultiplayerIntroAnimationController::PlayIntroAnimation, void, MultiplayerIntroAnimationController* self, float maxDesiredIntroAnimationDuration, Action* onCompleted) {
+    MAKE_HOOK_MATCH_NO_CATCH(IntroAnimationPatch, &MultiplayerIntroAnimationController::PlayIntroAnimation, void, MultiplayerIntroAnimationController* self, float maxDesiredIntroAnimationDuration, Action* onCompleted) {
         getLogger().debug("Creating intro PlayableDirector for iteration '%d'.", targetIterations);
         PlayableDirector* originalDirector = self->introPlayableDirector;
         // if (targetIterations == 0)
@@ -320,19 +320,19 @@ namespace MultiplayerCore {
             MultiplayerResultsPyramidPatch(self, (IReadOnlyList_1<MultiplayerPlayerResultsData*>*)newResultsData, badgeStartTransform, badgeMidTransform);
         }
         catch (il2cpp_utils::exceptions::StackTraceException const& e) {
-            getLogger().critical("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " at Line %d: %s", __LINE__, e.what());
+            getLogger().error("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " logger at Line %d: %s", __LINE__, e.what());
             getLogger().debug("returning usual results pyramid");
             e.log_backtrace();
             MultiplayerResultsPyramidPatch(self, resultsData, badgeStartTransform, badgeMidTransform);
         }
         catch (il2cpp_utils::RunMethodException const& e) {
-            getLogger().critical("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " at Line %d: %s", __LINE__, e.what());
+            getLogger().error("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " logger at Line %d: %s", __LINE__, e.what());
             getLogger().debug("returning usual results pyramid");
             e.log_backtrace();
             MultiplayerResultsPyramidPatch(self, resultsData, badgeStartTransform, badgeMidTransform);
         }
         catch (const std::runtime_error& e) {
-            getLogger().critical("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " at Line %d: %s", __LINE__, e.what());
+            getLogger().error("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " logger at Line %d: %s", __LINE__, e.what());
             getLogger().debug("returning usual results pyramid");
             MultiplayerResultsPyramidPatch(self, resultsData, badgeStartTransform, badgeMidTransform);
         }
@@ -340,7 +340,7 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(CreateServerFormController_get_formData, &CreateServerFormController::get_formData, CreateServerFormData, CreateServerFormController* self) {
         CreateServerFormData result = CreateServerFormController_get_formData(self);
-        result.maxPlayers = std::clamp<int>(self->maxPlayersList->get_value(), 2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120));
+        result.maxPlayers = std::clamp<int>(self->maxPlayersList->get_value(), 2, getConfig().config["MaxPlayers"].GetInt());
         return result;
     }
 
@@ -350,7 +350,7 @@ namespace MultiplayerCore {
             // We have to manually find the method as the codegen call fails to find the method for this
             static auto* Enumerable_ToArray = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(MethodCache::get_Enumerable_ToArray_Generic(), { classof(int) }));
             il2cpp_utils::RunMethodRethrow<::Array<int>*, false>(static_cast<Il2CppClass*>(nullptr),
-                Enumerable_ToArray, Enumerable::Range(2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120) - 1))->copy_to(rangeVec);
+                Enumerable_ToArray, Enumerable::Range(2, getConfig().config["MaxPlayers"].GetInt() - 1))->copy_to(rangeVec);
 
             // Codegen version of the above, does not work and will cause an Exception due to FindMethod failing
             // Enumerable::ToArray(Enumerable::Range(2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120) - 1))->copy_to(rangeVec);
