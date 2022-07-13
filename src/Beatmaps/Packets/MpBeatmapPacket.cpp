@@ -43,6 +43,13 @@ namespace MultiplayerCore::Beatmaps::Packets {
 		writer->Put(characteristic);
 		writer->Put((uint)difficulty);
 		GlobalNamespace::VarIntExtensions::PutVarUInt(writer, (uint)difficulty);
+
+		// TODO: Properly add data, for now we just send empty data
+		writer->Put((uint8_t)0); // requirements Count
+		// for loop here
+		writer->Put((uint8_t)0); // contributors Length
+
+		writer->Put((uint8_t)0); // mapColors Count
 	}
 
 	void MpBeatmapPacket::Deserialize(LiteNetLib::Utils::NetDataReader* reader) {
