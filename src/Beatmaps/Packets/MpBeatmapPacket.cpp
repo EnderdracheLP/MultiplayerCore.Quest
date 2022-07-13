@@ -41,7 +41,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
 		writer->Put(songDuration);
 
 		writer->Put(characteristic);
-		writer->Put((uint)difficulty);
+		// writer->Put((uint)difficulty);
 		GlobalNamespace::VarIntExtensions::PutVarUInt(writer, (uint)difficulty);
 
 		// TODO: Properly add data, for now we just send empty data
