@@ -4,7 +4,7 @@
   "info": {
     "name": "MultiplayerCore",
     "id": "MultiplayerCore",
-    "version": "1.0.1-Dev.1",
+    "version": "1.1.0-Dev.1",
     "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
     "additionalData": {
       "overrideSoName": "libMultiplayerCore.so"
