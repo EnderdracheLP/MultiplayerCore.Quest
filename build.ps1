@@ -18,7 +18,7 @@ if ($release -ne $true -and -not $VERSION.Contains('-Dev')) {
     $VERSION += "-Dev"
 }
 
-if ($env:version -eq "") {
+if ([string]::IsNullOrEmpty($env:version) -and $VERSION) {
     & qpm-rust package edit --version $VERSION
 }
 
