@@ -41,15 +41,15 @@ namespace MultiplayerCore::Beatmaps::Packets {
 		writer->Put(songDuration);
 
 		writer->Put(characteristic);
-		// writer->Put((uint)difficulty);
-		GlobalNamespace::VarIntExtensions::PutVarUInt(writer, (uint)difficulty);
+		writer->Put((uint)difficulty);
+		// GlobalNamespace::VarIntExtensions::PutVarUInt(writer, (uint)difficulty);
 
 		// TODO: Properly add data, for now we just send empty data
-		writer->Put((uint8_t)0); // requirements Count
+		writer->Put(uint8_t(0)); // requirements Count
 		// for loop here
-		writer->Put((uint8_t)0); // contributors Length
+		writer->Put(uint8_t(0)); // contributors Length
 
-		writer->Put((uint8_t)0); // mapColors Count
+		writer->Put(uint8_t(0)); // mapColors Count
 	}
 
 	void MpBeatmapPacket::Deserialize(LiteNetLib::Utils::NetDataReader* reader) {
@@ -65,6 +65,8 @@ namespace MultiplayerCore::Beatmaps::Packets {
 
 		characteristic = reader->GetString();
 		difficulty = (BeatmapDifficulty)GlobalNamespace::VarIntExtensions::GetVarUInt(reader);
+
+		uint8_t difficultyCount = reader->GetByte();
 		getLogger().debug("Deserialize MpBeatmapPacket done");
 	}
 
