@@ -64,7 +64,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
 		songDuration = reader->GetFloat();
 
 		characteristic = reader->GetString();
-		difficulty = (BeatmapDifficulty)reader->GetUInt(reader);
+		difficulty = (BeatmapDifficulty)reader->GetUInt();
 
 		uint8_t difficultyCount = reader->GetByte();
 		getLogger().debug("Deserialize MpBeatmapPacket done");
