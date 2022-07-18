@@ -39,7 +39,6 @@ namespace MultiplayerCore {
         static void EnvironmentHooks();
         static void QuickplayHooks();
         static void SessionManagerAndExtendedPlayerHooks();
-        static void LogBaseGameHooks();
         static void MultiplayerStatusHook();
 
     public:
@@ -49,7 +48,6 @@ namespace MultiplayerCore {
             EnvironmentHooks();
             QuickplayHooks();
             SessionManagerAndExtendedPlayerHooks();
-            LogBaseGameHooks();
             MultiplayerStatusHook();
         }
     };

@@ -2,6 +2,7 @@
 #include "Hooks/Hooks.hpp"
 #include "Utils/MethodCache.hpp"
 #include "Utilities.hpp"
+#include "Utils/CustomData.hpp"
 #include "GlobalNamespace/MultiplayerOutroAnimationController.hpp"
 #include "GlobalNamespace/MultiplayerIntroAnimationController.hpp"
 #include "GlobalNamespace/CreateServerFormController.hpp"
@@ -32,6 +33,10 @@
 #include "UnityEngine/Timeline/AudioTrack.hpp"
 
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
+
+#include "GlobalNamespace/PlayerSpecificSettingsAtStartNetSerializable.hpp"
+#include "GlobalNamespace/PlayerSpecificSettingsNetSerializable.hpp"
+#include "LiteNetLib/Utils/INetSerializable.hpp"
 
 using namespace GlobalNamespace;
 using namespace System;
@@ -338,6 +343,52 @@ namespace MultiplayerCore {
         }
     }
 
+    using namespace LiteNetLib::Utils;
+    MAKE_HOOK_MATCH(PlayerSpecificSettingsAtStartNetSerializable_Deserialize, &PlayerSpecificSettingsAtStartNetSerializable::Deserialize, void, PlayerSpecificSettingsAtStartNetSerializable* self, LiteNetLib::Utils::NetDataReader* reader){
+        PlayerSpecificSettingsAtStartNetSerializable_Deserialize(self, reader);
+
+        int MaxAmount = 1;
+
+        using namespace ::System::Collections::Generic;
+
+        static auto* Enumerable_ToList = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(MethodCache::get_Enumerable_ToList_Generic(), { classof(PlayerSpecificSettingsNetSerializable*) }));
+        static auto* Enumerable_Take = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(MethodCache::get_Enumerable_Take_Generic(), { classof(PlayerSpecificSettingsNetSerializable*) }));
+
+        List_1<PlayerSpecificSettingsNetSerializable*>* listVisiblePlayers = il2cpp_utils::RunMethodRethrow<List_1<PlayerSpecificSettingsNetSerializable*>*, false>(static_cast<Il2CppClass*>(nullptr),
+            Enumerable_ToList, reinterpret_cast<IEnumerable_1<PlayerSpecificSettingsNetSerializable*>*>(self->get_activePlayerSpecificSettingsAtGameStart()));
+        
+        PlayerSpecificSettingsNetSerializable* localPlayer = nullptr;
+
+        MaxAmount = Utils::GetMaxVisiblePlayers();
+        // Check if active players contains local player and remove local player
+        for (int i = 0; i < listVisiblePlayers->get_Count(); i++) {
+            PlayerSpecificSettingsNetSerializable* currentPlayer = listVisiblePlayers->get_Item(i);
+            if (currentPlayer->userId == lobbyPlayersDataModel->get_localUserId()) {
+                listVisiblePlayers->RemoveAt(i);
+                localPlayer = currentPlayer;
+                MaxAmount--;
+            }
+        }
+        //Take the first few players
+        auto* takeResult = il2cpp_utils::RunMethodRethrow<IEnumerable_1<PlayerSpecificSettingsNetSerializable*>*, false>(static_cast<Il2CppClass*>(nullptr),
+            Enumerable_Take, reinterpret_cast<IEnumerable_1<PlayerSpecificSettingsNetSerializable*>*>(listVisiblePlayers), MaxAmount);
+
+        List_1<PlayerSpecificSettingsNetSerializable*>* selectedVisiblePlayers = il2cpp_utils::RunMethodRethrow<List_1<PlayerSpecificSettingsNetSerializable*>*, false>(static_cast<Il2CppClass*>(nullptr),
+            Enumerable_ToList, takeResult);
+
+        // Add back local player if not null
+        if (localPlayer != nullptr) {
+            selectedVisiblePlayers->Add(localPlayer);
+        }
+
+        //Convert list back to readonly list, and set the players
+        IReadOnlyList_1<::GlobalNamespace::PlayerSpecificSettingsNetSerializable*>* VisiblePlayersList = reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::PlayerSpecificSettingsNetSerializable*>*>(selectedVisiblePlayers);
+        self->set_activePlayerSpecificSettingsAtGameStart(VisiblePlayersList);
+
+        getLogger().debug("New starting players set");
+    }
+
+
     MAKE_HOOK_MATCH(CreateServerFormController_get_formData, &CreateServerFormController::get_formData, CreateServerFormData, CreateServerFormController* self) {
         CreateServerFormData result = CreateServerFormController_get_formData(self);
         result.maxPlayers = std::clamp<int>(self->maxPlayersList->get_value(), 2, getConfig().config["MaxPlayers"].GetInt());
@@ -383,6 +434,9 @@ namespace MultiplayerCore {
         INSTALL_HOOK(getLogger(), MultiplayerOutroAnimationController_BindRingsAndAudio);
         INSTALL_HOOK(getLogger(), CreateServerFormController_get_formData);
         INSTALL_HOOK(getLogger(), CreateServerFormController_Setup);
+
+        
+        INSTALL_HOOK(getLogger(), PlayerSpecificSettingsAtStartNetSerializable_Deserialize);
 
     }
 }
