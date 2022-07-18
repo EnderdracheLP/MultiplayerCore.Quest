@@ -70,4 +70,24 @@ namespace MultiplayerCore::Utils {
         missingLevelText.clear();
         return true;
     }
+
+    int MaxVisiblePlayersInGameplay = -1;
+
+    void SetMaxVisiblePlayers(int Players, bool SaveToConfig){
+        MaxVisiblePlayersInGameplay = std::clamp(Players, 1, 30);
+        if(SaveToConfig){
+            getConfig().config["MaxVisiblePlayers"].SetInt(MaxVisiblePlayersInGameplay);
+            getConfig().Write();
+        }
+    }
+
+    int GetMaxVisiblePlayers(){
+        if(MaxVisiblePlayersInGameplay == -1){
+            MaxVisiblePlayersInGameplay = getConfig().config["MaxVisiblePlayers"].GetInt();
+        }
+        return MaxVisiblePlayersInGameplay;
+    }
+
+
+    
 }
