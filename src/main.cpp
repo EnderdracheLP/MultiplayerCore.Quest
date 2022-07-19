@@ -434,16 +434,11 @@ void saveDefaultConfig() {
 
     if (config.HasMember("autoDelete") && config["autoDelete"].IsBool() &&
         config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt() &&
-        config.HasMember("MaxVisiblePlayers") && config["MaxVisiblePlayers"].IsInt() &&
         config.HasMember("CustomsWarning") && config["CustomsWarning"].IsBool() &&
         config.HasMember("LastWarningVersion") && config["LastWarningVersion"].IsString()) {
         if (config["MaxPlayers"].GetInt() > 254 || config["MaxPlayers"].GetInt() < 2) {
             getLogger().warning("MaxPlayers is set outside of range");
             config["MaxPlayers"].SetInt(std::clamp(config["MaxPlayers"].GetInt(), 2, 254));
-        }
-        if (config["MaxVisiblePlayers"].GetInt() != 250) {
-            getLogger().warning("MaxVisiblePlayers is set outside of range");
-            config["MaxVisiblePlayers"].SetInt(250);
         }
         getLogger().info("Config file already exists.");
         return;
@@ -460,14 +455,6 @@ void saveDefaultConfig() {
         if (config["MaxPlayers"].GetInt() > 250 || config["MaxPlayers"].GetInt() < 2) {
             getLogger().warning("MaxPlayers is set outside of range");
             config["MaxPlayers"].SetInt(std::clamp(config["MaxPlayers"].GetInt(), 2, 250));
-        }
-    }
-    if (!(config.HasMember("MaxVisiblePlayers") && config["MaxVisiblePlayers"].IsInt() && config["MaxVisiblePlayers"].GetInt() != 250))
-        config.AddMember("MaxVisiblePlayers", 250, allocator);
-    else {
-        if (config["MaxVisiblePlayers"].GetInt() > 250 || config["MaxVisiblePlayers"].GetInt() < 1) {
-            getLogger().warning("MaxVisiblePlayers is set outside of range");
-            config["MaxVisiblePlayers"].SetInt(std::clamp(config["MaxVisiblePlayers"].GetInt(), 1, 250));
         }
     }
     if (!(config.HasMember("autoDelete") && config["autoDelete"].IsBool()))
