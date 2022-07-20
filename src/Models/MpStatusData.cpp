@@ -11,15 +11,17 @@ namespace MultiplayerCore::Models {
     void MpStatusData::New(StringW json) {
         rapidjson::Document document;
         document.Parse(static_cast<std::string>(json));
-        if (!document.HasParseError() && document.IsObject() && document.HasMember("requiredMods")) {
-            auto& requiredMods = document["required_mods"];
-            if (requiredMods.IsArray()) {
-                for (auto& requiredMod : requiredMods.GetArray()) {
-                    if (requiredMod.IsObject() && requiredMod.HasMember("id") && requiredMod.HasMember("version")) {
-                        auto& id = requiredMod["id"];
-                        auto& version = requiredMod["version"];
-                        if (id.IsString() && version.IsString()) {
-                            this->requiredMods.push_back({id.GetString(), version.GetString()});
+        if (!document.HasParseError() && document.IsObject()) {
+            if (document.HasMember("requiredMods")) {
+                auto& requiredMods = document["requiredMods"];
+                if (requiredMods.IsArray()) {
+                    for (auto& requiredMod : requiredMods.GetArray()) {
+                        if (requiredMod.IsObject() && requiredMod.HasMember("id") && requiredMod.HasMember("version")) {
+                            auto& id = requiredMod["id"];
+                            auto& version = requiredMod["version"];
+                            if (id.IsString() && version.IsString()) {
+                                this->requiredMods.push_back({id.GetString(), version.GetString()});
+                            }
                         }
                     }
                 }
