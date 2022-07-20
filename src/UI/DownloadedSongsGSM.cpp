@@ -19,13 +19,12 @@ using namespace GlobalNamespace;
 using namespace QuestUI;
 using namespace RuntimeSongLoader::API;
 using namespace HMUI;
-using namespace MultiQuestensions;
 using namespace MultiplayerCore;
 
 
-DEFINE_TYPE(MultiQuestensions::UI, DownloadedSongsGSM);
+DEFINE_TYPE(MultiplayerCore::UI, DownloadedSongsGSM);
 
-namespace MultiQuestensions::UI {
+namespace MultiplayerCore::UI {
     bool cellIsSelected = false;
     DownloadedSongsGSM* DownloadedSongsGSM::instance;
     std::vector<std::string> DownloadedSongsGSM::mapQueue;
@@ -45,10 +44,10 @@ namespace MultiQuestensions::UI {
         // else if we have the level but no coverImage we add the level and use the default coverImage
         else if (level) {
             list->data.emplace_back(CustomListTableData::CustomCellInfo{
-            level->get_songName() ? to_utf8(csstrtostr(level->get_songName())) : "Error: songName null",
-            (level->get_songAuthorName() ? to_utf8(csstrtostr(level->get_songAuthorName())) : std::string()) + " [" + (level->get_levelAuthorName() ? to_utf8(csstrtostr(level->get_levelAuthorName())) : std::string()) + "]",
-            level->get_defaultCoverImage()
-                });
+                level->get_songName() ? to_utf8(csstrtostr(level->get_songName())) : "Error: songName null",
+                (level->get_songAuthorName() ? to_utf8(csstrtostr(level->get_songAuthorName())) : std::string()) + " [" + (level->get_levelAuthorName() ? to_utf8(csstrtostr(level->get_levelAuthorName())) : std::string()) + "]",
+                level->get_defaultCoverImage()
+            });
         } else getLogger().error("Nullptr in UI: cover '%p', level '%p'", cover, level);
         if (!mapQueue.empty()) {
             InsertCell(mapQueue.back());

@@ -33,7 +33,6 @@
 //#include "GlobalNamespace/LobbySetupViewController_CannotStartGameReason.hpp"
 using namespace GlobalNamespace;
 using namespace System::Threading::Tasks;
-using namespace MultiQuestensions;
 using namespace MultiplayerCore;
 
 #ifndef VERSION
@@ -279,11 +278,11 @@ MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoad
                                                         [self, gameplaySetupData, initialStartTime, hash, levelId] {
                                                             RuntimeSongLoader::API::RefreshSongs(false,
                                                                 [self, gameplaySetupData, initialStartTime, hash, levelId](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
-                                                                    auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
+                                                                    auto* downloadedSongsGSM = MultiplayerCore::UI::DownloadedSongsGSM::get_Instance();
                                                                     if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
                                                                     else if (!getConfig().config["autoDelete"].GetBool()) {
                                                                         getLogger().warning("DownloadedSongsGSM was null, adding to queue");
-                                                                        MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
+                                                                        MultiplayerCore::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
                                                                     }
                                                                     getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
                                                                     self->loaderState = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
@@ -316,11 +315,11 @@ MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoad
                                             [self, gameplaySetupData, initialStartTime, hash, levelId] {
                                                 RuntimeSongLoader::API::RefreshSongs(false,
                                                     [self, gameplaySetupData, initialStartTime, hash, levelId](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
-                                                        auto* downloadedSongsGSM = MultiQuestensions::UI::DownloadedSongsGSM::get_Instance();
+                                                        auto* downloadedSongsGSM = MultiplayerCore::UI::DownloadedSongsGSM::get_Instance();
                                                         if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
                                                         else if (!getConfig().config["autoDelete"].GetBool()) {
                                                             getLogger().warning("DownloadedSongsGSM was null, adding to queue");
-                                                            MultiQuestensions::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
+                                                            MultiplayerCore::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
                                                         }
                                                         getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
                                                         self->loaderState = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
@@ -436,9 +435,9 @@ void saveDefaultConfig() {
         config.HasMember("MaxPlayers") && config["MaxPlayers"].IsInt() &&
         config.HasMember("CustomsWarning") && config["CustomsWarning"].IsBool() &&
         config.HasMember("LastWarningVersion") && config["LastWarningVersion"].IsString()) {
-        if (config["MaxPlayers"].GetInt() > 254 || config["MaxPlayers"].GetInt() < 2) {
+        if (config["MaxPlayers"].GetInt() > 250 || config["MaxPlayers"].GetInt() < 2) {
             getLogger().warning("MaxPlayers is set outside of range");
-            config["MaxPlayers"].SetInt(std::clamp(config["MaxPlayers"].GetInt(), 2, 254));
+            config["MaxPlayers"].SetInt(std::clamp(config["MaxPlayers"].GetInt(), 2, 250));
         }
         getLogger().info("Config file already exists.");
         return;
@@ -537,16 +536,40 @@ MAKE_HOOK_FIND_VERBOSE(Debug_LogWarning, il2cpp_utils::FindMethodUnsafe("UnityEn
 }
 #endif
 
+// #include "GlobalNamespace/MultiplayerGameplayAnimator.hpp"
+// #include "GlobalNamespace/SimpleColorSO.hpp"
+
+// // Utilities for working with colors
+// ColorSO* getColorSO(UnityEngine::Color color) {
+//     GlobalNamespace::SimpleColorSO* colorSO = reinterpret_cast<GlobalNamespace::SimpleColorSO*>(
+//         UnityEngine::ScriptableObject::CreateInstance(csTypeOf(GlobalNamespace::SimpleColorSO*))
+//     );
+//     colorSO->SetColor(color);
+//     return colorSO;
+// }
+// ColorSO* getColorSO(float r, float g, float b, float a) {
+//     UnityEngine::Color color = { r, g, b, a };
+//     return getColorSO(color);
+// }
+
+// MAKE_HOOK_MATCH(MultiplayerGameplayAnimator_HandleStateChanged, &GlobalNamespace::MultiplayerGameplayAnimator::HandleStateChanged, void, MultiplayerGameplayAnimator* self, MultiplayerController::State state) {
+//     MultiplayerGameplayAnimator_HandleStateChanged(self, state);
+//     self->activeLightsColor = getColorSO(0, 0, 0, 0);
+//     self->leadingLightsColor = getColorSO(0, 0, 0, 0);
+// }
+
 // Called later on in the game loading - a good time to install function hooks
 extern "C" void load() {
     il2cpp_functions::Init();
 
     custom_types::Register::AutoRegister();
 
-    QuestUI::Register::RegisterGameplaySetupMenu<MultiQuestensions::UI::DownloadedSongsGSM*>(modInfo, "MP Downloaded", QuestUI::Register::Online);
+    QuestUI::Register::RegisterGameplaySetupMenu<MultiplayerCore::UI::DownloadedSongsGSM*>(modInfo, "MP Downloaded", QuestUI::Register::Online);
 
     getLogger().info("Installing hooks...");
     Hooks::Install_Hooks();
+    // INSTALL_HOOK(getLogger(), MultiplayerGameplayAnimator_HandleStateChanged);
+
     INSTALL_HOOK(getLogger(), LobbyPlayersActivate);
 
     INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_LoadLevel);
