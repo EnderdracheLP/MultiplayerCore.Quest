@@ -16,7 +16,8 @@ DECLARE_CLASS_CODEGEN_DLL(MultiplayerCore::Models, MpStatusData, GlobalNamespace
         StringW version;
     };
     
-    std::vector<RequiredMod> requiredMods;
+    public:
+        std::vector<RequiredMod> requiredMods;
 )
 
 // namespace MultiplayerCore::Models {

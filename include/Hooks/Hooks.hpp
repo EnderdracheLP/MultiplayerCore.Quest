@@ -40,6 +40,7 @@ namespace MultiplayerCore {
         static void QuickplayHooks();
         static void SessionManagerAndExtendedPlayerHooks();
         static void MultiplayerStatusHook();
+        static void MultiplayerUnavailableReasonHook();
 
     public:
         static const void Install_Hooks() {
@@ -49,6 +50,7 @@ namespace MultiplayerCore {
             QuickplayHooks();
             SessionManagerAndExtendedPlayerHooks();
             MultiplayerStatusHook();
+            MultiplayerUnavailableReasonHook();
         }
     };
 }
