@@ -24,6 +24,9 @@ namespace MultiplayerCore {
                     continue;
                 else {
                     std::string installedVersion = installedMods.at(requiredMod.id).info.version;
+                    // We filter out our dev suffix from the installed version.
+                    if (installedVersion.find("-") != std::string::npos)
+                        installedVersion = installedVersion.substr(0, installedVersion.find("-"));
                     std::string requiredVersion = requiredMod.version;
                     if (semver::valid(installedVersion) && semver::valid(requiredVersion)) {
                         if (semver::gte(installedVersion, requiredVersion))
@@ -33,12 +36,14 @@ namespace MultiplayerCore {
                         //     continue;
                         // }
                         else {
+                            getLogger().info("Installed mod %s is out of date. Required version: %s, installed version: %s", static_cast<std::string>(requiredMod.id).c_str(), requiredVersion.c_str(), installedVersion.c_str());
                             _requiredMod = static_cast<std::string>(requiredMod.id);
                             _requiredVersion = static_cast<std::string>(requiredMod.version);
                             reason = (MultiplayerUnavailableReason)5;
                             return true;
                         }
-                    }
+                    } else 
+                        getLogger().error("Either installed or required mod is not semver versioned. Required version: %s, installed version: %s", requiredVersion.c_str(), installedVersion.c_str());
                     // const std::string requiredVersion = requiredMod.version;
                     // const std::string& installedVersion = installedMods.at(requiredMod.id).info.version;
                     // // Splits version numbers into a string vector and checks major and minor version numbers ignoring patch version
