@@ -16,11 +16,7 @@ namespace MultiplayerCore::Beatmaps {
 	StringW LocalBeatmapLevel::get_levelID() {
 		return _preview->get_levelID();
 	}
-
-	StringW LocalBeatmapLevel::get_levelHash() {
-		return levelHash;
-	}
-
+	
 	StringW LocalBeatmapLevel::get_songName() {
 		return _preview->get_songName();
 	}

@@ -16,28 +16,22 @@ namespace MultiplayerCore::Beatmaps {
 
 #pragma region All the pain in form of getter functions
 
-	StringW NoInfoBeatmapLevel::get_levelID() {
-		return StringW(RuntimeSongLoader::API::GetCustomLevelsPrefix().c_str()) + levelHash;
-	}
-
-	StringW NoInfoBeatmapLevel::get_levelHash() {
-		return levelHash;
-	}
+	ConstString emptyString("");
 
 	StringW NoInfoBeatmapLevel::get_songName() {
-		return StringW("");
+		return emptyString;
 	}
 
 	StringW NoInfoBeatmapLevel::get_songSubName() {
-		return StringW("");
+		return emptyString;
 	}
 
 	StringW NoInfoBeatmapLevel::get_songAuthorName() {
-		return StringW("");
+		return emptyString;
 	}
 
 	StringW NoInfoBeatmapLevel::get_levelAuthorName() {
-		return StringW("");
+		return emptyString;
 	}
 
 #pragma endregion
