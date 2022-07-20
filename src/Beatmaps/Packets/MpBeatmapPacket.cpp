@@ -6,13 +6,12 @@
 using namespace GlobalNamespace;
 
 #include "Utilities.hpp"
+#include "CodegenExtensions/EnumUtils.hpp"
 using namespace MultiplayerCore;
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket);
 
 namespace MultiplayerCore::Beatmaps::Packets {
-
-	void MpBeatmapPacket::New() {}
 
 	MpBeatmapPacket* MpBeatmapPacket::CS_Ctor(GlobalNamespace::PreviewDifficultyBeatmap* beatmap) {
 		MpBeatmapPacket* packet = MpBeatmapPacket::New_ctor();
@@ -53,7 +52,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
 	}
 
 	void MpBeatmapPacket::Deserialize(LiteNetLib::Utils::NetDataReader* reader) {
-		getLogger().debug("MpBeatmapPacket::Deserialize");
+		getLogger().debug("MpBeatmapPacket::Deserialize: Start");
 
 		levelHash = reader->GetString();
 		songName = reader->GetString();
@@ -66,8 +65,36 @@ namespace MultiplayerCore::Beatmaps::Packets {
 		characteristic = reader->GetString();
 		difficulty = (BeatmapDifficulty)reader->GetUInt();
 
-		uint8_t difficultyCount = reader->GetByte();
-		getLogger().debug("Deserialize MpBeatmapPacket done");
+		// New data to deserialize, we try catch it here so failing to deserialize doesn't invalidate the packet
+		try {
+			getLogger().debug("MpBeatmapPacket::Deserialize: New data to deserialize, reading difficulty requirements");
+			uint8_t difficultyCount = reader->GetByte();
+			getLogger().debug("MpBeatmapPacket::Deserialize: Difficulty requirements count: %d", difficultyCount);
+			for (uint8_t i = 0; i < difficultyCount; i++) {
+				getLogger().debug("MpBeatmapPacket::Deserialize: Reading difficulty requirement %d", i);
+				uint8_t difficulty = reader->GetByte(); // This can be cast to type BeatmapDifficulty
+				getLogger().debug("MpBeatmapPacket::Deserialize: Difficulty requirement %s", EnumUtils::GetEnumName((BeatmapDifficulty)difficulty).c_str());
+				uint8_t requirementCount = reader->GetByte();
+				getLogger().debug("MpBeatmapPacket::Deserialize: Difficulty requirements count: %d", requirementCount);
+				std::vector<StringW> reqsForDifficulty;
+				for (uint8_t j = 0; j < requirementCount; j++) {
+					getLogger().debug("MpBeatmapPacket::Deserialize: Reading difficulty requirement %d", j);
+					reqsForDifficulty.push_back(reader->GetString());
+					getLogger().debug("MpBeatmapPacket::Deserialize: Difficulty: %s, Requirement: %s", EnumUtils::GetEnumName((BeatmapDifficulty)difficulty).c_str(), static_cast<std::string>(reqsForDifficulty[j]).c_str());
+					// getLogger().debug("MpBeatmapPacket::Deserialize: Difficulty: %s, Requirement: %s", EnumUtils::GetEnumName((BeatmapDifficulty)difficulty).c_str(), reqsForDifficulty[j].c_str());
+				}
+				getLogger().debug("MpBeatmapPacket::Deserialize: Assigning reqsForDifficulty");
+				requirements.insert_or_assign(difficulty, reqsForDifficulty);
+				getLogger().debug("MpBeatmapPacket::Deserialize: Assigned reqsForDifficulty");
+			}
+		}
+		catch(::std::exception const& exc) {
+			getLogger().error("MpBeatmapPacket::Deserialize: Error reading data, is the players MpCore version up to date?");
+			getLogger().error("std::exception REPORT TO ENDER: %s", exc.what());
+		}
+
+
+		getLogger().debug("MpBeatmapPacket::Deserialize: done");
 	}
 
 }
