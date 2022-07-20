@@ -59,17 +59,17 @@ namespace MultiplayerCore {
 				}
 				catch(il2cpp_utils::exceptions::StackTraceException e) {
 					getLogger().debug("Exception Deserializing Packet");
-					getLogger().error("REPORT TO ENDER: %s", e.what());
+					getLogger().error("StackTraceException REPORT TO ENDER: %s", e.what());
 					e.log_backtrace();
 				}
 				catch (il2cpp_utils::RunMethodException e) {
 					getLogger().debug("Exception Deserializing Packet");
-					getLogger().error("REPORT TO ENDER: %s", e.what());
+					getLogger().error("RunMethodException REPORT TO ENDER: %s", e.what());
 					e.log_backtrace();
 				}
 				catch (const std::exception& e) {
 					getLogger().debug("Exception Deserializing Packet");
-					getLogger().error("REPORT TO ENDER: %s", e.what());
+					getLogger().error("exception REPORT TO ENDER: %s", e.what());
 				}
 				catch (...) {
 					getLogger().debug("REPORT TO ENDER: Unknown exception Deserializing Packet");
@@ -94,7 +94,7 @@ namespace MultiplayerCore {
 					getLogger().error("REPORT TO ENDER: %s", e.what());
 				}
 				catch (...) {
-					getLogger().debug("REPORT TO ENDER: Unknown exception Deserializing Packet");
+					getLogger().debug("REPORT TO ENDER: Unknown exception running action");
 				}
 			}
 			// Freeing the packet explicitly here would probably just cause issues, the packet will have to be freed by whoever last uses it
