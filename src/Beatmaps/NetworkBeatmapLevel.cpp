@@ -12,7 +12,7 @@ DEFINE_TYPE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel);
 namespace MultiplayerCore::Beatmaps {
 	void NetworkBeatmapLevel::New(Packets::MpBeatmapPacket* packet) {
 		_packet = packet;
-		this->levelID = StringW(RuntimeSongLoader::API::GetCustomLevelsPrefix().c_str()) + _packet->levelHash;
+		levelHash =  _packet->levelHash;
 	}
 
 	System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* NetworkBeatmapLevel::GetCoverImageAsync(System::Threading::CancellationToken cancellationToken) {
@@ -54,14 +54,6 @@ namespace MultiplayerCore::Beatmaps {
 
 #pragma region All the pain in form of getter functions
 
-	StringW NetworkBeatmapLevel::get_levelID() {
-		return StringW(RuntimeSongLoader::API::GetCustomLevelsPrefix().c_str()) + _packet->levelHash;
-	}
-
-	StringW NetworkBeatmapLevel::get_levelHash() {
-		return _packet->levelHash;
-	}
-
 	StringW NetworkBeatmapLevel::get_songName() {
 		return _packet->songName;
 	}
@@ -85,38 +77,6 @@ namespace MultiplayerCore::Beatmaps {
 	float NetworkBeatmapLevel::get_songDuration() {
 		return _packet->songDuration;
 	}
-
-	//float NetworkBeatmapLevel::get_songTimeOffset() {
-	//	return 0;
-	//}
-
-	//float NetworkBeatmapLevel::get_previewDuration() {
-	//	return 0;
-	//}
-
-	//float NetworkBeatmapLevel::get_previewStartTime() {
-	//	return 0;
-	//}
-
-	//float NetworkBeatmapLevel::get_shuffle() {
-	//	return 0;
-	//}
-
-	//float NetworkBeatmapLevel::get_shufflePeriod() {
-	//	return 0;
-	//}
-
-	//GlobalNamespace::EnvironmentInfoSO* NetworkBeatmapLevel::get_allDirectionsEnvironmentInfo() {
-	//	return nullptr;
-	//}
-
-	//GlobalNamespace::EnvironmentInfoSO* NetworkBeatmapLevel::get_environmentInfo() {
-	//	return nullptr;
-	//}
-
-	//::System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::PreviewDifficultyBeatmapSet*>* NetworkBeatmapLevel::get_previewDifficultyBeatmapSets() {
-	//	return nullptr;
-	//}
 
 #pragma endregion
 }
