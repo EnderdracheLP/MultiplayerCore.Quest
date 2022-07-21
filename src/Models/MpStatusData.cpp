@@ -20,7 +20,12 @@ namespace MultiplayerCore::Models {
                             auto& id = requiredMod["id"];
                             auto& version = requiredMod["version"];
                             if (id.IsString() && version.IsString()) {
-                                this->requiredMods.push_back({id.GetString(), version.GetString()});
+                                std::string idStr = id.GetString();
+                                auto& itr = idStr.find(".Quest");
+                                if (itr != std::string::npos) {
+                                    idStr = idStr.substr(0, itr);
+                                    this->requiredMods.push_back({idStr, version.GetString()});
+                                }
                             }
                         }
                     }
