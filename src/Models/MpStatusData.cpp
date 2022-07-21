@@ -21,7 +21,7 @@ namespace MultiplayerCore::Models {
                             auto& version = requiredMod["version"];
                             if (id.IsString() && version.IsString()) {
                                 std::string idStr = id.GetString();
-                                auto& itr = idStr.find(".Quest");
+                                auto itr = idStr.find(".Quest");
                                 if (itr != std::string::npos) {
                                     idStr = idStr.substr(0, itr);
                                     this->requiredMods.push_back({idStr, version.GetString()});
