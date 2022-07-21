@@ -18,6 +18,8 @@ DECLARE_CLASS_CODEGEN_INTERFACES_DLL(MultiplayerCore::Beatmaps::Abstractions, Mp
 
     DECLARE_CTOR(New);
 
+	DECLARE_INSTANCE_FIELD(StringW, levelHash);
+
     DECLARE_INSTANCE_METHOD(StringW, get_levelHash);
 
     DECLARE_OVERRIDE_METHOD(StringW, get_levelID, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_levelID>::get());

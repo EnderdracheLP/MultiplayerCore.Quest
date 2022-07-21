@@ -30,6 +30,8 @@
 #include "GlobalNamespace/MultiplayerSessionManager_SessionType.hpp"
 #include "GlobalNamespace/LobbyPlayerData.hpp"
 #include "GlobalNamespace/ConnectedPlayerManager.hpp"
+#include "GlobalNamespace/BeatmapCharacteristicCollectionSO.hpp"
+#include "GlobalNamespace/BeatmapIdentifierNetSerializable.hpp"
 
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Application.hpp"

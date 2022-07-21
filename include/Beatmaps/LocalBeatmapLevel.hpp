@@ -11,11 +11,8 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps, LocalBeatmapLevel, Abstracti
 
 	// IPreviewBeatmapLevel
 	DECLARE_INSTANCE_FIELD(GlobalNamespace::IPreviewBeatmapLevel*, _preview);
-	DECLARE_INSTANCE_FIELD(StringW, levelHash);
 
 	// Getter overrides
-	DECLARE_INSTANCE_METHOD(StringW, get_levelHash);
-
 	DECLARE_OVERRIDE_METHOD(StringW, get_levelID, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_levelID>::get());
 
 	DECLARE_OVERRIDE_METHOD(StringW, get_songName, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_songName>::get());

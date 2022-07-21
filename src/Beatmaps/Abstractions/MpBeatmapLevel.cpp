@@ -3,8 +3,7 @@
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
 
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
-#include "songdownloader/shared/BeatSaverAPI.hpp"
-#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
+#include "songloader/shared/API.hpp"
 
 #include "System/Threading/Tasks/Task_1.hpp"
 #include "System/Threading/Tasks/TaskStatus.hpp"
@@ -28,12 +27,11 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
 #pragma region All the pain in form of getter functions
 
 	StringW MpBeatmapLevel::get_levelHash() {
-		return StringW();
+		return levelHash;
 	}
 
-	// Never actually called, because I have no way of making things virtual in CT, so every type that inherits just implements the method itself
 	StringW MpBeatmapLevel::get_levelID() {
-		return StringW("custom_level_") + get_levelHash();
+		return StringW(RuntimeSongLoader::API::GetCustomLevelsPrefix().c_str()) + get_levelHash();
 	}
 
 	StringW MpBeatmapLevel::get_songName() {

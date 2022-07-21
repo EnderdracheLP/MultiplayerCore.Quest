@@ -3,6 +3,8 @@
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 
 #include "GlobalNamespace/LobbyGameStateController.hpp"
+#include "GlobalNamespace/BeatmapDifficulty.hpp"
+#include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 
 #include "songdownloader/shared/BeatSaverAPI.hpp"
 
@@ -37,7 +39,8 @@ namespace MultiplayerCore {
         static void EnvironmentHooks();
         static void QuickplayHooks();
         static void SessionManagerAndExtendedPlayerHooks();
-        static void LogBaseGameHooks();
+        static void MultiplayerStatusHook();
+        static void MultiplayerUnavailableReasonHook();
 
     public:
         static const void Install_Hooks() {
@@ -46,7 +49,8 @@ namespace MultiplayerCore {
             EnvironmentHooks();
             QuickplayHooks();
             SessionManagerAndExtendedPlayerHooks();
-            LogBaseGameHooks();
+            MultiplayerStatusHook();
+            MultiplayerUnavailableReasonHook();
         }
     };
 }

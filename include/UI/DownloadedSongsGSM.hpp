@@ -13,7 +13,7 @@
 #include "UnityEngine/Sprite.hpp"
 
 
-DECLARE_CLASS_CODEGEN(MultiQuestensions::UI, DownloadedSongsGSM, UnityEngine::MonoBehaviour,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, DownloadedSongsGSM, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(HMUI::ModalView*, modal);
     DECLARE_INSTANCE_FIELD(QuestUI::CustomListTableData*, list);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::CustomPreviewBeatmapLevel*, lastDownloaded);

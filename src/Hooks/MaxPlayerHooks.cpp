@@ -2,6 +2,7 @@
 #include "Hooks/Hooks.hpp"
 #include "Utils/MethodCache.hpp"
 #include "Utilities.hpp"
+#include "Utils/CustomData.hpp"
 #include "GlobalNamespace/MultiplayerOutroAnimationController.hpp"
 #include "GlobalNamespace/MultiplayerIntroAnimationController.hpp"
 #include "GlobalNamespace/CreateServerFormController.hpp"
@@ -17,6 +18,7 @@
 #include "GlobalNamespace/MultiplayerLocalActivePlayerIntroAnimator.hpp"
 #include "GlobalNamespace/MultiplayerLocalInactivePlayerOutroAnimator.hpp"
 #include "GlobalNamespace/MultiplayerLocalInactivePlayerFacade.hpp"
+#include "GlobalNamespace/IConnectedPlayer.hpp"
 
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Debug.hpp"
@@ -31,6 +33,8 @@
 #include "UnityEngine/Timeline/AudioTrack.hpp"
 
 #include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
+
+
 
 using namespace GlobalNamespace;
 using namespace System;
@@ -47,7 +51,7 @@ namespace MultiplayerCore {
     static ConstString noFacadeError("Neither active or inactive facade exists, this should not happen");
 
 #pragma region IntroAnimationPatch
-    MAKE_HOOK_MATCH(IntroAnimationPatch, &MultiplayerIntroAnimationController::PlayIntroAnimation, void, MultiplayerIntroAnimationController* self, float maxDesiredIntroAnimationDuration, Action* onCompleted) {
+    MAKE_HOOK_MATCH_NO_CATCH(IntroAnimationPatch, &MultiplayerIntroAnimationController::PlayIntroAnimation, void, MultiplayerIntroAnimationController* self, float maxDesiredIntroAnimationDuration, Action* onCompleted) {
         getLogger().debug("Creating intro PlayableDirector for iteration '%d'.", targetIterations);
         PlayableDirector* originalDirector = self->introPlayableDirector;
         // if (targetIterations == 0)
@@ -63,7 +67,8 @@ namespace MultiplayerCore {
                 self->introPlayableDirector = newPlayableGameObject->AddComponent<PlayableDirector*>();
                 MethodCache::SetPlayableAsset(self->introPlayableDirector, originalDirector->get_playableAsset());
 
-                // Cleanup gameobject
+                // NOTE: We don't do that on Quest right now, doesn't seem to cause any issues so far
+                // // Cleanup gameobject
                 // onCompleted = il2cpp_utils::MakeDelegate<System::Action*>(classof(System::Action*), (std::function<void()>)[self, newPlayableGameObject, &onCompleted] {
                 //     GameObject::Destroy(newPlayableGameObject);
 
@@ -318,19 +323,19 @@ namespace MultiplayerCore {
             MultiplayerResultsPyramidPatch(self, (IReadOnlyList_1<MultiplayerPlayerResultsData*>*)newResultsData, badgeStartTransform, badgeMidTransform);
         }
         catch (il2cpp_utils::exceptions::StackTraceException const& e) {
-            getLogger().critical("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " at Line %d: %s", __LINE__, e.what());
+            getLogger().error("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " logger at Line %d: %s", __LINE__, e.what());
             getLogger().debug("returning usual results pyramid");
             e.log_backtrace();
             MultiplayerResultsPyramidPatch(self, resultsData, badgeStartTransform, badgeMidTransform);
         }
         catch (il2cpp_utils::RunMethodException const& e) {
-            getLogger().critical("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " at Line %d: %s", __LINE__, e.what());
+            getLogger().error("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " logger at Line %d: %s", __LINE__, e.what());
             getLogger().debug("returning usual results pyramid");
             e.log_backtrace();
             MultiplayerResultsPyramidPatch(self, resultsData, badgeStartTransform, badgeMidTransform);
         }
         catch (const std::runtime_error& e) {
-            getLogger().critical("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " at Line %d: %s", __LINE__, e.what());
+            getLogger().error("REPORT TO ENDER: Hook MultiplayerResultsPyramidPatch File " __FILE__ " logger at Line %d: %s", __LINE__, e.what());
             getLogger().debug("returning usual results pyramid");
             MultiplayerResultsPyramidPatch(self, resultsData, badgeStartTransform, badgeMidTransform);
         }
@@ -338,7 +343,7 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(CreateServerFormController_get_formData, &CreateServerFormController::get_formData, CreateServerFormData, CreateServerFormController* self) {
         CreateServerFormData result = CreateServerFormController_get_formData(self);
-        result.maxPlayers = std::clamp<int>(self->maxPlayersList->get_value(), 2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120));
+        result.maxPlayers = std::clamp<int>(self->maxPlayersList->get_value(), 2, getConfig().config["MaxPlayers"].GetInt());
         return result;
     }
 
@@ -348,7 +353,7 @@ namespace MultiplayerCore {
             // We have to manually find the method as the codegen call fails to find the method for this
             static auto* Enumerable_ToArray = THROW_UNLESS(il2cpp_utils::MakeGenericMethod(MethodCache::get_Enumerable_ToArray_Generic(), { classof(int) }));
             il2cpp_utils::RunMethodRethrow<::Array<int>*, false>(static_cast<Il2CppClass*>(nullptr),
-                Enumerable_ToArray, Enumerable::Range(2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120) - 1))->copy_to(rangeVec);
+                Enumerable_ToArray, Enumerable::Range(2, getConfig().config["MaxPlayers"].GetInt() - 1))->copy_to(rangeVec);
 
             // Codegen version of the above, does not work and will cause an Exception due to FindMethod failing
             // Enumerable::ToArray(Enumerable::Range(2, std::clamp(getConfig().config["MaxPlayers"].GetInt(), 2, 120) - 1))->copy_to(rangeVec);
@@ -381,6 +386,8 @@ namespace MultiplayerCore {
         INSTALL_HOOK(getLogger(), MultiplayerOutroAnimationController_BindRingsAndAudio);
         INSTALL_HOOK(getLogger(), CreateServerFormController_get_formData);
         INSTALL_HOOK(getLogger(), CreateServerFormController_Setup);
+
+        
 
     }
 }

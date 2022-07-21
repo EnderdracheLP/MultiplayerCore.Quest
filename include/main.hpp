@@ -10,26 +10,6 @@
 #include "beatsaber-hook/shared/utils/il2cpp-functions.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 
-// TODO: Move the codegen includes out to where they're used
-// Codegen includes
-#include "LiteNetLib/Utils/INetSerializable.hpp"
-#include "GlobalNamespace/MultiplayerSessionManager.hpp"
-#include "GlobalNamespace/IMenuRpcManager.hpp"
-#include "GlobalNamespace/LobbyPlayersDataModel.hpp"
-#include "GlobalNamespace/ILobbyPlayersDataModel.hpp"
-#include "GlobalNamespace/ILevelGameplaySetupData.hpp"
-#include "GlobalNamespace/BeatmapLevelsModel.hpp"
-#include "GlobalNamespace/IConnectedPlayer.hpp"
-
-#include "GlobalNamespace/BeatmapIdentifierNetSerializable.hpp"
-#include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
-#include "GlobalNamespace/BeatmapDifficulty.hpp"
-#include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
-#include "GlobalNamespace/BeatmapCharacteristicCollectionSO.hpp"
-#include "GlobalNamespace/HMMainThreadDispatcher.hpp"
-
-#include "GlobalNamespace/LobbyGameStateController.hpp"
-
 // Cpp includes
 #include <map>
 #include <set>
