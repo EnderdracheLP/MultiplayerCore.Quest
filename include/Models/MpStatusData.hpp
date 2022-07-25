@@ -10,14 +10,9 @@
 
 DECLARE_CLASS_CODEGEN_DLL(MultiplayerCore::Models, MpStatusData, GlobalNamespace::MultiplayerStatusData, "MultiplayerCore.Models",
     DECLARE_CTOR(New, StringW);
-
-    struct RequiredMod {
-        StringW id;
-        StringW version;
-    };
     
     public:
-        std::vector<RequiredMod> requiredMods;
+        std::vector<ModInfo> requiredMods;
 )
 
 // namespace MultiplayerCore::Models {
