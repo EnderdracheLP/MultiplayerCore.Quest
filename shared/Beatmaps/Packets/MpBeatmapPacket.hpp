@@ -3,6 +3,8 @@
 #include "Networking/Abstractions/MpPacket.hpp"
 #include "GlobalNamespace/BeatmapDifficulty.hpp"
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
+#include "Beatmaps/Abstractions/DifficultyColors.hpp"
+#include "Beatmaps/Abstractions/Contributor.hpp"
 
 DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, MultiplayerCore::Networking::Abstractions::MpPacket, "MultiplayerCore.Beatmaps.Packets",
     DECLARE_INSTANCE_FIELD(StringW, levelHash);
@@ -18,6 +20,8 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, Mu
     DECLARE_INSTANCE_FIELD(StringW, characteristic);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapDifficulty, difficulty);
 
+    // DECLARE_INSTANCE_FIELD(System::Collections::Generic::Dictionary_2<GlobalNamespace::BeatmapDifficulty, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors*>, mapColors);
+
     DECLARE_DEFAULT_CTOR();
 
     DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&LiteNetLib::Utils::INetSerializable::Serialize>::get(), LiteNetLib::Utils::NetDataWriter* writer);
@@ -26,5 +30,8 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, Mu
     public:
         static MpBeatmapPacket* CS_Ctor(GlobalNamespace::PreviewDifficultyBeatmap* beatmap);
 
+        // uint8_t represents BeatmapDifficulty
         std::unordered_map<uint8_t, std::vector<StringW>> requirements;
+        std::vector<MultiplayerCore::Beatmaps::Abstractions::Contributor> contributors;
+        std::unordered_map<uint8_t, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors> mapColors;
 )
