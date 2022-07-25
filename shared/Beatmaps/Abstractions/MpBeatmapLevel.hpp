@@ -16,7 +16,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES_DLL(MultiplayerCore::Beatmaps::Abstractions, Mp
     { classof(GlobalNamespace::IPreviewBeatmapLevel*) },
     "MultiplayerCore.Beatmaps.Abstractions",
 
-    DECLARE_CTOR(New);
+    DECLARE_DEFAULT_CTOR();
 
 	DECLARE_INSTANCE_FIELD(StringW, levelHash);
 
