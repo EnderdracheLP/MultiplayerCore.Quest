@@ -18,8 +18,6 @@ DEFINE_TYPE(MultiplayerCore::Beatmaps::Abstractions, MpBeatmapLevel);
 
 namespace MultiplayerCore::Beatmaps::Abstractions {
 
-	void MpBeatmapLevel::New() {}
-
 	System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* MpBeatmapLevel::GetCoverImageAsync(System::Threading::CancellationToken cancellationToken) {
 		return System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));
 	}
