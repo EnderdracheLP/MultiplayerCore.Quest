@@ -54,13 +54,13 @@
 namespace MultiplayerCore::Beatmaps::Abstractions {
     struct DifficultyColors {
         
-        UnityEngine::Color _colorLeft;
-        UnityEngine::Color _colorRight;
-        UnityEngine::Color _envColorLeft;
-        UnityEngine::Color _envColorRight;
-        UnityEngine::Color _envColorLeftBoost;
-        UnityEngine::Color _envColorRightBoost;
-        UnityEngine::Color _obstacleColor;
+        std::optional<UnityEngine::Color> _colorLeft;
+        std::optional<UnityEngine::Color> _colorRight;
+        std::optional<UnityEngine::Color> _envColorLeft;
+        std::optional<UnityEngine::Color> _envColorRight;
+        std::optional<UnityEngine::Color> _envColorLeftBoost;
+        std::optional<UnityEngine::Color> _envColorRightBoost;
+        std::optional<UnityEngine::Color> _obstacleColor;
 
         void Serialize(LiteNetLib::Utils::NetDataWriter* writer);
         void Deserialize(LiteNetLib::Utils::NetDataReader* reader);

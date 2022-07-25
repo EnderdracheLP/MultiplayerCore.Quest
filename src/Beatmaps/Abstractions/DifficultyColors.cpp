@@ -1,15 +1,5 @@
-// TODO: Possibly remove the whole type as for right now I just can't use it the intended way
-
 #include "Beatmaps/Abstractions/DifficultyColors.hpp"
-
-#include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
-#include "songdownloader/shared/BeatSaverAPI.hpp"
-#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
-
-#include "System/Threading/Tasks/Task_1.hpp"
-#include "System/Threading/Tasks/TaskStatus.hpp"
-
-#include <vector>
+using namespace LiteNetLib::Utils;
 
 // DEFINE_TYPE(MultiplayerCore::Beatmaps::Abstractions, DifficultyColors);
 
@@ -27,19 +17,19 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
 		writer->Put(colors);
 
 		if (_colorLeft)
-			SerializeMapColor(writer, _colorLeft);
+			SerializeMapColor(writer, *_colorLeft);
 		if (_colorRight)
-			SerializeMapColor(writer, _colorRight);
+			SerializeMapColor(writer, *_colorRight);
 		if (_envColorLeft)
-			SerializeMapColor(writer, _envColorLeft);
+			SerializeMapColor(writer, *_envColorLeft);
 		if (_envColorRight)
-			SerializeMapColor(writer, _envColorRight);
+			SerializeMapColor(writer, *_envColorRight);
 		if (_envColorLeftBoost)
-			SerializeMapColor(writer, _envColorLeftBoost);
+			SerializeMapColor(writer, *_envColorLeftBoost);
 		if (_envColorRightBoost)
-			SerializeMapColor(writer, _envColorRightBoost);
+			SerializeMapColor(writer, *_envColorRightBoost);
 		if (_obstacleColor)
-			SerializeMapColor(writer, _obstacleColor);
+			SerializeMapColor(writer, *_obstacleColor);
 	}
 
 	void DifficultyColors::Deserialize(NetDataReader* reader)
