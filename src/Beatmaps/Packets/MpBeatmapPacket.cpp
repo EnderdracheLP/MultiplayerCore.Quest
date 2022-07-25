@@ -1,13 +1,14 @@
 #include "main.hpp"
 #include "custom-types/shared/register.hpp"
-#include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "GlobalNamespace/VarIntExtensions.hpp"
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 using namespace GlobalNamespace;
 
 #include "Utilities.hpp"
 #include "CodegenExtensions/EnumUtils.hpp"
+#include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 using namespace MultiplayerCore;
+using namespace MultiplayerCore::Beatmaps::Abstractions;
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket);
 
@@ -87,10 +88,28 @@ namespace MultiplayerCore::Beatmaps::Packets {
 				requirements.insert_or_assign(difficulty, reqsForDifficulty);
 				getLogger().debug("MpBeatmapPacket::Deserialize: Assigned reqsForDifficulty");
 			}
+
+			uint8_t contributorCount = reader->GetByte();
+			getLogger().debug("MpBeatmapPacket::Deserialize: Contributor count: %d", contributorCount);
+			for (uint8_t i = 0; i < contributorCount; i++) {
+				getLogger().debug("MpBeatmapPacket::Deserialize: Reading contributor %d", i);
+				auto contributor = Contributor(reader->GetString(), reader->GetString(), reader->GetString());
+				getLogger().debug("MpBeatmapPacket::Deserialize: Contributor: %s", contributor._name.c_str());
+				contributors.push_back(contributor);
+			}
+
+			uint8_t colorCount = reader->GetByte();
+			getLogger().debug("MpBeatmapPacket::Deserialize: Color count: %d", colorCount);
+			for (uint8_t i = 0; i < colorCount; i++) {
+				uint8_t difficulty = reader->GetByte();
+				DifficultyColors colors = DifficultyColors();
+				colors.Deserialize(reader);
+				mapColors.insert_or_assign(difficulty, colors);
+			}
 		}
 		catch(::std::exception const& exc) {
-			getLogger().error("MpBeatmapPacket::Deserialize: Error reading data, is the players MpCore version up to date?");
-			getLogger().error("std::exception REPORT TO ENDER: %s", exc.what());
+			getLogger().warning("MpBeatmapPacket::Deserialize: Error reading data, is the players MpCore version up to date?");
+			getLogger().warning("MpBeatmapPacket::Deserialize std::exception: %s", exc.what());
 		}
 
 
