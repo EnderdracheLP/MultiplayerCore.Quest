@@ -31,13 +31,13 @@ namespace MultiplayerCore::Utils {
 		{
             RequirementData(std::vector<std::string> requirements, std::vector<std::string> suggestions, std::vector<std::string> warnings, std::vector<std::string> information) :
                 _requirements(std::move(requirements)), _suggestions(std::move(suggestions)), _warnings(std::move(warnings)), _information(std::move(information)) {}
-			const std::vector<std::string> _requirements;
+			std::vector<std::string> _requirements;
 
-			const std::vector<std::string> _suggestions;
+			std::vector<std::string> _suggestions;
 
-			const std::vector<std::string> _warnings;
+			std::vector<std::string> _warnings;
 
-			const std::vector<std::string> _information;
+			std::vector<std::string> _information;
 		};
 
 		struct MapColor : public UnityEngine::Color {
