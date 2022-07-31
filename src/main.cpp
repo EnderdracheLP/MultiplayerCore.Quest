@@ -371,6 +371,9 @@ MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoad
     isDownloading = false;
 }
 
+#include "sombrero/shared/linq_functional.hpp"
+#include "modloader/shared/modloader.hpp"
+
 // Checks entitlement and stalls lobby until fullfilled, unless a game is already in progress.
 static ConstString in_gameplay("in_gameplay");
 MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void, MultiplayerLevelLoader* self) {
@@ -380,6 +383,51 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
             if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
                 self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::Ok);
             getLogger().debug("Loaded Level %s", static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
+            // var hash = Utilities.HashForLevelID(_gameplaySetupData.beatmapLevel.beatmapLevel.levelID);
+            // if (hash != null)
+            // {
+            auto extraSongData = MultiplayerCore::Utils::ExtraSongData::FromPreviewBeatmapLevel(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel());
+            if (extraSongData)
+            {
+                // std::vector<const MultiplayerCore::Utils::ExtraSongData::DifficultyData>* diffPtr = &extraSongData->_difficulties;
+                // auto difficulty = Sombrero::Linq::FirstOrDefault(diffPtr, [self](auto x) {
+                //     return x->get_difficulty() == self->gameplaySetupData->get_beatmapLevel()->get_beatmapDifficulty() && 
+                //         x->beatmapCharacteristicName == self->gameplaySetupData->get_beatmapLevel()->get_beatmapCharacteristic()->get_name();
+                // });
+
+                MultiplayerCore::Utils::ExtraSongData::DifficultyData difficulty;
+                for (auto& diff : extraSongData->_difficulties) {
+                    if (diff._difficulty == self->gameplaySetupData->get_beatmapLevel()->get_beatmapDifficulty() &&
+                        diff._beatmapCharacteristicName == static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapCharacteristic()->get_name())) {
+                        difficulty = std::move(diff);
+                        break;
+                    }
+                }
+
+                // auto difficulty = extraSongData->_difficulties.FirstOrDefault(x => x._difficulty == _gameplaySetupData.beatmapLevel.beatmapDifficulty && x._beatmapCharacteristicName == _gameplaySetupData.beatmapLevel.beatmapCharacteristic.name);
+                // std::vector<std::string>* reqPtr = difficulty ? &(difficulty->additionalDifficultyData->_requirements) : nullptr;
+                // ArrayW<std::string> reqPtr = il2cpp_utils::vectorToArray(difficulty->additionalDifficultyData->_requirements);
+                // if (reqPtr && !Sombrero::Linq::All(reqPtr, [](auto x) {
+                //     return Modloader::getMods().contains(x);
+                // }))
+                // {
+                //     if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
+                //         self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::NotOwned);
+                //     self->difficultyBeatmap = nullptr;
+                // }
+                for (auto& req : difficulty.additionalDifficultyData->_requirements)
+                {
+                    // TODO: Properly get installed requirements.
+                    if (!Modloader::getMods().contains(req))
+                    {
+                        if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
+                            self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::NotOwned);
+                        self->difficultyBeatmap = nullptr;
+                        break;
+                    }
+                }
+            }
+            // }
         }
     }
     else if (self->loaderState == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
@@ -393,10 +441,10 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
             StringW csUserID = p->get_userId();
             std::string UserID =  static_cast<std::string>(csUserID);
             if (entitlementDictionary[UserID][LevelID] == EntitlementsStatus::Ok || p->HasState(in_gameplay)){
-            MultiplayerCore::UI::CenterScreenLoading::playersReady++;
+                MultiplayerCore::UI::CenterScreenLoading::playersReady++;
             } 
         }
-        if (MultiplayerCore::UI::CenterScreenLoading::playersReady == _multiplayerSessionManager->connectedPlayers->get_Count()+1) {
+        if (_multiplayerSessionManager->get_syncTime() >= self->startTime && MultiplayerCore::UI::CenterScreenLoading::playersReady == _multiplayerSessionManager->connectedPlayers->get_Count()+1) {
             getLogger().debug("All players have OK entitilement");
             MultiplayerLevelLoader_Tick(self);
         }
