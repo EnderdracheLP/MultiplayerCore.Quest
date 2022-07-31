@@ -4,7 +4,7 @@
 #include "GlobalNamespace/BeatmapDifficulty.hpp"
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 #include "Beatmaps/Abstractions/DifficultyColors.hpp"
-#include "Beatmaps/Abstractions/Contributor.hpp"
+#include "Utils/ExtraSongData.hpp"
 
 DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, MultiplayerCore::Networking::Abstractions::MpPacket, "MultiplayerCore.Beatmaps.Packets",
     DECLARE_INSTANCE_FIELD(StringW, levelHash);
@@ -31,7 +31,7 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, Mu
         static MpBeatmapPacket* CS_Ctor(GlobalNamespace::PreviewDifficultyBeatmap* beatmap);
 
         // uint8_t represents BeatmapDifficulty
-        std::unordered_map<uint8_t, std::vector<StringW>> requirements;
-        std::vector<MultiplayerCore::Beatmaps::Abstractions::Contributor> contributors;
+        std::unordered_map<uint8_t, std::vector<std::string>> requirements;
+        std::vector<MultiplayerCore::Utils::ExtraSongData::Contributor> contributors;
         std::unordered_map<uint8_t, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors> mapColors;
 )

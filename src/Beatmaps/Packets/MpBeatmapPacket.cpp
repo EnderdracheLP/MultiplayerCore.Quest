@@ -9,6 +9,7 @@ using namespace GlobalNamespace;
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 using namespace MultiplayerCore;
 using namespace MultiplayerCore::Beatmaps::Abstractions;
+using namespace MultiplayerCore::Utils;
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket);
 
@@ -45,11 +46,27 @@ namespace MultiplayerCore::Beatmaps::Packets {
 		// GlobalNamespace::VarIntExtensions::PutVarUInt(writer, (uint)difficulty);
 
 		// TODO: Properly add data, for now we just send empty data
-		writer->Put((uint8_t)0); // requirements Count
+		writer->Put((uint8_t)requirements.size()); // requirements Count
+		for (auto& [difficulty, requirements] : requirements) {
+			writer->Put((uint8_t)difficulty);
+			writer->Put((uint8_t)requirements.size()); // requirements Count
+			for (auto& requirement : requirements) {
+				writer->Put(StringW(requirement));
+			}
+		}
 		// for loop here
-		writer->Put((uint8_t)0); // contributors Length
+		writer->Put((uint8_t)contributors.size()); // contributors Length
+		for (ExtraSongData::Contributor& contributor : contributors) {
+			writer->Put(StringW(contributor.role));
+			writer->Put(StringW(contributor.name));
+			writer->Put(StringW(contributor.iconPath));
+		}
 
-		writer->Put((uint8_t)0); // mapColors Count
+		writer->Put((uint8_t)mapColors.size()); // mapColors Count
+		for (auto& [difficulty, diffiCultyColors] : mapColors) {
+			writer->Put((uint8_t)difficulty);
+			diffiCultyColors.Serialize(writer);
+		}
 	}
 
 	void MpBeatmapPacket::Deserialize(LiteNetLib::Utils::NetDataReader* reader) {
@@ -77,7 +94,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
 				getLogger().debug("MpBeatmapPacket::Deserialize: Difficulty requirement %s", EnumUtils::GetEnumName((BeatmapDifficulty)difficulty).c_str());
 				uint8_t requirementCount = reader->GetByte();
 				getLogger().debug("MpBeatmapPacket::Deserialize: Difficulty requirements count: %d", requirementCount);
-				std::vector<StringW> reqsForDifficulty;
+				std::vector<std::string> reqsForDifficulty;
 				for (uint8_t j = 0; j < requirementCount; j++) {
 					getLogger().debug("MpBeatmapPacket::Deserialize: Reading difficulty requirement %d", j);
 					reqsForDifficulty.push_back(reader->GetString());
@@ -93,8 +110,8 @@ namespace MultiplayerCore::Beatmaps::Packets {
 			getLogger().debug("MpBeatmapPacket::Deserialize: Contributor count: %d", contributorCount);
 			for (uint8_t i = 0; i < contributorCount; i++) {
 				getLogger().debug("MpBeatmapPacket::Deserialize: Reading contributor %d", i);
-				auto contributor = Contributor(reader->GetString(), reader->GetString(), reader->GetString());
-				getLogger().debug("MpBeatmapPacket::Deserialize: Contributor: %s", contributor._name.c_str());
+				auto contributor = ExtraSongData::Contributor(reader->GetString(), reader->GetString(), reader->GetString());
+				getLogger().debug("MpBeatmapPacket::Deserialize: Contributor: %s", contributor.name.c_str());
 				contributors.push_back(contributor);
 			}
 
