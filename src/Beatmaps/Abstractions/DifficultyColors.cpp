@@ -1,5 +1,6 @@
 #include "Beatmaps/Abstractions/DifficultyColors.hpp"
 using namespace LiteNetLib::Utils;
+using MultiplayerCore::Utils::ExtraSongData;
 
 // DEFINE_TYPE(MultiplayerCore::Beatmaps::Abstractions, DifficultyColors);
 
@@ -36,18 +37,18 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
 	{
 		uint8_t colors = reader->GetByte();
 		if ((colors & 0x1) != 0)
-			_colorLeft = DeserializeMapColor(reader);
+			_colorLeft = ExtraSongData::MapColor(reader);
 		if (((colors >> 1) & 0x1) != 0)
-			_colorLeft = DeserializeMapColor(reader);
+			_colorLeft = ExtraSongData::MapColor(reader);
 		if (((colors >> 2) & 0x1) != 0)
-			_colorLeft = DeserializeMapColor(reader);
+			_colorLeft = ExtraSongData::MapColor(reader);
 		if (((colors >> 3) & 0x1) != 0)
-			_colorLeft = DeserializeMapColor(reader);
+			_colorLeft = ExtraSongData::MapColor(reader);
 		if (((colors >> 4) & 0x1) != 0)
-			_colorLeft = DeserializeMapColor(reader);
+			_colorLeft = ExtraSongData::MapColor(reader);
 		if (((colors >> 5) & 0x1) != 0)
-			_colorLeft = DeserializeMapColor(reader);
+			_colorLeft = ExtraSongData::MapColor(reader);
 		if (((colors >> 6) & 0x1) != 0)
-			_colorLeft = DeserializeMapColor(reader);
+			_colorLeft = ExtraSongData::MapColor(reader);
 	}
 }
