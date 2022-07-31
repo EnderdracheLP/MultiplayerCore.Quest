@@ -2,7 +2,6 @@
 #include "custom-types/shared/macros.hpp"
 #include "Networking/Abstractions/MpPacket.hpp"
 #include "Utils/ExtraSongData.hpp"
-#include "UnityEngine/Color.hpp"
 
 // DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Abstractions, DifficultyColors, MultiplayerCore::Networking::Abstractions::MpPacket, "MultiplayerCore.Beatmaps.Abstractions",
 //     DECLARE_DEFAULT_CTOR();
@@ -55,13 +54,13 @@
 namespace MultiplayerCore::Beatmaps::Abstractions {
     struct DifficultyColors {
         
-        std::optional<UnityEngine::Color> _colorLeft;
-        std::optional<UnityEngine::Color> _colorRight;
-        std::optional<UnityEngine::Color> _envColorLeft;
-        std::optional<UnityEngine::Color> _envColorRight;
-        std::optional<UnityEngine::Color> _envColorLeftBoost;
-        std::optional<UnityEngine::Color> _envColorRightBoost;
-        std::optional<UnityEngine::Color> _obstacleColor;
+        std::optional<MultiplayerCore::Utils::ExtraSongData::MapColor> _colorLeft;
+        std::optional<MultiplayerCore::Utils::ExtraSongData::MapColor> _colorRight;
+        std::optional<MultiplayerCore::Utils::ExtraSongData::MapColor> _envColorLeft;
+        std::optional<MultiplayerCore::Utils::ExtraSongData::MapColor> _envColorRight;
+        std::optional<MultiplayerCore::Utils::ExtraSongData::MapColor> _envColorLeftBoost;
+        std::optional<MultiplayerCore::Utils::ExtraSongData::MapColor> _envColorRightBoost;
+        std::optional<MultiplayerCore::Utils::ExtraSongData::MapColor> _obstacleColor;
 
         void Serialize(LiteNetLib::Utils::NetDataWriter* writer);
         void Deserialize(LiteNetLib::Utils::NetDataReader* reader);
@@ -76,10 +75,10 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
             _envColorRightBoost = data._envColorRightBoost;
             _obstacleColor = data._obstacleColor;
         }
-        constexpr DifficultyColors(UnityEngine::Color colorLeft, UnityEngine::Color colorRight, 
-            UnityEngine::Color envColorLeft, UnityEngine::Color envColorRight, 
-            UnityEngine::Color envColorLeftBoost, UnityEngine::Color envColorRightBoost,
-            UnityEngine::Color obstacleColor)
+        constexpr DifficultyColors(MultiplayerCore::Utils::ExtraSongData::MapColor colorLeft, MultiplayerCore::Utils::ExtraSongData::MapColor colorRight, 
+            MultiplayerCore::Utils::ExtraSongData::MapColor envColorLeft, MultiplayerCore::Utils::ExtraSongData::MapColor envColorRight, 
+            MultiplayerCore::Utils::ExtraSongData::MapColor envColorLeftBoost, MultiplayerCore::Utils::ExtraSongData::MapColor envColorRightBoost,
+            MultiplayerCore::Utils::ExtraSongData::MapColor obstacleColor)
         {
             this->_colorLeft = colorLeft;
             this->_colorRight = colorRight;
@@ -97,13 +96,9 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
             writer->Put(color.b);
         }
 
-        static inline UnityEngine::Color DeserializeMapColor(LiteNetLib::Utils::NetDataReader* reader)
+        static inline MultiplayerCore::Utils::ExtraSongData::MapColor DeserializeMapColor(LiteNetLib::Utils::NetDataReader* reader)
         {
-            UnityEngine::Color color;
-            color.r = reader->GetFloat();
-            color.g = reader->GetFloat();
-            color.b = reader->GetFloat();
-            return color;
+            return MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
         }
     };
 }
