@@ -32,6 +32,6 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, Mu
 
         // uint8_t represents BeatmapDifficulty
         std::unordered_map<uint8_t, std::vector<std::string>> requirements;
-        std::vector<MultiplayerCore::Utils::ExtraSongData::Contributor> contributors;
+        std::vector<const MultiplayerCore::Utils::ExtraSongData::Contributor> contributors;
         std::unordered_map<uint8_t, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors> mapColors;
 )

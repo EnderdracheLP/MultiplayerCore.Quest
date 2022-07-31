@@ -1,13 +1,19 @@
+#pragma once
 #include <string>
 #include <string_view>
 #include <optional>
 #include <vector>
+
+#include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 
 #include "UnityEngine/Sprite.hpp"
 #include "UnityEngine/Color.hpp"
 
 #include "LiteNetLib/Utils/NetDataReader.hpp"
 #include "LiteNetLib/Utils/NetDataWriter.hpp"
+
+#include "GlobalNamespace/BeatmapDifficulty.hpp"
+#include "GlobalNamespace/CustomPreviewBeatmapLevel.hpp"
 
 namespace MultiplayerCore::Utils {
     struct ExtraSongData {
@@ -18,20 +24,20 @@ namespace MultiplayerCore::Utils {
             const std::string name;
             const std::string iconPath;
 
-            UnityEngine::Sprite* icon;
+            // UnityEngine::Sprite* icon;
         };
 
         struct RequirementData
 		{
-            RequirementData(std::vector<std::string_view> requirements, std::vector<std::string_view> suggestions, std::vector<std::string_view> warnings, std::vector<std::string_view> information) :
+            RequirementData(std::vector<std::string> requirements, std::vector<std::string> suggestions, std::vector<std::string> warnings, std::vector<std::string> information) :
                 _requirements(std::move(requirements)), _suggestions(std::move(suggestions)), _warnings(std::move(warnings)), _information(std::move(information)) {}
-			std::vector<std::string_view> _requirements;
+			const std::vector<std::string> _requirements;
 
-			std::vector<std::string_view> _suggestions;
+			const std::vector<std::string> _suggestions;
 
-			std::vector<std::string_view> _warnings;
+			const std::vector<std::string> _warnings;
 
-			std::vector<std::string_view> _information;
+			const std::vector<std::string> _information;
 		};
 
 		struct MapColor : public UnityEngine::Color {
@@ -69,19 +75,19 @@ namespace MultiplayerCore::Utils {
             MapColor obstacleColor) :
                 _beatmapCharacteristicName(beatmapCharacteristicName), 
                 _difficultyLabel(difficultyLabel), _difficulty(difficulty), 
-                _additionalDifficultyData(additionalDifficultyData),
+                additionalDifficultyData(additionalDifficultyData),
                 _colorLeft(colorLeft), _colorRight(colorRight),
                 _envColorLeft(envColorLeft), _envColorRight(envColorRight),
                 _envColorLeftBoost(envColorLeftBoost), _envColorRightBoost(envColorRightBoost),
                 _obstacleColor(obstacleColor) {}
 
-            std::string_view _beatmapCharacteristicName;
+            std::string _beatmapCharacteristicName;
 
 			GlobalNamespace::BeatmapDifficulty _difficulty;
 
 			std::optional<std::string_view> _difficultyLabel;
 
-			std::optional<RequirementData> _additionalDifficultyData;
+			std::optional<RequirementData> additionalDifficultyData;
 
 			MapColor _colorLeft;
 
@@ -98,17 +104,30 @@ namespace MultiplayerCore::Utils {
 			MapColor _obstacleColor;
         };
 
-        std::vector<Contributor> contributors;
+        std::vector<const Contributor> contributors;
 
         std::string _customEnvironmentName;
 
         std::string _customEnvironmentHash;
 
-        std::vector<DifficultyData> _difficulties;
+        std::vector<const DifficultyData> _difficulties;
 
         std::string _defaultCharacteristicName;
 
-        inline ExtraSongData(std::string songPath)
+        static inline std::optional<ExtraSongData> FromPreviewBeatmapLevel(GlobalNamespace::IPreviewBeatmapLevel* preview)
+        {
+            std::optional<GlobalNamespace::CustomPreviewBeatmapLevel*> customPreview = il2cpp_utils::try_cast<GlobalNamespace::CustomPreviewBeatmapLevel>(preview);
+            if (customPreview)
+            {
+                return FromMapPath((*customPreview)->customLevelPath);
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+        static inline std::optional<ExtraSongData> FromMapPath(std::string songPath)
         {
             if (fileexists(songPath + "/Info.dat")) {
                 songPath += "/Info.dat";
@@ -117,9 +136,18 @@ namespace MultiplayerCore::Utils {
                 songPath += "/info.dat";
             }
             else {
-                getLogger().error("Could not find Info.dat or info.dat");
-                return;
+                // TODO: Check this beforehand, otherwise we'd be fucked as most fields won't be set/initialized
+                // getLogger().error("Could not find Info.dat or info.dat");
+                return std::nullopt;
             }
+            return ExtraSongData(songPath);
+
+        }
+
+        private:
+
+        inline ExtraSongData(std::string songPath)
+        {
             rapidjson::Document document;
             document.Parse(readfile(songPath));
             if (!document.HasParseError() && document.IsObject()) {
@@ -152,7 +180,7 @@ namespace MultiplayerCore::Utils {
                     }
                 }
 
-                std::vector<DifficultyData> diffData;
+                std::vector<const DifficultyData> diffData;
                 auto difficultyBeatmapSetsItr = document.FindMember("_difficultyBeatmapSets");
                 if (difficultyBeatmapSetsItr != document.MemberEnd() && difficultyBeatmapSetsItr->value.IsArray() && !difficultyBeatmapSetsItr->value.Empty()) {
                     for (auto& dBS : difficultyBeatmapSetsItr->value.GetArray()) 
@@ -162,10 +190,10 @@ namespace MultiplayerCore::Utils {
                         auto dbItr = dBS.FindMember("_difficultyBeatmaps");
                         if (dbItr != dBS.MemberEnd() && dbItr->value.IsArray() && !dbItr->value.Empty()) {
                             for (auto& dB : dbItr->value.GetArray()) {
-                                std::vector<std::string_view> diffRequirements;
-                                std::vector<std::string_view> diffSuggestions;
-                                std::vector<std::string_view> diffWarnings;
-                                std::vector<std::string_view> diffInfo;
+                                std::vector<std::string> diffRequirements;
+                                std::vector<std::string> diffSuggestions;
+                                std::vector<std::string> diffWarnings;
+                                std::vector<std::string> diffInfo;
                                 std::string diffLabel;
                                 MapColor diffLeft;
                                 MapColor diffRight;

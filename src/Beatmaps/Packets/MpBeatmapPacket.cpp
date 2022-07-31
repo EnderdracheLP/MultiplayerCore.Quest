@@ -7,6 +7,7 @@ using namespace GlobalNamespace;
 #include "Utilities.hpp"
 #include "CodegenExtensions/EnumUtils.hpp"
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
+#include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
 using namespace MultiplayerCore;
 using namespace MultiplayerCore::Beatmaps::Abstractions;
 using namespace MultiplayerCore::Utils;
@@ -27,6 +28,17 @@ namespace MultiplayerCore::Beatmaps::Packets {
 
 		packet->characteristic = beatmap->get_beatmapCharacteristic()->get_serializedName();
 		packet->difficulty = beatmap->get_beatmapDifficulty();
+
+		std::optional<Abstractions::MpBeatmapLevel*> mpBeatmapLevel = il2cpp_utils::try_cast<Abstractions::MpBeatmapLevel>(beatmap->get_beatmapLevel());
+		if (mpBeatmapLevel)
+		{
+			if ((*mpBeatmapLevel)->requirements.contains(beatmap->get_beatmapCharacteristic()->get_name()))
+				packet->requirements = (*mpBeatmapLevel)->requirements[beatmap->get_beatmapCharacteristic()->get_name()];
+			if ((*mpBeatmapLevel)->requirements.contains(beatmap->get_beatmapCharacteristic()->get_serializedName()))
+				packet->requirements = (*mpBeatmapLevel)->requirements[beatmap->get_beatmapCharacteristic()->get_serializedName()];
+
+			packet->contributors = std::move((*mpBeatmapLevel)->contributors);
+		}
 		return packet;
 	}
 
@@ -56,7 +68,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
 		}
 		// for loop here
 		writer->Put((uint8_t)contributors.size()); // contributors Length
-		for (ExtraSongData::Contributor& contributor : contributors) {
+		for (const ExtraSongData::Contributor& contributor : contributors) {
 			writer->Put(StringW(contributor.role));
 			writer->Put(StringW(contributor.name));
 			writer->Put(StringW(contributor.iconPath));
