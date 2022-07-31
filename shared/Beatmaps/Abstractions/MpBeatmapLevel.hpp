@@ -2,10 +2,13 @@
 #include "main.hpp"
 #include "custom-types/shared/types.hpp"
 #include "custom-types/shared/macros.hpp"
+#include "Utils/ExtraSongData.hpp"
+#include "Beatmaps/Abstractions/DifficultyColors.hpp"
 
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
 #include "GlobalNamespace/PreviewDifficultyBeatmapSet.hpp"
 #include "GlobalNamespace/EnvironmentInfoSO.hpp"
+#include "GlobalNamespace/BeatmapDifficulty.hpp"
 
 #include "UnityEngine/Sprite.hpp"
 
@@ -42,4 +45,9 @@ DECLARE_CLASS_CODEGEN_INTERFACES_DLL(MultiplayerCore::Beatmaps::Abstractions, Mp
     DECLARE_OVERRIDE_METHOD(GlobalNamespace::EnvironmentInfoSO*, get_allDirectionsEnvironmentInfo, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::get_allDirectionsEnvironmentInfo>::get());
 
     DECLARE_OVERRIDE_METHOD(System::Threading::Tasks::Task_1<UnityEngine::Sprite*>*, GetCoverImageAsync, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::IPreviewBeatmapLevel::GetCoverImageAsync>::get(), System::Threading::CancellationToken cancellationToken);
+    
+    public:
+        std::unordered_map<std::string, std::unordered_map<uint8_t, std::vector<std::string>>> requirements;
+        std::unordered_map<std::string, std::unordered_map<uint8_t, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors>> difficultyColors ;
+        std::vector<const MultiplayerCore::Utils::ExtraSongData::Contributor> contributors;
 )

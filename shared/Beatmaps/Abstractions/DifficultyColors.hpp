@@ -1,6 +1,7 @@
 #pragma once
 #include "custom-types/shared/macros.hpp"
 #include "Networking/Abstractions/MpPacket.hpp"
+#include "Utils/ExtraSongData.hpp"
 #include "UnityEngine/Color.hpp"
 
 // DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Abstractions, DifficultyColors, MultiplayerCore::Networking::Abstractions::MpPacket, "MultiplayerCore.Beatmaps.Abstractions",
@@ -66,6 +67,15 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
         void Deserialize(LiteNetLib::Utils::NetDataReader* reader);
 
         constexpr DifficultyColors() {}
+        inline DifficultyColors(MultiplayerCore::Utils::ExtraSongData::DifficultyData data) {
+            _colorLeft = data._colorLeft;
+            _colorRight = data._colorRight;
+            _envColorLeft = data._envColorLeft;
+            _envColorRight = data._envColorRight;
+            _envColorLeftBoost = data._envColorLeftBoost;
+            _envColorRightBoost = data._envColorRightBoost;
+            _obstacleColor = data._obstacleColor;
+        }
         constexpr DifficultyColors(UnityEngine::Color colorLeft, UnityEngine::Color colorRight, 
             UnityEngine::Color envColorLeft, UnityEngine::Color envColorRight, 
             UnityEngine::Color envColorLeftBoost, UnityEngine::Color envColorRightBoost,
