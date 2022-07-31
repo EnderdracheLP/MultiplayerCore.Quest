@@ -136,12 +136,11 @@ namespace MultiplayerCore::Utils {
                 songPath += "/info.dat";
             }
             else {
-                // TODO: Check this beforehand, otherwise we'd be fucked as most fields won't be set/initialized
-                // getLogger().error("Could not find Info.dat or info.dat");
+                // If we can't find the info.dat file, we can't parse it.
+                // So we return nullopt.
                 return std::nullopt;
             }
             return ExtraSongData(songPath);
-
         }
 
         private:
