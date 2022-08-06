@@ -119,7 +119,7 @@ namespace MultiplayerCore {
                                                 if (tempMissingLevelText.find("Chroma") == std::string::npos) tempMissingLevelText += "Chroma";
                                                 isMissingRequirements = true;
                                             }
-                                            else if (diff.GetNE() && !RequirementUtils::GetRequirementInstalled("NoodleExtensions") && !RequirementUtils::GetIsForcedSuggestion("NoodleExtensions")) {
+                                            else if (diff.GetNE() && !RequirementUtils::GetRequirementInstalled("Noodle Extensions") && !RequirementUtils::GetIsForcedSuggestion("Noodle Extensions")) {
                                                 task->TrySetResult(EntitlementsStatus::NotOwned);
                                                 getLogger().warning("Map contains NE difficulty but NoodleExtensions doesn't seem to be installed, returning NotOwned");
                                                 if (tempMissingLevelText.find("Noodle Extensions") == std::string::npos) tempMissingLevelText += "Noodle Extensions";
