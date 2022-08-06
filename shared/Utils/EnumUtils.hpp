@@ -2,11 +2,16 @@
 #include "System/Enum.hpp"
 #include "System/Enum_EnumResult.hpp"
 #include "System/ValueType.hpp"
+#include "beatsaber-hook/shared/utils/logging.hpp"
 #include <string>
 
 namespace MultiplayerCore {
-    class EnumUtils {
-    public:
+    struct EnumUtils {
+        private:
+        static Logger& getMpCoreLogger();
+
+        public:
+
         template<typename T>
         static std::string GetEnumName(T enumValue) {
             return EnumUtils::GetEnumName<T>(enumValue, false);
@@ -28,14 +33,14 @@ namespace MultiplayerCore {
                 }
             }
             catch (il2cpp_utils::RunMethodException const& e) {
-                getLogger().error("REPORT TO ENDER: %s", e.what());
+                getMpCoreLogger().error("REPORT TO ENDER RunMethodException: %s", e.what());
                 e.log_backtrace();
             }
             catch (const std::runtime_error& e) {
-                getLogger().error("REPORT TO ENDER: %s", e.what());
+                getMpCoreLogger().error("REPORT TO ENDER runtime_error: %s", e.what());
             }
             catch (...) {
-                getLogger().error("REPORT TO ENDER: Unknown exception");
+                getMpCoreLogger().error("REPORT TO ENDER: Unknown exception");
             }
             return enumName;
         }
@@ -67,18 +72,18 @@ namespace MultiplayerCore {
                 // }
             }
             catch (il2cpp_utils::exceptions::StackTraceException const& e) {
-                getLogger().error("REPORT TO ENDER StackTraceException: %s", e.what());
+                getMpCoreLogger().error("REPORT TO ENDER StackTraceException: %s", e.what());
                 e.log_backtrace();
             }
             catch (il2cpp_utils::RunMethodException const& e) {
-                getLogger().error("REPORT TO ENDER RunMethodException: %s", e.what());
+                getMpCoreLogger().error("REPORT TO ENDER RunMethodException: %s", e.what());
                 e.log_backtrace();
             }
             catch (const std::runtime_error& e) {
-                getLogger().error("REPORT TO ENDER runtime_error: %s", e.what());
+                getMpCoreLogger().error("REPORT TO ENDER runtime_error: %s", e.what());
             }
             catch (...) {
-                getLogger().error("REPORT TO ENDER: Unknown exception");
+                getMpCoreLogger().error("REPORT TO ENDER: Unknown exception");
             }
             return enumResult;
         }

@@ -2,7 +2,7 @@
 #include "Hooks/Hooks.hpp"
 #include "Utils/ExtraSongData.hpp"
 #include "Utilities.hpp"
-#include "CodegenExtensions/EnumUtils.hpp"
+#include "Utils/EnumUtils.hpp"
 #include "shared/GlobalFields.hpp"
 
 #include "GlobalNamespace/NetworkPlayerEntitlementChecker.hpp"
