@@ -2,7 +2,6 @@
 #include "Hooks/Hooks.hpp"
 #include "Utils/MethodCache.hpp"
 #include "Utilities.hpp"
-#include "Utils/CustomData.hpp"
 #include "GlobalNamespace/MultiplayerOutroAnimationController.hpp"
 #include "GlobalNamespace/MultiplayerIntroAnimationController.hpp"
 #include "GlobalNamespace/CreateServerFormController.hpp"
