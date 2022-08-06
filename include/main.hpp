@@ -28,9 +28,3 @@ extern std::vector<std::string> DownloadedSongIds;
 extern bool gotSongPackOverrides;
 
 extern std::string missingLevelText;
-
-namespace MultiplayerCore {
-    extern bool AllPlayersHaveNE();
-    extern bool AllPlayersHaveME();
-    extern bool AllPlayersHaveChroma();
-}
