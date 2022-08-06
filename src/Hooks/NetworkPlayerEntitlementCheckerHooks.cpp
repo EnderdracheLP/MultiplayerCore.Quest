@@ -1,7 +1,8 @@
 #include "main.hpp"
 #include "Hooks/Hooks.hpp"
-#include "Utils/CustomData.hpp"
+#include "Utils/ExtraSongData.hpp"
 #include "Utilities.hpp"
+#include "CodegenExtensions/EnumUtils.hpp"
 #include "shared/GlobalFields.hpp"
 
 #include "GlobalNamespace/NetworkPlayerEntitlementChecker.hpp"
@@ -28,21 +29,6 @@ namespace MultiplayerCore {
 
 #pragma endregion
 
-    // For debugging purposes
-    const char* entitlementText(EntitlementsStatus entitlement) {
-        switch (entitlement.value) {
-        case EntitlementsStatus::Unknown:
-            return "Unknown";
-        case EntitlementsStatus::NotOwned:
-            return "NotOwned";
-        case EntitlementsStatus::NotDownloaded:
-            return "NotDownloaded";
-        case EntitlementsStatus::Ok:
-            return "Ok";
-        }
-        return "";
-    }
-
     // Subscribe this method to 'menuRpcManager.setIsEntitledToLevelEvent' when on NetworkPlayerEntitlementChecker.Start, unsub on destroy
     static void HandleEntitlementReceived(StringW userId, StringW levelId, EntitlementsStatus entitlement) {
         std::string cUserId = static_cast<std::string>(userId);
@@ -51,19 +37,19 @@ namespace MultiplayerCore {
         getLogger().debug("[HandleEntitlementReceived] Received Entitlement from user '%s' for level '%s' with status '%s'",
             cUserId.c_str(),
             cLevelId.c_str(),
-            entitlementText(entitlement)
+            EnumUtils::GetEnumName(entitlement).c_str()
             );
 
-        if (entitlement == EntitlementsStatus::NotOwned && MultiplayerCore::Utils::HasRequirement(RuntimeSongLoader::API::GetLevelById(cLevelId))) {
-            IConnectedPlayer* player = _multiplayerSessionManager->GetPlayerByUserId(userId);
-            if (player) {
-                if (!(player->HasState(getMEStateStr()) || player->HasState(getNEStateStr()) || player->HasState(getChromaStateStr())))
-                    missingLevelText = "One or more players might be missing mod Requirements";
-            }
-            else {
-                missingLevelText = "Error Checking Requirement: Player not found";
-            }
-        }
+        // if (entitlement == EntitlementsStatus::NotOwned && MultiplayerCore::Utils::HasRequirement(RuntimeSongLoader::API::GetLevelById(cLevelId))) {
+        //     IConnectedPlayer* player = _multiplayerSessionManager->GetPlayerByUserId(userId);
+        //     if (player) {
+        //         if (!(player->HasState(getMEStateStr()) || player->HasState(getNEStateStr()) || player->HasState(getChromaStateStr())))
+        //             missingLevelText = "One or more players might be missing mod Requirements";
+        //     }
+        //     else {
+        //         missingLevelText = "Error Checking Requirement: Player not found";
+        //     }
+        // }
         entitlementDictionary[cUserId][cLevelId] = entitlement.value;
     }
 
@@ -74,9 +60,43 @@ namespace MultiplayerCore {
         getLogger().info("NetworkPlayerEntitlementChecker_GetEntitlementStatus: %s", levelId.c_str());
         if (IsCustomLevel(levelId)) {
             if (HasSong(levelId)) {
-                if (MultiplayerCore::Utils::HasRequirement(RuntimeSongLoader::API::GetLevelById(levelId)))
+                auto extraSongData  = MultiplayerCore::Utils::ExtraSongData::FromLevelId(levelId);
+                if (!extraSongData)
                     return Task_1<EntitlementsStatus>::New_ctor(EntitlementsStatus::Ok);
-                else return Task_1<EntitlementsStatus>::New_ctor(EntitlementsStatus::NotOwned);
+
+                std::vector<std::string> requirements;
+                for (auto& diff : extraSongData->_difficulties) {
+                    if (diff.additionalDifficultyData)
+                    {
+                        auto reqVec = diff.additionalDifficultyData->_requirements;
+                        std::remove_copy_if(reqVec.begin(), reqVec.end(), back_inserter(requirements), MultiplayerCore::Utilities::Contained<std::string>(requirements));                        
+                        // // join
+                        // auto mergepoint = requirements.end();
+
+                        // std::copy(reqVec.begin(), reqVec.end(), std::back_inserter(requirements));
+
+                        // // merge
+                        // std::inplace_merge(requirements.begin(), mergepoint, requirements.end());
+
+                        // for (auto& req : diff.additionalDifficultyData->_requirements) {
+                        //     requirements.push_back(req);
+                        // }
+                    }
+                }
+                bool hasRequirements = true;
+                std::string tempMissingLevelText = "You or other players might be missing the following mod Requirements:\n";
+                for (auto& req : requirements) {
+                    if (!RequirementUtils::GetRequirementInstalled(req) && !RequirementUtils::GetIsForcedSuggestion(req))
+                    {
+                        hasRequirements = false;
+                        tempMissingLevelText += req + "\n";
+                    }
+                }
+                if (!hasRequirements) {
+                    missingLevelText = tempMissingLevelText;
+                    return Task_1<EntitlementsStatus>::New_ctor(EntitlementsStatus::NotOwned);
+                }
+                return Task_1<EntitlementsStatus>::New_ctor(EntitlementsStatus::Ok);
             }
             else {
                 auto task = Task_1<EntitlementsStatus>::New_ctor();
@@ -85,32 +105,36 @@ namespace MultiplayerCore {
                         QuestUI::MainThreadScheduler::Schedule(
                             [task, beatmaps, levelId] {
                                 if (beatmaps.has_value()) {
-                                    // TODO: Server side check, possibly something better mod side as well, this would just prevent downloading
-                                    // Possibly taking a look at this https://github.com/BSMGPink/PinkCore/blob/master/include/Utils/RequirementUtils.hpp
-                                    //for (auto& beatmap : beatmaps->GetVersions()) {
                                     auto& beatmap = beatmaps->GetVersions().front();
                                     std::string mapHash = beatmap.GetHash();
                                     std::transform(mapHash.begin(), mapHash.end(), mapHash.begin(), toupper);
                                     if (mapHash == Utilities::GetHash(levelId)) {
+                                        static std::string tempMissingLevelText = "You or other players might be missing the following mod Requirements:\n";
+                                        bool isMissingRequirements = false;
+                                        // TODO: I'd like to actually only check the current difficulty, but I still need to figure out how to get the current selected difficulty
                                         for (auto& diff : beatmap.GetDiffs()) {
-                                            if (diff.GetChroma() && !AllPlayersHaveChroma() && Modloader::getMods().find("Chroma") != Modloader::getMods().end()) {
+                                            if (diff.GetChroma() && !RequirementUtils::GetRequirementInstalled("Chroma") && !RequirementUtils::GetIsForcedSuggestion("Chroma")) {
                                                 task->TrySetResult(EntitlementsStatus::NotOwned);
-                                                getLogger().warning("Map contains Chroma difficulty and Chroma is installed, returning NotOwned as Chroma currently causes issues in Multiplayer");
-                                                missingLevelText = "Chroma Requirement block, please uninstall Chroma";
-                                                return;
+                                                getLogger().warning("Map contains Chroma difficulty and Chroma doesn't seem to be installed, returning NotOwned");
+                                                if (tempMissingLevelText.find("Chroma") == std::string::npos) tempMissingLevelText += "Chroma";
+                                                isMissingRequirements = true;
                                             }
-                                            else if (diff.GetNE() && !AllPlayersHaveNE() && Modloader::getMods().find("NoodleExtensions") == Modloader::getMods().end()) {
+                                            else if (diff.GetNE() && !RequirementUtils::GetRequirementInstalled("NoodleExtensions") && !RequirementUtils::GetIsForcedSuggestion("NoodleExtensions")) {
                                                 task->TrySetResult(EntitlementsStatus::NotOwned);
                                                 getLogger().warning("Map contains NE difficulty but NoodleExtensions doesn't seem to be installed, returning NotOwned");
-                                                missingLevelText = "You or another Player is Missing the following Requirement: Noodle Extensions";
-                                                return;
+                                                if (tempMissingLevelText.find("Noodle Extensions") == std::string::npos) tempMissingLevelText += "Noodle Extensions";
+                                                isMissingRequirements = true;
                                             }
-                                            else if (diff.GetME() && !AllPlayersHaveME() && Modloader::getMods().find("MappingExtensions") == Modloader::getMods().end()) {
+                                            else if (diff.GetME() && !RequirementUtils::GetRequirementInstalled("MappingExtensions") && !RequirementUtils::GetIsForcedSuggestion("MappingExtensions")) {
                                                 task->TrySetResult(EntitlementsStatus::NotOwned);
                                                 getLogger().warning("Map contains ME difficulty but MappingExtensions doesn't seem to be installed, returning NotOwned");
-                                                missingLevelText = "You or another Player is Missing the following Requirement: Mapping Extensions";
-                                                return;
+                                                if (tempMissingLevelText.find("Mapping Extensions") == std::string::npos) tempMissingLevelText += "Mapping Extensions";
+                                                isMissingRequirements = true;
                                             }
+                                        }
+                                        if (isMissingRequirements) {
+                                            missingLevelText = tempMissingLevelText;
+                                            task->TrySetResult(EntitlementsStatus::NotOwned);
                                         }
                                         task->TrySetResult(EntitlementsStatus::NotDownloaded);
                                         return;
