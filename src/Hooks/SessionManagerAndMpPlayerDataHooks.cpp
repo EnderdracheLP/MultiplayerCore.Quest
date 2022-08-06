@@ -8,7 +8,7 @@
 #include "UI/CenterScreenLoading.hpp"
 #include "Utils/SemVerChecker.hpp"
 #include "Utilities.hpp"
-#include "CodegenExtensions/EnumUtils.hpp"
+#include "Utils/EnumUtils.hpp"
 
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"

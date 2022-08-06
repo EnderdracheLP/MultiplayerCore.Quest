@@ -5,7 +5,7 @@
 using namespace GlobalNamespace;
 
 #include "Utilities.hpp"
-#include "CodegenExtensions/EnumUtils.hpp"
+#include "Utils/EnumUtils.hpp"
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
 using namespace MultiplayerCore;

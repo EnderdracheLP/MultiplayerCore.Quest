@@ -175,7 +175,7 @@ MAKE_HOOK_MATCH(LobbySetupViewController_SetPlayersMissingLevelText , &LobbySetu
     LobbySetupViewController_SetPlayersMissingLevelText(self, playersMissingLevelText);
 }
 
-#include "CodegenExtensions/EnumUtils.hpp"
+#include "Utils/EnumUtils.hpp"
 
 // Prevent the button becoming shown when we're force disabling it, as pressing it would crash
 MAKE_HOOK_MATCH(LobbySetupViewController_SetStartGameEnabled, &LobbySetupViewController::SetStartGameEnabled, void, LobbySetupViewController* self, CannotStartGameReason cannotStartGameReason) {
@@ -506,6 +506,10 @@ void saveDefaultConfig() {
     getLogger().info("Config file created.");
 }
 
+Logger& MultiplayerCore::EnumUtils::getMpCoreLogger() {
+    return getLogger();
+}
+
 // Called at the early stages of game loading
 extern "C" void setup(ModInfo& info) {
     info.id = MOD_ID;
@@ -602,6 +606,9 @@ MAKE_HOOK_FIND_VERBOSE(Debug_LogWarning, il2cpp_utils::FindMethodUnsafe("UnityEn
 #if defined(IGNORE_MOD_REQUIREMENTS)
 #include "pinkcore/shared/RequirementAPI.hpp"
 #endif
+
+#include "System/Enum.hpp"
+#include "System/ValueType.hpp"
 
 extern "C" void load() {
     il2cpp_functions::Init();
