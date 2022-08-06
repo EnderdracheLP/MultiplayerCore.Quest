@@ -6,6 +6,8 @@
 
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 
+#include "songloader/shared/API.hpp"
+
 #include "UnityEngine/Sprite.hpp"
 #include "UnityEngine/Color.hpp"
 
@@ -114,6 +116,19 @@ namespace MultiplayerCore::Utils {
 
         std::string _defaultCharacteristicName;
 
+        static inline std::optional<ExtraSongData> FromLevelId(std::string levelId)
+        {
+            auto customPreview = RuntimeSongLoader::API::GetLevelById(levelId);
+            if (customPreview)
+            {
+                return FromMapPath((*customPreview)->customLevelPath);
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
         static inline std::optional<ExtraSongData> FromPreviewBeatmapLevel(GlobalNamespace::IPreviewBeatmapLevel* preview)
         {
             std::optional<GlobalNamespace::CustomPreviewBeatmapLevel*> customPreview = il2cpp_utils::try_cast<GlobalNamespace::CustomPreviewBeatmapLevel>(preview);
@@ -140,15 +155,16 @@ namespace MultiplayerCore::Utils {
                 // So we return nullopt.
                 return std::nullopt;
             }
-            return ExtraSongData(songPath);
-        }
-
-        private:
-
-        inline ExtraSongData(std::string songPath)
-        {
             rapidjson::Document document;
             document.Parse(readfile(songPath));
+            if (document.HasParseError() || !document.IsObject()) {
+                return std::nullopt;
+            }
+            return ExtraSongData(document);
+        }
+
+        inline ExtraSongData(rapidjson::Document& document)
+        {
             if (!document.HasParseError() && document.IsObject()) {
                 auto cdItr = document.FindMember("_customData");
                 if (cdItr != document.MemberEnd() && cdItr->value.IsObject()) {
