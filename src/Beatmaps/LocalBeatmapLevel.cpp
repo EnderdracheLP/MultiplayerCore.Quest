@@ -11,6 +11,7 @@ DEFINE_TYPE(MultiplayerCore::Beatmaps, LocalBeatmapLevel);
 namespace MultiplayerCore::Beatmaps {
 	void LocalBeatmapLevel::New(StringW hash, GlobalNamespace::IPreviewBeatmapLevel* preview) {
 		INVOKE_CTOR();
+		this->__ctor();
 		levelHash = hash;
 		std::optional<ExtraSongData> extraSongData = ExtraSongData::FromPreviewBeatmapLevel(preview);
 		if (extraSongData)

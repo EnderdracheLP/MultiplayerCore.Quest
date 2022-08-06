@@ -6,6 +6,7 @@ DEFINE_TYPE(MultiplayerCore::Beatmaps, NoInfoBeatmapLevel);
 
 namespace MultiplayerCore::Beatmaps {
 	void NoInfoBeatmapLevel::New(StringW hash) {
+		this->__ctor();
 		levelHash = hash;
 	}
 
