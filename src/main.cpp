@@ -363,19 +363,25 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
             // var hash = Utilities.HashForLevelID(_gameplaySetupData.beatmapLevel.beatmapLevel.levelID);
             // if (hash != null)
             // {
+            getLogger().debug("Checking extraSongData");
             auto extraSongData = MultiplayerCore::Utils::ExtraSongData::FromPreviewBeatmapLevel(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel());
             if (extraSongData)
             {
+                getLogger().debug("extraSongData found");
                 // std::vector<const MultiplayerCore::Utils::ExtraSongData::DifficultyData>* diffPtr = &extraSongData->_difficulties;
                 // auto difficulty = Sombrero::Linq::FirstOrDefault(diffPtr, [self](auto x) {
                 //     return x->get_difficulty() == self->gameplaySetupData->get_beatmapLevel()->get_beatmapDifficulty() && 
                 //         x->beatmapCharacteristicName == self->gameplaySetupData->get_beatmapLevel()->get_beatmapCharacteristic()->get_name();
                 // });
 
-                MultiplayerCore::Utils::ExtraSongData::DifficultyData difficulty;
+                std::optional<MultiplayerCore::Utils::ExtraSongData::DifficultyData> difficulty;
+                getLogger().debug("Checking difficulty size '%lu'", extraSongData->_difficulties.size());
                 for (auto& diff : extraSongData->_difficulties) {
+                    getLogger().debug("Checking difficulty found '%s' need '%s'", MultiplayerCore::EnumUtils::GetEnumName(diff._difficulty).c_str(), MultiplayerCore::EnumUtils::GetEnumName(self->gameplaySetupData->get_beatmapLevel()->get_beatmapDifficulty()).c_str());
+                    getLogger().debug("And beatmapCharacteristicName found '%s' need '%s'", diff._beatmapCharacteristicName.c_str(), static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapCharacteristic()->get_serializedName()).c_str());
                     if (diff._difficulty == self->gameplaySetupData->get_beatmapLevel()->get_beatmapDifficulty() &&
-                        diff._beatmapCharacteristicName == static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapCharacteristic()->get_name())) {
+                        diff._beatmapCharacteristicName == static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapCharacteristic()->get_serializedName())) {
+                        getLogger().debug("Found match with difficulty '%s' for beatmapCharacteristicName '%s'", MultiplayerCore::EnumUtils::GetEnumName(diff._difficulty).c_str(), diff._beatmapCharacteristicName.c_str());
                         difficulty = std::move(diff);
                         break;
                     }
@@ -392,21 +398,26 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
                 //         self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::NotOwned);
                 //     self->difficultyBeatmap = nullptr;
                 // }
-                for (auto& req : difficulty.additionalDifficultyData->_requirements)
+                if (difficulty && difficulty->additionalDifficultyData)
                 {
-                    
-                    // // TODO: Properly get installed requirements.
-
-                    // if (!Modloader::getMods().contains(req))
-                    if (!RequirementUtils::GetRequirementInstalled(req) && !RequirementUtils::GetIsForcedSuggestion(req))
+                    for (auto& req : difficulty->additionalDifficultyData->_requirements)
                     {
-                        if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
-                            self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::NotOwned);
-                        self->difficultyBeatmap = nullptr;
-                        break;
+                        
+                        // if (!Modloader::getMods().contains(req))
+                        // #define IGNORE_MOD_REQUIREMENTS
+                        // if (true)
+                        if (!RequirementUtils::GetRequirementInstalled(req) && !RequirementUtils::GetIsForcedSuggestion(req))
+                        {
+                            getLogger().debug("Attempted to Load Level with Requirement '%s' not installed stopping load", req.c_str());
+                            if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
+                                self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::NotOwned);
+                            self->difficultyBeatmap = nullptr;
+                            break;
+                        }
                     }
                 }
             }
+            else getLogger().warning("No extra song data found for level '%s'", static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
             // }
         }
     }
@@ -587,12 +598,26 @@ MAKE_HOOK_FIND_VERBOSE(Debug_LogWarning, il2cpp_utils::FindMethodUnsafe("UnityEn
 // }
 
 // Called later on in the game loading - a good time to install function hooks
+
+#if defined(IGNORE_MOD_REQUIREMENTS)
+#include "pinkcore/shared/RequirementAPI.hpp"
+#endif
+
 extern "C" void load() {
     il2cpp_functions::Init();
 
     custom_types::Register::AutoRegister();
 
     QuestUI::Register::RegisterGameplaySetupMenu<MultiplayerCore::UI::DownloadedSongsGSM*>(modInfo, "MP Downloaded", QuestUI::Register::Online);
+
+    
+    #if defined(IGNORE_MOD_REQUIREMENTS)
+    #warning "Ignoring mod requirements"
+    PinkCore::RequirementAPI::RegisterInstalled("Chroma");
+    PinkCore::RequirementAPI::RegisterInstalled("Chroma Lighting Events");
+    PinkCore::RequirementAPI::RegisterInstalled("Mapping Extensions");
+    PinkCore::RequirementAPI::RegisterInstalled("Noodle Extensions");
+    #endif
 
     getLogger().info("Installing hooks...");
     Hooks::Install_Hooks();
