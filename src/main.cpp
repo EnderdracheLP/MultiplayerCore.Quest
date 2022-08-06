@@ -101,29 +101,6 @@ namespace MultiplayerCore {
         }
         return true;
     }
-
-    bool AllPlayersHaveNE() {
-        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
-            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getNEStateStr())) return false;
-        }
-        return true;
-    }
-
-    bool AllPlayersHaveME() {
-        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
-            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getMEStateStr())) return false;
-        }
-        return true;
-    }
-
-    bool AllPlayersHaveChroma() {
-        for (int i = 0; i < _multiplayerSessionManager->connectedPlayers->get_Count(); i++) {
-            if (!_multiplayerSessionManager->connectedPlayers->get_Item(i)->HasState(getChromaStateStr())) return false;
-        }
-        return true;
-    }
-
-
 }
 
 // LobbyPlayersDataModel Activate
@@ -417,8 +394,11 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
                 // }
                 for (auto& req : difficulty.additionalDifficultyData->_requirements)
                 {
-                    // TODO: Properly get installed requirements.
-                    if (!Modloader::getMods().contains(req))
+                    
+                    // // TODO: Properly get installed requirements.
+
+                    // if (!Modloader::getMods().contains(req))
+                    if (!RequirementUtils::GetRequirementInstalled(req) && !RequirementUtils::GetIsForcedSuggestion(req))
                     {
                         if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
                             self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::NotOwned);
