@@ -4,6 +4,8 @@
 #include <optional>
 #include <vector>
 
+#include "../CodegenExtensions/EnumUtils.hpp"
+
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 
 #include "songloader/shared/API.hpp"
@@ -16,6 +18,9 @@
 
 #include "GlobalNamespace/BeatmapDifficulty.hpp"
 #include "GlobalNamespace/CustomPreviewBeatmapLevel.hpp"
+
+//Temporary include
+#include "main.hpp"
 
 namespace MultiplayerCore::Utils {
     struct ExtraSongData {
@@ -218,7 +223,12 @@ namespace MultiplayerCore::Utils {
                                 MapColor diffEnvRightBoost;
                                 MapColor diffObstacle;
                                 auto diffItr = dB.FindMember("_difficulty");
-                                GlobalNamespace::BeatmapDifficulty diffDifficulty = (diffItr != dB.MemberEnd() && diffItr->value.IsInt()) ? diffItr->value.GetInt() : GlobalNamespace::BeatmapDifficulty::Normal;
+                                GlobalNamespace::BeatmapDifficulty diffDifficulty = GlobalNamespace::BeatmapDifficulty::Normal;
+                                if (diffItr != dB.MemberEnd() && diffItr->value.IsString()) {
+                                    auto diffEnumName = diffItr->value.GetString();
+                                    diffDifficulty = EnumUtils::GetEnumValue<GlobalNamespace::BeatmapDifficulty>(diffEnumName);
+                                }
+                                // GlobalNamespace::BeatmapDifficulty diffDifficulty = (diffItr != dB.MemberEnd() && diffItr->value.IsInt()) ? diffItr->value.GetInt() : GlobalNamespace::BeatmapDifficulty::Normal;
 
                                 auto customDataItr = dB.FindMember("_customData");
                                 if (customDataItr != dB.MemberEnd() && customDataItr->value.IsObject()) {
