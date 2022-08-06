@@ -11,7 +11,11 @@ DEFINE_TYPE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel);
 
 namespace MultiplayerCore::Beatmaps {
 	void NetworkBeatmapLevel::New(Packets::MpBeatmapPacket* packet) {
+		getLogger().debug("NetworkBeatmapLevel::New:  INVOKE_CTOR();");
 		INVOKE_CTOR();
+		// Calling base class constructor
+		// TODO: Add this to the other types
+		reinterpret_cast<Abstractions::MpBeatmapLevel*>(this)->__ctor();
 		_packet = packet;
 		requirements[_packet->characteristic] = std::move(_packet->requirements);
 		difficultyColors[_packet->characteristic] = std::move(_packet->mapColors);
