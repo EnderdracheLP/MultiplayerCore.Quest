@@ -64,7 +64,7 @@ namespace MultiplayerCore {
             ).Contains(
                 getCustomLevelSongPackMaskStr())
             ) {
-            action = il2cpp_utils::MakeDelegate<System::Action_1<int>*>(classof(System::Action_1<int>*), (std::function<void(int)>)[self, success](int btnId) {
+            action = custom_types::MakeDelegate<System::Action_1<int>*>((std::function<void(int)>)[self, success](int btnId) {
                         switch (btnId)
                         {
                         default:
