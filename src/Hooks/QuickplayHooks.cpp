@@ -80,11 +80,6 @@ namespace MultiplayerCore {
                             self->ReplaceTopViewController(self->joinQuickPlayViewController, nullptr, HMUI::ViewController::AnimationType::In, HMUI::ViewController::AnimationDirection::Vertical);
                             break;
                         }
-                        QuestUI::MainThreadScheduler::Schedule([]{
-                            Utilities::ClearDelegate(action);
-                            action = nullptr;
-                        });
-                        return;
                     });
             self->simpleDialogPromptViewController->Init(
                 "Custom Song Quickplay",

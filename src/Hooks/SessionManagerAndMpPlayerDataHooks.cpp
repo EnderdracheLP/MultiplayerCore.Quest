@@ -267,7 +267,7 @@ namespace MultiplayerCore {
         static bool gotPlayerInfo = false;
         static auto localNetworkPlayerModel = UnityEngine::Resources::FindObjectsOfTypeAll<LocalNetworkPlayerModel*>().get(0);
         static auto UserInfoTask = localNetworkPlayerModel->platformUserModel->GetUserInfo();
-        static System::Action_1<System::Threading::Tasks::Task*>* action;
+        System::Action_1<System::Threading::Tasks::Task*>* action;
         if (!gotPlayerInfo) action = custom_types::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>((std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
             auto userInfo = userInfoTask->get_Result();
             if (userInfo) {
@@ -277,10 +277,6 @@ namespace MultiplayerCore {
                     localPlayer->platform = getPlatform(userInfo->platform);
                 }
                 gotPlayerInfo = true;
-                QuestUI::MainThreadScheduler::Schedule([]{
-                    Utilities::ClearDelegate(action);
-                    action = nullptr;
-                });
             }
             else getLogger().error("Failed to get local network player!");
             }

@@ -165,9 +165,7 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(NetworkPlayerEntitlementChecker_Start, &NetworkPlayerEntitlementChecker::Start, void, NetworkPlayerEntitlementChecker* self) {
         if (!entitlementAction) entitlementAction = il2cpp_utils::MakeDelegate<System::Action_3<::StringW, ::StringW, EntitlementsStatus>*>(classof(System::Action_3<::StringW, ::StringW, EntitlementsStatus>*), &HandleEntitlementReceived);
-        self->rpcManager->add_setIsEntitledToLevelEvent(
-        entitlementAction
-        );
+        self->rpcManager->add_setIsEntitledToLevelEvent(entitlementAction);
         NetworkPlayerEntitlementChecker_Start(self);
     }
 
