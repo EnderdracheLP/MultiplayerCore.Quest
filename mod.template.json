@@ -9,7 +9,13 @@
   "packageVersion": "1.23.0",
   "description": "Port of MultiplayerCore, the PC mod that adds features to BeatTogether Multiplayer.",
   "coverImage": "Cover.png",
-  "dependencies": [],
+  "dependencies": [
+    {
+      "version": "^1.5.0",
+      "id": "BeatTogether",
+      "downloadIfMissing": "https://github.com/BeatTogether/BeatTogether.Quest/releases/download/v1.5.0/BeatTogether_v1.5.0.qmod"
+    }
+  ],
   "modFiles": [],
   "libraryFiles": [],
   "fileCopies": [],
