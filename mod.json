@@ -4,14 +4,24 @@
   "id": "MultiplayerCore",
   "author": "Goobie",
   "porter": "EnderdracheLP, cubic",
-  "version": "1.1.0-Dev.1",
+  "version": "1.1.0-Dev",
   "packageId": "com.beatgames.beatsaber",
-  "packageVersion": "1.23.0",
+  "packageVersion": "1.24.0",
   "description": "Port of MultiplayerCore, the PC mod that adds features to BeatTogether Multiplayer.",
   "coverImage": "Cover.png",
   "dependencies": [
     {
-      "version": "^0.10.0",
+      "version": "^1.5.0",
+      "id": "BeatTogether",
+      "downloadIfMissing": "https://github.com/BeatTogether/BeatTogether.Quest/releases/download/v1.5.0/BeatTogether_v1.5.0.qmod"
+    },
+    {
+      "version": "^0.25.0",
+      "id": "codegen",
+      "downloadIfMissing": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.25.0/Codegen.qmod"
+    },
+    {
+      "version": "^0.10.3",
       "id": "songloader",
       "downloadIfMissing": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.0/SongLoader.qmod"
     },
