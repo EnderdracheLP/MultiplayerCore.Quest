@@ -258,18 +258,18 @@ MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoad
                         QuestUI::MainThreadScheduler::Schedule( [self, gameplaySetupData, initialStartTime, hash, levelId] {
                             RuntimeSongLoader::API::RefreshSongs(false,
                                 [self, gameplaySetupData, initialStartTime, hash, levelId](const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
-                                    auto* downloadedSongsGSM = MultiplayerCore::UI::DownloadedSongsGSM::get_Instance();
-                                    if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(hash);
-                                    else if (!getConfig().config["autoDelete"].GetBool()) {
-                                        getLogger().warning("DownloadedSongsGSM was null, adding to queue");
-                                        MultiplayerCore::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
-                                    }
                                     getLogger().debug("Pointer Check before loading level: self='%p', gameplaySetupData='%p'", self, gameplaySetupData);
                                     self->loaderState = MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::NotLoading;
                                     getLogger().debug("Setting beatmapLevel");
                                     for (GlobalNamespace::CustomPreviewBeatmapLevel* song : songs) {
                                         if (static_cast<std::string>(song->get_levelID()) == levelId) {
                                             getLogger().debug("Found song, setting beatmapLevel");
+                                            auto* downloadedSongsGSM = MultiplayerCore::UI::DownloadedSongsGSM::get_Instance();
+                                            if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(song);
+                                            else if (!getConfig().config["autoDelete"].GetBool()) {
+                                                getLogger().warning("DownloadedSongsGSM was null, adding to queue");
+                                                MultiplayerCore::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
+                                            }
                                             reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->beatmapLevel->set_beatmapLevel(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(song));
                                             break;
                                         }

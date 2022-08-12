@@ -35,5 +35,5 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, DownloadedSongsGSM, UnityEngine::Mono
 
 public:
     void InsertCell(std::string hash);
-
+    void InsertCell(GlobalNamespace::CustomPreviewBeatmapLevel* level);
 )

@@ -61,7 +61,6 @@ namespace MultiplayerCore::UI {
         QuestUI::MainThreadScheduler::Schedule([&]{
             MultiplayerCore::Utilities::ClearDelegate(action);
         });
-        
     }
 
     // TODO: Add index check, check if index is out of bounds
@@ -151,20 +150,31 @@ namespace MultiplayerCore::UI {
     }
 
     void DownloadedSongsGSM::InsertCell(std::string hash) {
+        getLogger().debug("DownloadedSongsGSM::InsertCell");
         std::optional<CustomPreviewBeatmapLevel*> levelOpt = GetLevelByHash(hash);
         if (levelOpt.has_value()) {
+            this->InsertCell(levelOpt.value());
+        }
+        else {
+            getLogger().error("Song with Hash '%s' not found, was it already deleted?", hash.c_str());
+        }
+    }
+
+    void DownloadedSongsGSM::InsertCell(GlobalNamespace::CustomPreviewBeatmapLevel* level) {
+        getLogger().debug("DownloadedSongsGSM::InsertCell");
+        if (level) {
             lastDownloaded = levelOpt.value();
             getLogger().info("Song with Hash '%s' added to list", hash.c_str());
             System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask = lastDownloaded->GetCoverImageAsync(System::Threading::CancellationToken::get_None());
             static System::Action_1<System::Threading::Tasks::Task*>* action;
-            action = custom_types::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>((std::function<void()>)[coverTask, this] {
-                CreateCell(coverTask, lastDownloaded, action);
+            action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>((std::function<void()>)[coverTask, this] {
+                    CreateCell(coverTask, lastDownloaded, action);
                 }
             );
             reinterpret_cast<System::Threading::Tasks::Task*>(coverTask)->ContinueWith(action);
         }
         else {
-            getLogger().error("Song with Hash '%s' not found, was it already deleted?", hash.c_str());
+            getLogger().error("Level is nullptr, was it already deleted?");
         }
     }
 
