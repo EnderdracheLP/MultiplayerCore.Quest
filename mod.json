@@ -16,34 +16,34 @@
       "downloadIfMissing": "https://github.com/BeatTogether/BeatTogether.Quest/releases/download/v1.5.0/BeatTogether_v1.5.0.qmod"
     },
     {
-      "version": "^1.6.10",
+      "version": "^1.8.0",
       "id": "pinkcore",
       "downloadIfMissing": "https://github.com/BSMGPink/PinkCore/releases/download/v1.8.0/PinkCore.qmod"
     },
     {
-      "version": "^0.16.3",
+      "version": "^0.16.5",
       "id": "questui",
-      "downloadIfMissing": "https://github.com/darknight1050/QuestUI/releases/download/v0.16.4/QuestUI.qmod"
+      "downloadIfMissing": "https://github.com/darknight1050/QuestUI/releases/download/v0.16.5/QuestUI.qmod"
     },
     {
-      "version": "^0.10.3",
+      "version": "^0.10.4",
       "id": "songloader",
-      "downloadIfMissing": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.3/SongLoader.qmod"
+      "downloadIfMissing": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.4/SongLoader.qmod"
     },
     {
-      "version": "^0.15.18",
+      "version": "^0.15.19",
       "id": "custom-types",
       "downloadIfMissing": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.19/CustomTypes.qmod"
     },
     {
-      "version": "^0.4.10",
+      "version": "^0.4.11",
       "id": "songdownloader",
-      "downloadIfMissing": "https://github.com/darknight1050/SongDownloader/releases/download/v0.4.10/SongDownloader.qmod"
+      "downloadIfMissing": "https://github.com/darknight1050/SongDownloader/releases/download/v0.4.11/SongDownloader.qmod"
     },
     {
-      "version": "^0.25.0",
+      "version": "^0.26.0",
       "id": "codegen",
-      "downloadIfMissing": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.25.0/Codegen.qmod"
+      "downloadIfMissing": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.26.0/Codegen.qmod"
     }
   ],
   "modFiles": [
