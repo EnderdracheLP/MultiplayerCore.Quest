@@ -3,8 +3,8 @@
   "dependenciesDir": "extern",
   "info": {
     "name": "MultiplayerCore",
-    "id": "MultiplayerCore",
-    "version": "1.2.0-Dev",
+    "id": "multiplayer-core",
+    "version": "1.2.0",
     "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
     "additionalData": {
       "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.2.0/libMultiplayerCore.so",
