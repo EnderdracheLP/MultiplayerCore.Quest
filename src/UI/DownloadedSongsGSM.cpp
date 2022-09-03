@@ -53,7 +53,7 @@ namespace MultiplayerCore::UI {
             InsertCell(mapQueue.back());
             mapQueue.pop_back();
         }
-        // Refresh our view, though this doesn't always work perfectly first try though will at least show the next time our view ie re-enabled
+        // Refresh our view, though this doesn't always work perfectly first try though will at least show the next time our view is re-enabled
         if (list && list->tableView)
             list->tableView->RefreshCellsContent();
         else getLogger().error("Nullptr in UI: list '%p', list->tableView '%p'", list, list->tableView);

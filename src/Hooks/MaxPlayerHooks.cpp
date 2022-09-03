@@ -19,8 +19,17 @@
 #include "GlobalNamespace/MultiplayerLocalInactivePlayerFacade.hpp"
 #include "GlobalNamespace/IConnectedPlayer.hpp"
 
+#include "GlobalNamespace/LocalMultiplayerSyncState_3.hpp"
+#include "GlobalNamespace/RemoteMultiplayerSyncState_3.hpp"
+#include "GlobalNamespace/MultiplayerSyncStateManager_5.hpp"
+#include "GlobalNamespace/NodePoseSyncStateManager.hpp"
+#include "GlobalNamespace/NodePoseSyncStateNetSerializable.hpp"
+#include "GlobalNamespace/NodePoseSyncStateDeltaNetSerializable.hpp"
+
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Debug.hpp"
+
+#include "System/Byte.hpp"
 
 #include "System/Action.hpp"
 
@@ -68,7 +77,7 @@ namespace MultiplayerCore {
 
                 // NOTE: We don't do that on Quest right now, doesn't seem to cause any issues so far
                 // // Cleanup gameobject
-                // onCompleted = il2cpp_utils::MakeDelegate<System::Action*>(classof(System::Action*), (std::function<void()>)[self, newPlayableGameObject, &onCompleted] {
+                // onCompleted = custom_types::MakeDelegate<System::Action*>(classof(System::Action*), (std::function<void()>)[self, newPlayableGameObject, &onCompleted] {
                 //     GameObject::Destroy(newPlayableGameObject);
 
                 //     // Make sure old action happens by calling it
@@ -376,6 +385,46 @@ namespace MultiplayerCore {
         CreateServerFormController_Setup(self, selectedNumberOfPlayers, netDiscoverable);
     }
 
+#pragma region TempPlayerPacketPatches
+
+    // FindMethodInfo* get_MultiplayerSyncStateManager_Method()
+    // {
+    //     static MethodInfo* method = il2cpp_utils::FindMethodUnsafe(classof(GlobalNamespace::MultiplayerSyncStateManager_5*), "LateUpdate", 0);
+        
+    // }
+
+    // MAKE_HOOK_FIND_CLASS_INSTANCE(NodePoseSyncStateManager_LateUpdate, "", "NodePoseSyncStateManager", "LateUpdate", void, GlobalNamespace::NodePoseSyncStateManager* self)
+    MAKE_HOOK_FIND_VERBOSE(NodePoseSyncStateManager_LateUpdate, il2cpp_utils::FindMethodUnsafe(classof(GlobalNamespace::NodePoseSyncStateManager*), "LateUpdate", 0), void, GlobalNamespace::NodePoseSyncStateManager* self, MethodInfo* mInfo)
+    {
+        if (self->get_connectedPlayerCount() > 10)
+        {
+            clock_t this_time = clock();
+            static clock_t last_time = this_time;
+            static double time_counter = 0;
+
+            time_counter += (double)(this_time - last_time);
+
+            last_time = this_time;
+
+            float secToWait = std::clamp(self->get_connectedPlayerCount() * 0.005f, 0.005f, 0.025f);
+            double calcSecWait = (double)(secToWait * CLOCKS_PER_SEC);
+
+            if (time_counter >= calcSecWait)
+            {
+                // static unsigned int count;
+                // getLogger().debug("NodePoseSyncStateManager_LateUpdate '%d'", count++);
+
+                time_counter -= calcSecWait;
+                NodePoseSyncStateManager_LateUpdate(self, mInfo);
+            }
+        } else {
+            NodePoseSyncStateManager_LateUpdate(self, mInfo);
+        }
+    }
+
+
+#pragma endregion
+
     void Hooks::MaxPlayerHooks() {
         INSTALL_HOOK(getLogger(), MultiplayerResultsPyramidPatch);
         INSTALL_HOOK(getLogger(), IntroAnimationPatch);
@@ -386,7 +435,7 @@ namespace MultiplayerCore {
         INSTALL_HOOK(getLogger(), CreateServerFormController_get_formData);
         INSTALL_HOOK(getLogger(), CreateServerFormController_Setup);
 
-        
+        INSTALL_HOOK_ORIG(getLogger(), NodePoseSyncStateManager_LateUpdate);
 
     }
 }
