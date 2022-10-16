@@ -163,8 +163,8 @@ namespace MultiplayerCore::UI {
     void DownloadedSongsGSM::InsertCell(GlobalNamespace::CustomPreviewBeatmapLevel* level) {
         getLogger().debug("DownloadedSongsGSM::InsertCell");
         if (level) {
-            lastDownloaded = levelOpt.value();
-            getLogger().info("Song with Hash '%s' added to list", hash.c_str());
+            lastDownloaded = level;
+            getLogger().info("Song with levelId '%s' added to list", static_cast<std::string>(level->get_levelID()).c_str());
             System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask = lastDownloaded->GetCoverImageAsync(System::Threading::CancellationToken::get_None());
             static System::Action_1<System::Threading::Tasks::Task*>* action;
             action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>((std::function<void()>)[coverTask, this] {
