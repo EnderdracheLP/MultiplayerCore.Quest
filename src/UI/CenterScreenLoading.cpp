@@ -57,8 +57,8 @@ namespace MultiplayerCore::UI{
         getLogger().info("CenterScreenLoading::ShowLoading, players ready (%d of %d)", 
             readyPlayers, maxPlayers);
         if (loadingControl) {
-            loadingControl->ShowLoading(il2cpp_utils::newcsstr(string_format("%d of %d players ready...",
-                readyPlayers, maxPlayers)));
+            loadingControl->ShowLoading(string_format("%d of %d players ready...",
+                readyPlayers, maxPlayers).c_str());
         }
     }
 
@@ -67,7 +67,7 @@ namespace MultiplayerCore::UI{
         isDownloading = (downloadingProgress < 100.0f);
         if (loadingControl) {
             //static Il2CppString* string = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Downloading...");
-            loadingControl->ShowDownloadingProgress(il2cpp_utils::newcsstr(string_format("Downloading (%.2f%%)...", downloadingProgress)), downloadingProgress / 100);
+            loadingControl->ShowDownloadingProgress(string_format("Downloading (%.2f%%)...", downloadingProgress).c_str(), downloadingProgress / 100);
         }
     }
 
