@@ -158,6 +158,21 @@ namespace MultiplayerCore {
                 mpPacketSerializer->Send(localPlayer);
             }
             getLogger().debug("MpPlayerData sent");
+
+            if (!MultiplayerCore::lobbyGameStateController)
+                return;
+            
+            std::optional<LobbyPlayersDataModel*> lobbyPlayersDataModel = il2cpp_utils::try_cast<LobbyPlayersDataModel>(MultiplayerCore::lobbyGameStateController->lobbyPlayersDataModel);
+            if (!(lobbyPlayersDataModel && (*lobbyPlayersDataModel)->playersData))
+                return;
+            
+            GlobalNamespace::LobbyPlayerData* localPlayerData = (*lobbyPlayersDataModel)->playersData->get_Item(
+                (*lobbyPlayersDataModel)->get_localUserId());
+
+            if (localPlayerData && localPlayerData->get_beatmapLevel()) {
+                mpPacketSerializer->Send(Beatmaps::Packets::MpBeatmapPacket::CS_Ctor(localPlayerData->get_beatmapLevel()));
+                getLogger().debug("MpBeatmapPacket sent");
+            }
         }
     }
 
