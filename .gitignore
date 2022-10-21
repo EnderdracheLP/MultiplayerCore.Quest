@@ -65,3 +65,5 @@ ndkpath.txt
 *.log
 .vscode/launch.json.bak
 mod.json
+
+notes.txt

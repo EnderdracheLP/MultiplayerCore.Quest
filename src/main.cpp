@@ -584,12 +584,16 @@ MAKE_HOOK_FIND_VERBOSE(Debug_LogWarning, il2cpp_utils::FindMethodUnsafe("UnityEn
 #include "System/Enum.hpp"
 #include "System/ValueType.hpp"
 
+using namespace Lapiz::Zenject;
+
 extern "C" void load() {
     il2cpp_functions::Init();
 
     custom_types::Register::AutoRegister();
 
     QuestUI::Register::RegisterGameplaySetupMenu<MultiplayerCore::UI::DownloadedSongsGSM*>(modInfo, "MP Downloaded", QuestUI::Register::Online);
+
+    auto zenjector = Zenjector::Get();
 
     
     #if defined(IGNORE_MOD_REQUIREMENTS)
@@ -604,41 +608,45 @@ extern "C" void load() {
     Hooks::Install_Hooks();
     // INSTALL_HOOK(getLogger(), MultiplayerGameplayAnimator_HandleStateChanged);
 
-    INSTALL_HOOK(getLogger(), LobbyPlayersActivate);
+    // INSTALL_HOOK(getLogger(), LobbyPlayersActivate);
 
-    INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_LoadLevel);
-    INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_Tick);
+    // INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_LoadLevel);
+    // INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_Tick);
     if (Modloader::getMods().find("BeatTogether") != Modloader::getMods().end()) {
         getLogger().info("Hello BeatTogether!");
     }
     else getLogger().warning("BeatTogether was not found! Is Multiplayer modded?");
 
-    INSTALL_HOOK(getLogger(), LobbyGameStateController_Activate);
-    INSTALL_HOOK(getLogger(), LobbySetupViewController_SetPlayersMissingLevelText);
-    INSTALL_HOOK(getLogger(), LobbySetupViewController_SetStartGameEnabled);
-    INSTALL_HOOK(getLogger(), LobbySetupViewController_DidActivate);
+    // INSTALL_HOOK(getLogger(), LobbyGameStateController_Activate);
+    // INSTALL_HOOK(getLogger(), LobbySetupViewController_SetPlayersMissingLevelText);
+    // INSTALL_HOOK(getLogger(), LobbySetupViewController_SetStartGameEnabled);
+    // INSTALL_HOOK(getLogger(), LobbySetupViewController_DidActivate);
 
-    INSTALL_HOOK(getLogger(), MultiplayerLobbyConnectionController_CreateParty);
+    // INSTALL_HOOK(getLogger(), MultiplayerLobbyConnectionController_CreateParty);
 
-    INSTALL_HOOK(getLogger(), LevelSelectionNavigationController_Setup);
-    INSTALL_HOOK(getLogger(), CenterStageScreenController_Setup);
+    // INSTALL_HOOK(getLogger(), LevelSelectionNavigationController_Setup);
+    // INSTALL_HOOK(getLogger(), CenterStageScreenController_Setup);
 
-#pragma region Debug Hooks
-#ifdef DEBUG
-#warning Debug Hooks enabled!!!
-    INSTALL_HOOK(getLogger(), BGNetDebug_Log);
-    INSTALL_HOOK(getLogger(), BGNetDebug_LogError);
-    INSTALL_HOOK(getLogger(), BGNetDebug_LogException);
-    INSTALL_HOOK(getLogger(), BGNetDebug_LogWarning);
+// #pragma region Debug Hooks
+// #ifdef DEBUG
+// #warning Debug Hooks enabled!!!
+//     INSTALL_HOOK(getLogger(), BGNetDebug_Log);
+//     INSTALL_HOOK(getLogger(), BGNetDebug_LogError);
+//     INSTALL_HOOK(getLogger(), BGNetDebug_LogException);
+//     INSTALL_HOOK(getLogger(), BGNetDebug_LogWarning);
 
-    INSTALL_HOOK(getLogger(), Debug_Log);
-    INSTALL_HOOK(getLogger(), Debug_LogError);
-    INSTALL_HOOK(getLogger(), Debug_LogWarning);
-#endif
-#pragma endregion
+//     INSTALL_HOOK(getLogger(), Debug_Log);
+//     INSTALL_HOOK(getLogger(), Debug_LogError);
+//     INSTALL_HOOK(getLogger(), Debug_LogWarning);
+// #endif
+// #pragma endregion
 
 
     INSTALL_HOOK(getLogger(), GameServerPlayerTableCell_SetData);
 
     getLogger().info("Installed all hooks!");
+    getLogger().info("Installing Zenject bindings...");
+
+    zenjector->Install<MultiplayerCore::Installers::MpAppInstaller*>(Location::App);
+    zenjector->Install<MultiplayerCore::Installers::MpMenuInstaller*>(Location::Menu);
 }

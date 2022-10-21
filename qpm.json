@@ -59,6 +59,16 @@
       "id": "pinkcore",
       "versionRange": "^1.8.2",
       "additionalData": {}
+    },
+    {
+      "id": "lapiz",
+      "versionRange": "^0.1.5",
+      "additionalData": {}
+    },
+    {
+      "id": "paper",
+      "versionRange": "^1.2.9",
+      "additionalData": {}
     }
   ],
   "additionalData": {}
