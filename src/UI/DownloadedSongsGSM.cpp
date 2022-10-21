@@ -131,7 +131,7 @@ namespace MultiplayerCore::UI {
                 ->set_verticalFit(UnityEngine::UI::ContentSizeFitter::FitMode::MinSize);
 
 
-            list = BeatSaberUI::CreateScrollableList(vertical->get_transform(), { 80, 60 }, [this](int idx) {
+            list = BeatSaberUI::CreateScrollableList(vertical->get_transform(), { 80, 53 }, [this](int idx) {
                 getLogger().debug("Cell with idx %d clicked", idx);
                 cellIsSelected = true;
                 selectedIdx = idx;
