@@ -12,7 +12,9 @@ Param(
     [Alias("actions", "pack")]
     [Switch] $package,
 
-    [Parameter(Mandatory=$false, HelpMessage="The version of the mod")][String] $version
+    [Parameter(Mandatory=$false, HelpMessage="The version of the mod")][String] $version,
+
+    [Parameter(Mandatory=$false, HelpMessage="To create a release build")][Alias("publish")][Switch]$release = $false
 )
 
 # Builds a .qmod file for loading with QP or BMBF
@@ -26,6 +28,7 @@ if ($help -eq $true) {
     echo "`n-- Arguments --`n"
 
     echo "-clean `t`t Performs a clean build on both your library and the qmod"
+    echo "-release `t`t Creates a release build, please use together with the `"-version`" and the `"-clean`" argument"
     echo "-help `t`t Prints this"
     echo "-package `t Only packages existing files, without recompiling`n"
 
@@ -48,7 +51,7 @@ echo "Creating QMod $qmodName"
         $qmodName += $version
         qpm-rust package edit --version $version
     }
-    & $PSScriptRoot/build.ps1 -clean:$clean -version:$version
+    & $PSScriptRoot/build.ps1 -clean:$clean -version:$version -release:$release
 
     if ($LASTEXITCODE -ne 0) {
         echo "Failed to build, exiting..."
