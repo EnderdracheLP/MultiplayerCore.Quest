@@ -60,6 +60,7 @@ namespace MultiplayerCore {
         getLogger().info("NetworkPlayerEntitlementChecker_GetEntitlementStatus: %s", levelId.c_str());
         if (IsCustomLevel(levelId)) {
             if (HasSong(levelId)) {
+                getLogger().info("NetworkPlayerEntitlementChecker_GetEntitlementStatus has song, checking requirements");
                 auto extraSongData  = MultiplayerCore::Utils::ExtraSongData::FromLevelId(levelId);
                 if (!extraSongData)
                     return Task_1<EntitlementsStatus>::New_ctor(EntitlementsStatus::Ok);
@@ -99,6 +100,7 @@ namespace MultiplayerCore {
                 return Task_1<EntitlementsStatus>::New_ctor(EntitlementsStatus::Ok);
             }
             else {
+                getLogger().info("NetworkPlayerEntitlementChecker_GetEntitlementStatus we don't have the song, falling back to beatsaver compare");
                 auto task = Task_1<EntitlementsStatus>::New_ctor();
                 BeatSaver::API::GetBeatmapByHashAsync(Utilities::GetHash(levelId),
                     [task, levelId](std::optional<BeatSaver::Beatmap> beatmaps) {
@@ -113,13 +115,13 @@ namespace MultiplayerCore {
                                         bool isMissingRequirements = false;
                                         // TODO: I'd like to actually only check the current difficulty, but I still need to figure out how to get the current selected difficulty
                                         for (auto& diff : beatmap.GetDiffs()) {
-                                            if (diff.GetChroma() && !RequirementUtils::GetRequirementInstalled("Chroma") && !RequirementUtils::GetIsForcedSuggestion("Chroma")) {
-                                                task->TrySetResult(EntitlementsStatus::NotOwned);
-                                                getLogger().warning("Map contains Chroma difficulty and Chroma doesn't seem to be installed, returning NotOwned");
-                                                if (tempMissingLevelText.find("Chroma") == std::string::npos) tempMissingLevelText += "Chroma";
-                                                isMissingRequirements = true;
-                                            }
-                                            else if (diff.GetNE() && !RequirementUtils::GetRequirementInstalled("Noodle Extensions") && !RequirementUtils::GetIsForcedSuggestion("Noodle Extensions")) {
+                                            // if (diff.GetChroma() && !RequirementUtils::GetRequirementInstalled("Chroma") && !RequirementUtils::GetIsForcedSuggestion("Chroma")) {
+                                            //     task->TrySetResult(EntitlementsStatus::NotOwned);
+                                            //     getLogger().warning("Map contains Chroma difficulty and Chroma doesn't seem to be installed, returning NotOwned");
+                                            //     if (tempMissingLevelText.find("Chroma") == std::string::npos) tempMissingLevelText += "Chroma";
+                                            //     isMissingRequirements = true;
+                                            // }
+                                            /*else*/ if (diff.GetNE() && !RequirementUtils::GetRequirementInstalled("Noodle Extensions") && !RequirementUtils::GetIsForcedSuggestion("Noodle Extensions")) {
                                                 task->TrySetResult(EntitlementsStatus::NotOwned);
                                                 getLogger().warning("Map contains NE difficulty but NoodleExtensions doesn't seem to be installed, returning NotOwned");
                                                 if (tempMissingLevelText.find("Noodle Extensions") == std::string::npos) tempMissingLevelText += "Noodle Extensions";
