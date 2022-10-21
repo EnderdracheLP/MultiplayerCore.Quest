@@ -382,7 +382,7 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
                         // if (true)
                         if (!RequirementUtils::GetRequirementInstalled(req) && !RequirementUtils::GetIsForcedSuggestion(req))
                         {
-                            getLogger().debug("Attempted to Load Level with Requirement '%s' not installed stopping load", req.c_str());
+                            getLogger().warning("Attempted to Load Level with Requirement '%s' not installed stopping load", req.c_str());
                             if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
                                 self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::NotOwned);
                             self->difficultyBeatmap = nullptr;
@@ -410,7 +410,7 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
             } 
         }
         if (_multiplayerSessionManager->get_syncTime() >= self->startTime && MultiplayerCore::UI::CenterScreenLoading::playersReady == _multiplayerSessionManager->connectedPlayers->get_Count()+1) {
-            getLogger().debug("All players have OK entitilement");
+            getLogger().debug("All players have OK entitlement");
             MultiplayerLevelLoader_Tick(self);
         }
     }
