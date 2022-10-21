@@ -64,3 +64,4 @@ ndkpath.txt
 *.cmake
 *.log
 .vscode/launch.json.bak
+mod.json
