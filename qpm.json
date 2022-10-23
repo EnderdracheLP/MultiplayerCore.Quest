@@ -7,7 +7,11 @@
     "version": "1.3.1",
     "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
     "additionalData": {
-      "overrideSoName": "libMultiplayerCore.so"
+      "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.3.1/libMultiplayerCore.so",
+      "debugSoLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.3.1/debug_libMultiplayerCore.so",
+      "overrideSoName": "libMultiplayerCore.so",
+      "modLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.3.1/MultiplayerCore_1.3.1.qmod",
+      "branchName": "version-1.3.1"
     }
   },
   "dependencies": [
