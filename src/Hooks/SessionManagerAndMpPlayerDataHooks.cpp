@@ -149,15 +149,17 @@ namespace MultiplayerCore {
         getLogger().debug("MPCore HandlePlayerConnected");
         if (player) {
             getLogger().info("Player '%s' joined", static_cast<std::string>(player->get_userId()).c_str());
-            if (localPlayer->platformId)
+            if (localPlayer && localPlayer->platformId)
             {
                 getLogger().debug("Sending MpPlayerData with platformID: '%s' platform: '%d'",
                     static_cast<std::string>(localPlayer->platformId).c_str(),
                     (int)localPlayer->platform
                 );
                 mpPacketSerializer->Send(localPlayer);
+                getLogger().debug("MpPlayerData sent");
+            } else {
+                getLogger().warning("LocalPlayer is null");
             }
-            getLogger().debug("MpPlayerData sent");
 
             if (!MultiplayerCore::lobbyGameStateController)
                 return;
@@ -279,22 +281,19 @@ namespace MultiplayerCore {
         SessionManager_StartSession(self, sessionType, connectedPlayerManager);
 
         getLogger().debug("SessionManager_StartSession, creating localPlayer");
-        static bool gotPlayerInfo = false;
         static auto localNetworkPlayerModel = UnityEngine::Resources::FindObjectsOfTypeAll<LocalNetworkPlayerModel*>().get(0);
-        static auto UserInfoTask = localNetworkPlayerModel->platformUserModel->GetUserInfo();
-        System::Action_1<System::Threading::Tasks::Task*>* action;
-        if (!gotPlayerInfo) action = custom_types::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>((std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
-            auto userInfo = userInfoTask->get_Result();
-            if (userInfo) {
-                if (!localPlayer) localPlayer = Players::MpPlayerData::Init(userInfo->platformUserId, getPlatform(userInfo->platform));
-                else {
-                    localPlayer->platformId = userInfo->platformUserId;
-                    localPlayer->platform = getPlatform(userInfo->platform);
-                }
-                gotPlayerInfo = true;
+        auto UserInfoTask = localNetworkPlayerModel->platformUserModel->GetUserInfo();
+        System::Action_1<System::Threading::Tasks::Task*>* action = custom_types::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>((std::function<void(System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>*)>)[&](System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>* userInfoTask) {
+        auto userInfo = userInfoTask->get_Result();
+        if (userInfo) {
+            if (!localPlayer) localPlayer = Players::MpPlayerData::Init(userInfo->platformUserId, getPlatform(userInfo->platform));
+            else {
+                localPlayer->platformId = userInfo->platformUserId;
+                localPlayer->platform = getPlatform(userInfo->platform);
             }
-            else getLogger().error("Failed to get local network player!");
-            }
+        }
+        else getLogger().error("Failed to get local network player!");
+        }
         );
         if (action) { 
             reinterpret_cast<System::Threading::Tasks::Task*>(UserInfoTask)->ContinueWith(action);
@@ -358,10 +357,11 @@ namespace MultiplayerCore {
         return beatmap;
     }
 
-
-    void Hooks::SessionManagerAndExtendedPlayerHooks() {
+    void Hooks::Early_SessionManagerAndExtendedPlayerHooks() {
         INSTALL_HOOK(getLogger(), SessionManagerStart);
+    }
 
+    void Hooks::Late_SessionManagerAndExtendedPlayerHooks() {
         INSTALL_HOOK_ORIG(getLogger(), SessionManager_StartSession);
         INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected);
         INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected);

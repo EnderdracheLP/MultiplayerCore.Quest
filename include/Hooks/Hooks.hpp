@@ -38,18 +38,23 @@ namespace MultiplayerCore {
         static void MaxPlayerHooks();
         static void EnvironmentHooks();
         static void QuickplayHooks();
-        static void SessionManagerAndExtendedPlayerHooks();
+        static void Early_SessionManagerAndExtendedPlayerHooks();
+        static void Late_SessionManagerAndExtendedPlayerHooks();
         static void MultiplayerStatusHook();
         static void MultiplayerUnavailableReasonHook();
 
     public:
-        static const void Install_Hooks() {
+        static const void InstallEarlyHooks() {
+            Early_SessionManagerAndExtendedPlayerHooks();
+            MultiplayerStatusHook();
+        }
+
+        static const void InstallLateHooks() {
             NetworkplayerEntitlementChecker();
             MaxPlayerHooks();
             EnvironmentHooks();
             QuickplayHooks();
-            SessionManagerAndExtendedPlayerHooks();
-            MultiplayerStatusHook();
+            Late_SessionManagerAndExtendedPlayerHooks();
             MultiplayerUnavailableReasonHook();
         }
     };

@@ -439,6 +439,39 @@ MAKE_HOOK_MATCH(CenterStageScreenController_Setup, &CenterStageScreenController:
         self->get_gameObject()->AddComponent<MultiplayerCore::UI::CenterScreenLoading*>();
 }
 
+bool HooksInit = false;
+
+#include "GlobalNamespace/MultiplayerModeSelectionFlowCoordinator.hpp"
+
+MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_DidActivate, &MultiplayerModeSelectionFlowCoordinator::DidActivate, void, MultiplayerModeSelectionFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
+    MultiplayerModeSelectionFlowCoordinator_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+    if (firstActivation && !HooksInit) {
+        getLogger().debug("MultiplayerModeSelectionFlowCoordinator_DidActivate Registering Custom Types");
+        custom_types::Register::AutoRegister();
+        getLogger().debug("MultiplayerModeSelectionFlowCoordinator_DidActivate Installing Late Hooks");
+        Hooks::InstallLateHooks();
+        INSTALL_HOOK(getLogger(), LobbyPlayersActivate);
+
+        INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_LoadLevel);
+        INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_Tick);
+
+        INSTALL_HOOK(getLogger(), LobbyGameStateController_Activate);
+        INSTALL_HOOK(getLogger(), LobbySetupViewController_SetPlayersMissingLevelText);
+        INSTALL_HOOK(getLogger(), LobbySetupViewController_SetStartGameEnabled);
+        INSTALL_HOOK(getLogger(), LobbySetupViewController_DidActivate);
+
+        INSTALL_HOOK(getLogger(), MultiplayerLobbyConnectionController_CreateParty);
+
+        INSTALL_HOOK(getLogger(), LevelSelectionNavigationController_Setup);
+        INSTALL_HOOK(getLogger(), CenterStageScreenController_Setup);
+
+        INSTALL_HOOK(getLogger(), GameServerPlayerTableCell_SetData);
+
+        HooksInit = true;
+        getLogger().debug("MultiplayerModeSelectionFlowCoordinator_DidActivate All Late Hooks Installed");
+    }
+}
+
 
 void saveDefaultConfig() {
     getLogger().info("Creating config file...");
@@ -583,15 +616,16 @@ MAKE_HOOK_FIND_VERBOSE(Debug_LogWarning, il2cpp_utils::FindMethodUnsafe("UnityEn
 
 #include "System/Enum.hpp"
 #include "System/ValueType.hpp"
+#include "questui/shared/CustomTypes/Components/List/CustomListTableData.hpp"
 
 extern "C" void load() {
     il2cpp_functions::Init();
+  
 
-    custom_types::Register::AutoRegister();
+    custom_types::Register::ExplicitRegister({QuestUI::CustomListTableData::___TypeRegistration::get(), MultiplayerCore::UI::DownloadedSongsGSM::___TypeRegistration::get()});
 
     QuestUI::Register::RegisterGameplaySetupMenu<MultiplayerCore::UI::DownloadedSongsGSM*>(modInfo, "MP Downloaded", QuestUI::Register::Online);
 
-    
     #if defined(IGNORE_MOD_REQUIREMENTS)
     #warning "Ignoring mod requirements"
     PinkCore::RequirementAPI::RegisterInstalled("Chroma");
@@ -600,28 +634,16 @@ extern "C" void load() {
     PinkCore::RequirementAPI::RegisterInstalled("Noodle Extensions");
     #endif
 
-    getLogger().info("Installing hooks...");
-    Hooks::Install_Hooks();
+    getLogger().info("Installing early hooks...");
+
+    Hooks::InstallEarlyHooks();
     // INSTALL_HOOK(getLogger(), MultiplayerGameplayAnimator_HandleStateChanged);
+    INSTALL_HOOK(getLogger(), MultiplayerModeSelectionFlowCoordinator_DidActivate);
 
-    INSTALL_HOOK(getLogger(), LobbyPlayersActivate);
-
-    INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_LoadLevel);
-    INSTALL_HOOK_ORIG(getLogger(), MultiplayerLevelLoader_Tick);
     if (Modloader::getMods().find("BeatTogether") != Modloader::getMods().end()) {
         getLogger().info("Hello BeatTogether!");
     }
     else getLogger().warning("BeatTogether was not found! Is Multiplayer modded?");
-
-    INSTALL_HOOK(getLogger(), LobbyGameStateController_Activate);
-    INSTALL_HOOK(getLogger(), LobbySetupViewController_SetPlayersMissingLevelText);
-    INSTALL_HOOK(getLogger(), LobbySetupViewController_SetStartGameEnabled);
-    INSTALL_HOOK(getLogger(), LobbySetupViewController_DidActivate);
-
-    INSTALL_HOOK(getLogger(), MultiplayerLobbyConnectionController_CreateParty);
-
-    INSTALL_HOOK(getLogger(), LevelSelectionNavigationController_Setup);
-    INSTALL_HOOK(getLogger(), CenterStageScreenController_Setup);
 
 #pragma region Debug Hooks
 #ifdef DEBUG
@@ -637,8 +659,5 @@ extern "C" void load() {
 #endif
 #pragma endregion
 
-
-    INSTALL_HOOK(getLogger(), GameServerPlayerTableCell_SetData);
-
-    getLogger().info("Installed all hooks!");
+    getLogger().info("Installed all early hooks!");
 }
