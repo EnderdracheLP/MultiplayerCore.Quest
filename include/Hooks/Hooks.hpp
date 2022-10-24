@@ -34,7 +34,8 @@ namespace MultiplayerCore {
     extern GlobalNamespace::GameplayModifiers* loadingGameplayModifiers;
 
     class Hooks {
-        static void NetworkplayerEntitlementChecker();
+        static void Early_NetworkPlayerEntitlementChecker();
+        static void Late_NetworkplayerEntitlementChecker();
         static void MaxPlayerHooks();
         static void EnvironmentHooks();
         static void QuickplayHooks();
@@ -45,12 +46,13 @@ namespace MultiplayerCore {
 
     public:
         static const void InstallEarlyHooks() {
+            Early_NetworkPlayerEntitlementChecker();
             Early_SessionManagerAndExtendedPlayerHooks();
             MultiplayerStatusHook();
         }
 
         static const void InstallLateHooks() {
-            NetworkplayerEntitlementChecker();
+            Late_NetworkplayerEntitlementChecker();
             MaxPlayerHooks();
             EnvironmentHooks();
             QuickplayHooks();

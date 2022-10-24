@@ -127,6 +127,7 @@ MAKE_HOOK_MATCH(LobbySetupViewController_DidActivate, &LobbySetupViewController:
                 DownloadedSongIds.pop_back();
                 });
             if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelOpt.value()->get_levelID(), EntitlementsStatus::NotDownloaded);
+            else getLogger().error("LobbyGameStateController is null!");
         }
     }
 }
@@ -219,6 +220,7 @@ MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoad
             if (HasSong(levelId)) {
                 getLogger().debug("MultiplayerLevelLoader_LoadLevel, HasSong, calling original");
                 if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
+                else getLogger().error("LobbyGameStateController is null!");
                 MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
                 reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->beatmapLevel->set_beatmapLevel(self->beatmapLevelsModel->GetLevelPreviewForLevelId(StringW(levelId.c_str())));
                 //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
@@ -278,6 +280,7 @@ MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoad
                                     getLogger().debug("MultiplayerLevelLoader_LoadLevel, Downloaded, calling original");
                                     MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);
                                     if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(levelId.c_str(), EntitlementsStatus::Ok);
+                                    else getLogger().error("LobbyGameStateController is null!");
                                     //self->dyn__getBeatmapLevelResultTask() = self->dyn__beatmapLevelsModel()->GetBeatmapLevelAsync(StringW(levelId.c_str()), self->dyn__getBeatmapCancellationTokenSource()->get_Token());
                                     isDownloading = false;
                                     return;
@@ -333,6 +336,7 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
         if (self->loaderState == MultiplayerLevelLoader::MultiplayerBeatmapLoaderState::WaitingForCountdown) {
             if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
                 self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::Ok);
+            else getLogger().error("LobbyGameStateController is null!");
             getLogger().debug("Loaded Level %s", static_cast<std::string>(self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID()).c_str());
             // var hash = Utilities.HashForLevelID(_gameplaySetupData.beatmapLevel.beatmapLevel.levelID);
             // if (hash != null)
@@ -385,6 +389,7 @@ MAKE_HOOK_MATCH(MultiplayerLevelLoader_Tick, &MultiplayerLevelLoader::Tick, void
                             getLogger().warning("Attempted to Load Level with Requirement '%s' not installed stopping load", req.c_str());
                             if (lobbyGameStateController) lobbyGameStateController->menuRpcManager->SetIsEntitledToLevel(
                                 self->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID(), EntitlementsStatus::NotOwned);
+                            else getLogger().error("LobbyGameStateController is null!");
                             self->difficultyBeatmap = nullptr;
                             break;
                         }

@@ -166,12 +166,14 @@ namespace MultiplayerCore {
     System::Action_3<::StringW, ::StringW, EntitlementsStatus>* entitlementAction = nullptr;
 
     MAKE_HOOK_MATCH(NetworkPlayerEntitlementChecker_Start, &NetworkPlayerEntitlementChecker::Start, void, NetworkPlayerEntitlementChecker* self) {
+        getLogger().debug("NetworkPlayerEntitlementChecker_Start");
         if (!entitlementAction) entitlementAction = il2cpp_utils::MakeDelegate<System::Action_3<::StringW, ::StringW, EntitlementsStatus>*>(classof(System::Action_3<::StringW, ::StringW, EntitlementsStatus>*), &HandleEntitlementReceived);
         self->rpcManager->add_setIsEntitledToLevelEvent(entitlementAction);
         NetworkPlayerEntitlementChecker_Start(self);
     }
 
     MAKE_HOOK_MATCH(NetworkPlayerEntitlementChecker_OnDestroy, &NetworkPlayerEntitlementChecker::OnDestroy, void, NetworkPlayerEntitlementChecker* self) {
+        getLogger().debug("NetworkPlayerEntitlementChecker_OnDestroy");
        if (entitlementAction) {
             Utilities::ClearDelegate(entitlementAction);
             entitlementAction = nullptr;
@@ -180,9 +182,12 @@ namespace MultiplayerCore {
     }
 #pragma endregion
 
-    void Hooks::NetworkplayerEntitlementChecker() {
-        INSTALL_HOOK_ORIG(getLogger(), NetworkPlayerEntitlementChecker_GetEntitlementStatus);
+    void Hooks::Early_NetworkPlayerEntitlementChecker() {
         INSTALL_HOOK(getLogger(), NetworkPlayerEntitlementChecker_Start);
+    }
+
+    void Hooks::Late_NetworkplayerEntitlementChecker() {
+        INSTALL_HOOK_ORIG(getLogger(), NetworkPlayerEntitlementChecker_GetEntitlementStatus);
         INSTALL_HOOK(getLogger(), NetworkPlayerEntitlementChecker_OnDestroy);
     }
 }
