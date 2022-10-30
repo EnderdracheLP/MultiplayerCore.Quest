@@ -3,6 +3,20 @@
 
 #include "pinkcore/shared/API.hpp"
 
+#include "lapiz/shared/zenject/Zenjector.hpp"
+#include "lapiz/shared/zenject/Location.hpp"
+
+#include "custom-types/shared/register.hpp"
+
+#include "Installers/AppInstaller.hpp"
+#include "Installers/MenuInstaller.hpp"
+
+/*
+ * Something regarding guard clauses;
+ * try to keep them to line 0, as they're
+ * going to be easier to keep track of, and lets you change them easier.
+ */
+
 static ModInfo modInfo; // Stores the ID and version of our mod, and is sent to the modloader upon startup
 
 // Loads the config from disk using our modInfo, then returns it for use
@@ -23,9 +37,14 @@ extern "C" void setup(ModInfo& info) {
     INFO("Completed setup!");
 }
 
+using namespace Lapiz::Zenject;
+using namespace MultiplayerCore;
 // Called later on in the game loading - a good time to install function hooks
 extern "C" void load() {
     il2cpp_functions::Init();
+    custom_types::Register::AutoRegister();
+
+    auto zenjector = Zenjector::Get();
 
 #pragma region PinkCore
 
@@ -38,7 +57,9 @@ extern "C" void load() {
 #endif
 
 #pragma endregion
-
+#pragma region Hooks and Zenject
     DEBUG("Installing hooks and binding zenject stuff...");
-    // Install our hooks (none defined yet)
+    zenjector->Install<Installers::AppInstaller*>(Location::App);
+    zenjector->Install<Installers::MenuInstaller*>(Location::Menu);
+#pragma endregion
 }
