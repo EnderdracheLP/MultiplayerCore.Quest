@@ -1,6 +1,7 @@
 #pragma once
 #include "main.hpp"
 #include "cpp-semver/shared/cpp-semver.hpp"
+#include "logging.hpp"
 
 namespace MultiplayerCore::Utils {
     static const std::string ChromaID = "Chroma";

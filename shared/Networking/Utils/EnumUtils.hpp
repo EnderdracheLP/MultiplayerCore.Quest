@@ -4,7 +4,7 @@
 #include "System/ValueType.hpp"
 #include "beatsaber-hook/shared/utils/logging.hpp"
 #include <string>
-#include "logger.hpp"
+#include "logging.hpp"
 
 namespace MultiplayerCore {
     struct EnumUtils {
