@@ -22,7 +22,7 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, DownloadedSongsGSM, UnityEngine::Mono
     DECLARE_INSTANCE_METHOD(void, DidActivate, bool firstActivation);
     DECLARE_INSTANCE_METHOD(void, OnEnable);
     DECLARE_INSTANCE_METHOD(void, Refresh);
-    DECLARE_INSTANCE_METHOD(void, CreateCell, System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask, GlobalNamespace::CustomPreviewBeatmapLevel* level, System::Action_1<System::Threading::Tasks::Task*>* action);
+    DECLARE_INSTANCE_METHOD(void, CreateCell, System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask, GlobalNamespace::CustomPreviewBeatmapLevel* level);
     DECLARE_INSTANCE_METHOD(void, Delete);
 
     static DownloadedSongsGSM* instance;
