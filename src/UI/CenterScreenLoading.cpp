@@ -86,9 +86,11 @@ namespace MultiplayerCore::UI{
         }
         else if (screenController->get_countdownShown() && gameStateController && _multiplayerSessionManager->get_syncTime() >= gameStateController->get_startTime() && gameStateController->get_levelStartInitiated())
         {
-            if (loadingControl)
+            if (loadingControl && _multiplayerSessionManager)
                 loadingControl->ShowLoading(il2cpp_utils::newcsstr(string_format("%d of %d players ready...",
-                    playersReady, _multiplayerSessionManager ? _multiplayerSessionManager->get_connectedPlayerCount() + 1 : 1)));
+                    playersReady, _multiplayerSessionManager->get_connectedPlayerCount() + 1)));
+            else if (loadingControl)
+                loadingControl->ShowLoading(il2cpp_utils::newcsstr("Waiting for players..."));
         }
         else
         {
