@@ -167,11 +167,12 @@ namespace MultiplayerCore::UI {
             getLogger().info("Song with levelId '%s' added to list", static_cast<std::string>(level->get_levelID()).c_str());
             System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask = lastDownloaded->GetCoverImageAsync(System::Threading::CancellationToken::get_None());
             static System::Action_1<System::Threading::Tasks::Task*>* action;
-            action = il2cpp_utils::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>((std::function<void()>)[coverTask, this] {
+            action = custom_types::MakeDelegate<System::Action_1<System::Threading::Tasks::Task*>*>((std::function<void(System::Threading::Tasks::Task_1<UnityEngine::Sprite*>*)>)[this](System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* coverTask) {
+                    // Note: coverTask should actually be of type Task*, but we know we only call ContinueWith on an instance where our overall task is of this type, so we can skip the cast and do it implicitly in the parameter
                     CreateCell(coverTask, lastDownloaded, action);
                 }
             );
-            reinterpret_cast<System::Threading::Tasks::Task*>(coverTask)->ContinueWith(action);
+            this->continueTask = reinterpret_cast<System::Threading::Tasks::Task*>(coverTask)->ContinueWith(action);
         }
         else {
             getLogger().error("Level is nullptr, was it already deleted?");

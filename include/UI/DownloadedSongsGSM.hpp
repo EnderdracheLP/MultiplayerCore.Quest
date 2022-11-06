@@ -17,6 +17,7 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, DownloadedSongsGSM, UnityEngine::Mono
     DECLARE_INSTANCE_FIELD(HMUI::ModalView*, modal);
     DECLARE_INSTANCE_FIELD(QuestUI::CustomListTableData*, list);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::CustomPreviewBeatmapLevel*, lastDownloaded);
+    DECLARE_INSTANCE_FIELD(::System::Threading::Tasks::Task*, continueTask);
 
     DECLARE_INSTANCE_METHOD(void, DidActivate, bool firstActivation);
     DECLARE_INSTANCE_METHOD(void, OnEnable);
