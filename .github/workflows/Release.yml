@@ -8,7 +8,7 @@ on:
 
 env:
      module_id: MultiplayerCore
-     BSVersion: 1.22.0
+     BSVersion: 1.25.1
      ndkname: android-ndk-r24
 
 jobs:
