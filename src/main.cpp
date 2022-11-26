@@ -2,7 +2,7 @@
 #include "Hooks/Hooks.hpp"
 #include "Hooks/SessionManagerAndExtendedPlayerHooks.hpp"
 #include "Networking/MpPacketSerializer.hpp"
-#include "UI/DownloadedSongsGSM.hpp"
+#include "UI/DownloadedSongsViewController.hpp"
 #include "UI/CenterScreenLoading.hpp"
 
 #include "Utilities.hpp"
@@ -266,11 +266,11 @@ MAKE_HOOK_MATCH_NO_CATCH(MultiplayerLevelLoader_LoadLevel, &MultiplayerLevelLoad
                                     for (GlobalNamespace::CustomPreviewBeatmapLevel* song : songs) {
                                         if (static_cast<std::string>(song->get_levelID()) == levelId) {
                                             getLogger().debug("Found song, setting beatmapLevel");
-                                            auto* downloadedSongsGSM = MultiplayerCore::UI::DownloadedSongsGSM::get_Instance();
+                                            auto* downloadedSongsGSM = MultiplayerCore::UI::DownloadedSongsViewController::get_Instance();
                                             if (!getConfig().config["autoDelete"].GetBool() && downloadedSongsGSM) downloadedSongsGSM->InsertCell(song);
                                             else if (!getConfig().config["autoDelete"].GetBool()) {
                                                 getLogger().warning("DownloadedSongsGSM was null, adding to queue");
-                                                MultiplayerCore::UI::DownloadedSongsGSM::mapQueue.push_back(hash);
+                                                MultiplayerCore::UI::DownloadedSongsViewController::mapQueue.push_back(hash);
                                             }
                                             reinterpret_cast<LevelGameplaySetupData*>(gameplaySetupData)->beatmapLevel->set_beatmapLevel(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(song));
                                             break;
@@ -444,7 +444,62 @@ MAKE_HOOK_MATCH(CenterStageScreenController_Setup, &CenterStageScreenController:
         self->get_gameObject()->AddComponent<MultiplayerCore::UI::CenterScreenLoading*>();
 }
 
+// MAKE_HOOK_MATCH(GameServerLobbyFlowCoordinator_DidActivate, &GameServerLobbyFlowCoordinator::DidActivate, void, GameServerLobbyFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
+//     GameServerLobbyFlowCoordinator_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+//     if (firstActivation) {
+//         getLogger().debug("GameServerLobbyFlowCoordinator_DidActivate firstActivation");
+
+//     }
+// }
+
+// MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_BackButtonWasPressed, &MultiplayerModeSelectionFlowCoordinator::BackButtonWasPressed, void, MultiplayerModeSelectionFlowCoordinator* self, HMUI::ViewController* topViewController) {
+//     MultiplayerModeSelectionFlowCoordinator_BackButtonWasPressed(self, topViewController);
+//     if (topViewController == )
+// }
+
 bool HooksInit = false;
+
+HMUI::ViewController* downloadedSongsVC;
+
+// #include "HMUI/ViewController_AnimationType.hpp"
+
+// MAKE_HOOK_MATCH(GameServerLobbyFlowCoordinator_TopViewControllerWillChange, &GameServerLobbyFlowCoordinator::TopViewControllerWillChange, void, GameServerLobbyFlowCoordinator* self, HMUI::ViewController* oldViewController, HMUI::ViewController* newViewController, HMUI::ViewController::AnimationType animationType) {
+//     GameServerLobbyFlowCoordinator_TopViewControllerWillChange(self, oldViewController, newViewController, animationType);
+//     if (newViewController == downloadedSongsVC) {
+//         self->ShowBackButton(true);
+//     }
+// }
+
+#include "GlobalNamespace/GameServerLobbyFlowCoordinator.hpp"
+#include "HMUI/ViewController_AnimationType.hpp"
+
+// MAKE_HOOK_MATCH(GameServerLobbyFlowCoordinator_DidActivate, &GameServerLobbyFlowCoordinator::DidActivate, void, GameServerLobbyFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
+//     GameServerLobbyFlowCoordinator_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+//     if (addedToHierarchy) {
+//         getLogger().debug("GameServerLobbyFlowCoordinator_DidActivate addedToHierarchy");
+//         // self->SetBottomScreenViewController(downloadedSongsVC, HMUI::ViewController::AnimationType::In);
+//         self->ProvideInitialViewControllers(self->lobbySetupViewController, nullptr, nullptr, downloadedSongsVC, nullptr);
+//         getLogger().debug("GameServerLobbyFlowCoordinator_DidActivate addedToHierarchy downloadedSongsVC %p", downloadedSongsVC);
+//     }
+// }
+
+MAKE_HOOK_MATCH(GameServerLobbyFlowCoordinator_ShowSideViewControllers, &GameServerLobbyFlowCoordinator::ShowSideViewControllers, void, GameServerLobbyFlowCoordinator* self, bool showSideViewControllers, HMUI::ViewController::AnimationType animationType) {
+    if (showSideViewControllers) {
+        if (!downloadedSongsVC) {
+            getLogger().debug("MultiplayerModeSelectionFlowCoordinator_DidActivate Creating DownloadedSongsViewController");
+            downloadedSongsVC = QuestUI::BeatSaberUI::CreateViewController<MultiplayerCore::UI::DownloadedSongsViewController*>();
+            UnityEngine::GameObject::DontDestroyOnLoad(downloadedSongsVC->get_gameObject());
+        }
+        getLogger().debug("GameServerLobbyFlowCoordinator_ShowSideViewControllers show");
+        self->SetBottomScreenViewController(downloadedSongsVC, animationType);
+        getLogger().debug("GameServerLobbyFlowCoordinator_ShowSideViewControllers show downloadedSongsVC %p", downloadedSongsVC);
+    } else {
+        getLogger().debug("GameServerLobbyFlowCoordinator_ShowSideViewControllers hide");
+        self->SetBottomScreenViewController(nullptr, animationType);
+        getLogger().debug("GameServerLobbyFlowCoordinator_ShowSideViewControllers hide downloadedSongsVC %p", downloadedSongsVC);
+    }
+    GameServerLobbyFlowCoordinator_ShowSideViewControllers(self, showSideViewControllers, animationType);
+}
 
 #include "GlobalNamespace/MultiplayerModeSelectionFlowCoordinator.hpp"
 
@@ -472,6 +527,11 @@ MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_DidActivate, &Multiplaye
 
         INSTALL_HOOK(getLogger(), GameServerPlayerTableCell_SetData);
 
+        INSTALL_HOOK(getLogger(), GameServerLobbyFlowCoordinator_ShowSideViewControllers);
+
+        // INSTALL_HOOK(getLogger(), GameServerLobbyFlowCoordinator_DidActivate);
+
+        // INSTALL_HOOK(getLogger(), MultiplayerModeSelectionFlowCoordinator_BackButtonWasPressed);
         HooksInit = true;
         getLogger().debug("MultiplayerModeSelectionFlowCoordinator_DidActivate All Late Hooks Installed");
     }
@@ -559,36 +619,36 @@ MAKE_HOOK_MATCH(BGNetDebug_LogWarning, &BGNet::Logging::Debug::LogWarning, void,
     BGNetDebug_LogWarning(message);
 }
 
-MAKE_HOOK_FIND_VERBOSE(Debug_Log, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "Log", 1), void, Il2CppObject* message) {
-// MAKE_HOOK_MATCH(Debug_Log, &UnityEngine::Debug::Log, void, Il2CppObject* message) {
-    std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
-    messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::Log").warning("%s", 
-    to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
-    getLogger().WithContext("UnityEngine::Debug::Log")
-    .error("UnityEngine::Debug::Log can't read message, is message valid? '%s', type of class '%s'", 
-    (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
-    Debug_Log(message);
-}
+// MAKE_HOOK_FIND_VERBOSE(Debug_Log, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "Log", 1), void, Il2CppObject* message, const MethodInfo* info) {
+// // MAKE_HOOK_MATCH(Debug_Log, &UnityEngine::Debug::Log, void, Il2CppObject* message) {
+//     std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
+//     messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::Log").warning("%s", 
+//     to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
+//     getLogger().WithContext("UnityEngine::Debug::Log")
+//     .error("UnityEngine::Debug::Log can't read message, is message valid? '%s', type of class '%s'", 
+//     (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
+//     Debug_Log(message, info);
+// }
 
-MAKE_HOOK_FIND_VERBOSE(Debug_LogError, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "LogError", 1), void, Il2CppObject* message) {
-    std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
-    messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::LogError").warning("%s", 
-    to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
-    getLogger().WithContext("UnityEngine::Debug::LogError")
-    .error("UnityEngine::Debug::LogError can't read message, is message valid? '%s', type of class '%s'", 
-    (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
-    Debug_LogError(message);
-}
+// MAKE_HOOK_FIND_VERBOSE(Debug_LogError, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "LogError", 1), void, Il2CppObject* message, const MethodInfo* info) {
+//     std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
+//     messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::LogError").warning("%s", 
+//     to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
+//     getLogger().WithContext("UnityEngine::Debug::LogError")
+//     .error("UnityEngine::Debug::LogError can't read message, is message valid? '%s', type of class '%s'", 
+//     (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
+//     Debug_LogError(message, info);
+// }
 
-MAKE_HOOK_FIND_VERBOSE(Debug_LogWarning, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "LogWarning", 1), void, Il2CppObject* message) {
-    std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
-    messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::LogError").warning("%s", 
-    to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
-    getLogger().WithContext("UnityEngine::Debug::LogError")
-    .error("UnityEngine::Debug::LogError can't read message, is message valid? '%s', type of class '%s'", 
-    (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
-    Debug_LogWarning(message);
-}
+// MAKE_HOOK_FIND_VERBOSE(Debug_LogWarning, il2cpp_utils::FindMethodUnsafe("UnityEngine", "Debug", "LogWarning", 1), void, Il2CppObject* message, const MethodInfo* info) {
+//     std::optional<Il2CppString*> messageOpt = il2cpp_utils::try_cast<Il2CppString>(message);
+//     messageOpt.has_value() ? getLogger().WithContext("UnityEngine::Debug::LogError").warning("%s", 
+//     to_utf8(csstrtostr(messageOpt.value())).c_str()) : 
+//     getLogger().WithContext("UnityEngine::Debug::LogError")
+//     .error("UnityEngine::Debug::LogError can't read message, is message valid? '%s', type of class '%s'", 
+//     (bool)messageOpt ? "true" : "false", il2cpp_utils::ClassStandardName(message->klass).c_str());
+//     Debug_LogWarning(message, info);
+// }
 #endif
 
 // #include "GlobalNamespace/MultiplayerGameplayAnimator.hpp"
@@ -627,9 +687,9 @@ extern "C" void load() {
     il2cpp_functions::Init();
   
 
-    custom_types::Register::ExplicitRegister({QuestUI::CustomListTableData::___TypeRegistration::get(), MultiplayerCore::UI::DownloadedSongsGSM::___TypeRegistration::get()});
+    // custom_types::Register::ExplicitRegister({QuestUI::CustomListTableData::___TypeRegistration::get(), MultiplayerCore::UI::DownloadedSongsGSM::___TypeRegistration::get()});
 
-    QuestUI::Register::RegisterGameplaySetupMenu<MultiplayerCore::UI::DownloadedSongsGSM*>(modInfo, "MP Downloaded", QuestUI::Register::Online);
+    // QuestUI::Register::RegisterGameplaySetupMenu<MultiplayerCore::UI::DownloadedSongsGSM*>(modInfo, "MP Downloaded", QuestUI::Register::Online);
 
     #if defined(IGNORE_MOD_REQUIREMENTS)
     #warning "Ignoring mod requirements"
@@ -658,9 +718,9 @@ extern "C" void load() {
     INSTALL_HOOK(getLogger(), BGNetDebug_LogException);
     INSTALL_HOOK(getLogger(), BGNetDebug_LogWarning);
 
-    INSTALL_HOOK(getLogger(), Debug_Log);
-    INSTALL_HOOK(getLogger(), Debug_LogError);
-    INSTALL_HOOK(getLogger(), Debug_LogWarning);
+    // INSTALL_HOOK(getLogger(), Debug_Log);
+    // INSTALL_HOOK(getLogger(), Debug_LogError);
+    // INSTALL_HOOK(getLogger(), Debug_LogWarning);
 #endif
 #pragma endregion
 

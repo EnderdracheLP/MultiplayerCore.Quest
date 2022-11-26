@@ -104,6 +104,7 @@ namespace MultiplayerCore {
                 auto task = Task_1<EntitlementsStatus>::New_ctor();
                 BeatSaver::API::GetBeatmapByHashAsync(Utilities::GetHash(levelId),
                     [task, levelId](std::optional<BeatSaver::Beatmap> beatmaps) {
+                        getLogger().debug("Getting Beatmap info from BeatSaver");
                         QuestUI::MainThreadScheduler::Schedule(
                             [task, beatmaps, levelId] {
                                 if (beatmaps.has_value()) {
@@ -149,6 +150,7 @@ namespace MultiplayerCore {
                                     task->TrySetResult(EntitlementsStatus::NotOwned);
                                 }
                                 else {
+                                    getLogger().error("BeatSaver returned no beatmap for hash: %s", Utilities::GetHash(levelId).c_str());
                                     task->TrySetResult(EntitlementsStatus::NotOwned);
                                 }
                             }
