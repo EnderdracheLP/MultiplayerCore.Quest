@@ -22,7 +22,7 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.31.0",
+      "versionRange": "^0.30.0",
       "additionalData": {}
     },
     {
@@ -32,17 +32,17 @@
     },
     {
       "id": "songloader",
-      "versionRange": "^0.10.12",
+      "versionRange": "^0.10.11",
       "additionalData": {}
     },
     {
       "id": "questui",
-      "versionRange": "^0.17.9",
+      "versionRange": "^0.17.8",
       "additionalData": {}
     },
     {
       "id": "songdownloader",
-      "versionRange": "^0.5.4",
+      "versionRange": "^0.5.3",
       "additionalData": {}
     },
     {
@@ -57,7 +57,7 @@
     },
     {
       "id": "pinkcore",
-      "versionRange": "^1.8.6",
+      "versionRange": "^1.8.5",
       "additionalData": {}
     }
   ],
