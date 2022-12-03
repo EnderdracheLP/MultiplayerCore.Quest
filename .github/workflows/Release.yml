@@ -8,7 +8,7 @@ on:
 
 env:
      module_id: MultiplayerCore
-     BSVersion: 1.25.1
+     BSVersion: 1.26.0
      ndkname: android-ndk-r24
 
 jobs:
@@ -125,7 +125,7 @@ jobs:
       with:
           name: ${{ env.module_id }} ${{ env.version }} for Beat Saber ${{ env.BSVersion }}
           files: |
-            ./${{ env.module_id }}.qmod
+            ./${{ env.module_id }}_${{ env.version }}.qmod
           body_path: ./rl-notes.md
           draft: true
 
