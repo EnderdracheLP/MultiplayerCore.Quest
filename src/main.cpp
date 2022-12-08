@@ -588,10 +588,10 @@ Logger& MultiplayerCore::EnumUtils::getMpCoreLogger() {
     return getLogger();
 }
 
-MAKE_HOOK_NO_CATCH(engrave_tombstone, 0x0, void, int* tombstone_fd, void* param_2, long param_3, int param_4, void* param_5, void* param_6, void* param_7) {
-    engrave_tombstone(tombstone_fd, param_2, param_3, param_4, param_5, param_6, param_7);
-    getLogger().info("engrave_tombstone called, the game crashed");
-}
+// MAKE_HOOK_NO_CATCH(engrave_tombstone, 0x0, void, int* tombstone_fd, void* param_2, long param_3, int param_4, void* param_5, void* param_6, void* param_7) {
+//     engrave_tombstone(tombstone_fd, param_2, param_3, param_4, param_5, param_6, param_7);
+//     getLogger().info("engrave_tombstone called, the game crashed");
+// }
 
 // Called at the early stages of game loading
 extern "C" void setup(ModInfo& info) {
@@ -599,9 +599,9 @@ extern "C" void setup(ModInfo& info) {
     info.version = VERSION;
     modInfo = info;
 
-    uintptr_t libunity = baseAddr("libunity.so");
-    uintptr_t engrave_tombstoneAddr = findPattern(libunity, "ff 43 04 d1 fc 63 0d a9 f7 5b 0e a9 f5 53 0f a9 f3 7b 10 a9 57 d0 3b d5 e8 16 40 f9 f4 03 02 aa");
-    INSTALL_HOOK_DIRECT(getLogger(), engrave_tombstone, reinterpret_cast<void*>(engrave_tombstoneAddr));
+    // uintptr_t libunity = baseAddr("libunity.so");
+    // uintptr_t engrave_tombstoneAddr = findPattern(libunity, "ff 43 04 d1 fc 63 0d a9 f7 5b 0e a9 f5 53 0f a9 f3 7b 10 a9 57 d0 3b d5 e8 16 40 f9 f4 03 02 aa");
+    // INSTALL_HOOK_DIRECT(getLogger(), engrave_tombstone, reinterpret_cast<void*>(engrave_tombstoneAddr));
 
     //getConfig().Load();
     saveDefaultConfig();
