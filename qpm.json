@@ -22,7 +22,7 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.29.0",
+      "versionRange": "^0.31.0",
       "additionalData": {}
     },
     {
@@ -32,12 +32,12 @@
     },
     {
       "id": "songloader",
-      "versionRange": "^0.10.10",
+      "versionRange": "^0.10.12",
       "additionalData": {}
     },
     {
       "id": "questui",
-      "versionRange": "^0.17.7",
+      "versionRange": "^0.17.9",
       "additionalData": {}
     },
     {
@@ -57,7 +57,7 @@
     },
     {
       "id": "pinkcore",
-      "versionRange": "^1.8.4",
+      "versionRange": "^1.8.6",
       "additionalData": {}
     }
   ],
