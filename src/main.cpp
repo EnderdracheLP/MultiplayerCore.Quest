@@ -697,6 +697,8 @@ MAKE_HOOK_MATCH(BGNetDebug_LogWarning, &BGNet::Logging::Debug::LogWarning, void,
 #include "System/Enum.hpp"
 #include "System/ValueType.hpp"
 #include "questui/shared/CustomTypes/Components/List/CustomListTableData.hpp"
+#include "UnityEngine/Application.hpp"
+
 
 extern "C" void load() {
     il2cpp_functions::Init();
@@ -714,6 +716,7 @@ extern "C" void load() {
     PinkCore::RequirementAPI::RegisterInstalled("Noodle Extensions");
     #endif
 
+    getLogger().info("MultiplayerCore load start - %s for GameVersion - %s", VERSION, static_cast<std::string>(UnityEngine::Application::get_version()).c_str());
     getLogger().info("Installing early hooks...");
 
     Hooks::InstallEarlyHooks();

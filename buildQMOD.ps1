@@ -48,7 +48,7 @@ if ($package -eq $true) {
 if (($args.Count -eq 0) -And $package -eq $false) {
 echo "Creating QMod $qmodName"
     if ($version.Length -gt 0) {
-        $qmodName += $version
+        $qmodName += "_$($version)"
         qpm-rust package edit --version $version
     }
     & $PSScriptRoot/build.ps1 -clean:$clean -version:$version -release:$release
