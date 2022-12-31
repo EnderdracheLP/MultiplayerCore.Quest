@@ -17,7 +17,7 @@ namespace MultiplayerCore {
 
     MAKE_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason, &MultiplayerUnavailableReasonMethods::TryGetMultiplayerUnavailableReason, bool, ::GlobalNamespace::MultiplayerStatusData* data, ByRef<::GlobalNamespace::MultiplayerUnavailableReason> reason)
     {
-        if (il2cpp_utils::AssignableFrom<Models::MpStatusData*>(reinterpret_cast<Il2CppObject*>(data)->klass) && reinterpret_cast<Models::MpStatusData*>(data)->requiredMods.size() > 0) {
+        if (data != nullptr && il2cpp_utils::AssignableFrom<Models::MpStatusData*>(reinterpret_cast<Il2CppObject*>(data)->klass) && reinterpret_cast<Models::MpStatusData*>(data)->requiredMods.size() > 0) {
             const std::unordered_map<std::string, const Mod>& installedMods = Modloader::getMods();
             for (auto& requiredMod : reinterpret_cast<Models::MpStatusData*>(data)->requiredMods) {
                 auto itr = installedMods.find(requiredMod.id);
