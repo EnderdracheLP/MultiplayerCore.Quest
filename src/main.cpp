@@ -507,6 +507,28 @@ MAKE_HOOK_MATCH(GameServerLobbyFlowCoordinator_ShowSideViewControllers, &GameSer
     GameServerLobbyFlowCoordinator_ShowSideViewControllers(self, showSideViewControllers, animationType);
 }
 
+#pragma region Debug Logging Transition
+#include "GlobalNamespace/MenuTransitionsHelper.hpp"
+MAKE_HOOK_FIND_VERBOSE(MenuTransitionsHelper_StartMultiplayerLevel, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartMultiplayerLevel", 15), GlobalNamespace::MenuTransitionsHelper* self, 
+::StringW gameMode, ::GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, ::GlobalNamespace::BeatmapDifficulty beatmapDifficulty, ::GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic, ::GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, ::GlobalNamespace::ColorScheme* overrideColorScheme, ::GlobalNamespace::GameplayModifiers* gameplayModifiers, ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, ::GlobalNamespace::PracticeSettings* practiceSettings, ::StringW backButtonText, bool useTestNoteCutSoundEffects, 
+::System::Action* beforeSceneSwitchCallback, ::System::Action_1<::Zenject::DiContainer*>* afterSceneSwitchCallback, ::System::Action_2<::GlobalNamespace::MultiplayerLevelScenesTransitionSetupDataSO*, ::GlobalNamespace::MultiplayerResultsData*>* levelFinishedCallback, ::System::Action_1<::GlobalNamespace::DisconnectedReason>* didDisconnectCallback, const MethodInfo* info) {
+    getLogger().info("StartMultiplayerLevel start");
+    getLogger().debug("Check pointers previewBeatmapLevel: %p, beatmapCharacteristic: %p, difficultyBeatmap: %p, overrideColorScheme: %p, gameplayModifiers: %p, playerSpecificSettings: %p, practiceSettings: %p, beforeSceneSwitchCallback: %p, levelFinishedCallback: %p, didDisconnectCallback: %p", 
+        previewBeatmapLevel, beatmapCharacteristic, difficultyBeatmap, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, beforeSceneSwitchCallback, levelFinishedCallback, didDisconnectCallback);
+    MenuTransitionsHelper_StartMultiplayerLevel(self, gameMode, previewBeatmapLevel, beatmapDifficulty, beatmapCharacteristic, difficultyBeatmap, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects, beforeSceneSwitchCallback, afterSceneSwitchCallback, levelFinishedCallback, didDisconnectCallback, info);
+    getLogger().info("StartMultiplayerLevel end");
+}
+
+#include "GlobalNamespace/GameScenesManager.hpp"
+MAKE_HOOK_MATCH(GameSceneManager_PushScenes, &GlobalNamespace::GameSceneManager::PushScenes, void, GlobalNamespace::GameSceneManager* self, 
+::GlobalNamespace::ScenesTransitionSetupDataSO* scenesTransitionSetupData, float minDuration, ::System::Action* afterMinDurationCallback, ::System::Action_1<::Zenject::DiContainer*>* finishCallback) {
+    getLogger().info("PushScenes start");
+    getLogger().debug("Check pointers scenesTransitionSetupData: %p, afterMinDurationCallback: %p, finishCallback: %p", scenesTransitionSetupData, afterMinDurationCallback, finishCallback);
+    GameSceneManager_PushScenes(self, scenesTransitionSetupData, minDuration, afterMinDurationCallback, finishCallback);
+    getLogger().info("PushScenes end");
+}
+#pragma endregion
+
 #include "GlobalNamespace/MultiplayerModeSelectionFlowCoordinator.hpp"
 
 MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_DidActivate, &MultiplayerModeSelectionFlowCoordinator::DidActivate, void, MultiplayerModeSelectionFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -534,6 +556,11 @@ MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_DidActivate, &Multiplaye
         INSTALL_HOOK(getLogger(), GameServerPlayerTableCell_SetData);
 
         INSTALL_HOOK(getLogger(), GameServerLobbyFlowCoordinator_ShowSideViewControllers);
+
+#pragma region Debug Logging Transition
+        INSTALL_HOOK(getLogger(), MenuTransitionsHelper_StartMultiplayerLevel);
+        INSTALL_HOOK(getLogger(), GameSceneManager_PushScenes);
+#pragma endregion
 
         // INSTALL_HOOK(getLogger(), GameServerLobbyFlowCoordinator_DidActivate);
 
@@ -686,6 +713,40 @@ MAKE_HOOK_MATCH(BGNetDebug_LogWarning, &BGNet::Logging::Debug::LogWarning, void,
 //     MultiplayerGameplayAnimator_HandleStateChanged(self, state);
 //     self->activeLightsColor = getColorSO(0, 0, 0, 0);
 //     self->leadingLightsColor = getColorSO(0, 0, 0, 0);
+// }
+
+
+// const MethodInfo* getMenuTransitionsHelper_StartMultiplayerLevel_MethodInfo() {
+//     static const MethodInfo* ___internal__method = THROW_UNLESS((::il2cpp_utils::FindMethod("", "MenuTransitionsHelper", "StartMultiplayerLevel", 
+//         std::vector<Il2CppClass*>{classof(MenuTransitionsHelper*)}, 
+//         ::std::vector<const Il2CppType*>{
+//             ::il2cpp_utils::ExtractIndependentType<StringW>(), 
+//             ::il2cpp_utils::ExtractIndependentType<GlobalNamespace::IPreviewBeatmapLevel*>(),
+//             ::il2cpp_utils::ExtractIndependentType<GlobalNamespace::BeatmapDifficulty*>(),
+//             ::il2cpp_utils::ExtractIndependentType<GlobalNamespace::BeatmapCharacteristicSO*>(),
+//             ::il2cpp_utils::ExtractIndependentType<GlobalNamespace::IDifficultyBeatmap*>(),
+//             ::il2cpp_utils::ExtractIndependentType<GlobalNamespace::ColorScheme*>(),
+//             ::il2cpp_utils::ExtractIndependentType<GlobalNamespace::GameplayModifiers*>(),
+//             ::il2cpp_utils::ExtractIndependentType<GlobalNamespace::PlayerSpecificSettings*>(),
+//             ::il2cpp_utils::ExtractIndependentType<GlobalNamespace::PracticeSettings*>(),
+//             ::il2cpp_utils::ExtractIndependentType<::System::Action*>(),
+//             ::il2cpp_utils::ExtractIndependentType<::System::Action_1<::Zenject::DiContainer*>*>(),
+//             })));
+//     return ___internal__method;
+// }
+
+
+// MAKE_HOOK_FIND_VERBOSE(MenuTransitionsHelper_StartMultiplayerLevel, getMenuTransitionsHelper_StartMultiplayerLevel_MethodInfo(), MenuTransitionsHelper*,  const MethodInfo* info)
+
+
+// MAKE_HOOK_MATCH(MenuTransitionsHelper_StartMultiplayerLevel, &GlobalNamespace::MenuTransitionsHelper::StartMultiplayerLevel, void, GlobalNamespace::MenuTransitionsHelper* self, 
+// ::StringW gameMode, ::GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, ::GlobalNamespace::BeatmapDifficulty beatmapDifficulty, ::GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic, ::GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, ::GlobalNamespace::ColorScheme* overrideColorScheme, ::GlobalNamespace::GameplayModifiers* gameplayModifiers, ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, ::GlobalNamespace::PracticeSettings* practiceSettings, ::StringW backButtonText, bool useTestNoteCutSoundEffects, 
+// ::System::Action* beforeSceneSwitchCallback, ::System::Action_1<::Zenject::DiContainer*>* afterSceneSwitchCallback, ::System::Action_2<::GlobalNamespace::MultiplayerLevelScenesTransitionSetupDataSO*, ::GlobalNamespace::MultiplayerResultsData*>* levelFinishedCallback, ::System::Action_1<::GlobalNamespace::DisconnectedReason>* didDisconnectCallback)
+// {
+//     getLogger().info("StartMultiplayerLevel start");
+//     getLogger().debug("Check pointers previewBeatmapLevel: %p, beatmapCharacteristic: %p, difficultyBeatmap: %p, overrideColorScheme: %p, gameplayModifiers: %p, playerSpecificSettings: %p, practiceSettings: %p, beforeSceneSwitchCallback: %p, levelFinishedCallback: %p, didDisconnectCallback: %p", previewBeatmapLevel, beatmapCharacteristic, difficultyBeatmap, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, beforeSceneSwitchCallback, levelFinishedCallback, didDisconnectCallback);
+//     MenuTransitionsHelper_StartMultiplayerLevel(self, gameMode, previewBeatmapLevel, beatmapDifficulty, beatmapCharacteristic, difficultyBeatmap, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects, beforeSceneSwitchCallback, afterSceneSwitchCallback, levelFinishedCallback, didDisconnectCallback);
+//     getLogger().info("StartMultiplayerLevel end");
 // }
 
 // Called later on in the game loading - a good time to install function hooks
