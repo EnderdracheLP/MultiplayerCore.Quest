@@ -253,10 +253,10 @@ namespace MultiplayerCore {
 
 #pragma region EventTriggeringHooks
     //Trigers the player connected event
-    MAKE_HOOK_MATCH(LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerConnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
-        getLogger().debug("LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected");
-        LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected(self, player);
-        getLogger().debug("LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected, triggering MPCore event");
+    MAKE_HOOK_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected, &LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerConnected, void, LobbyPlayersDataModel* self, IConnectedPlayer* player) {
+        getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected");
+        LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected(self, player);
+        getLogger().debug("LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected, triggering MPCore event");
         Players::MpPlayerManager::playerConnectedEvent(player);
     }
 
@@ -363,7 +363,7 @@ namespace MultiplayerCore {
 
     void Hooks::Late_SessionManagerAndExtendedPlayerHooks() {
         INSTALL_HOOK_ORIG(getLogger(), SessionManager_StartSession);
-        INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_sHandleMultiplayerSessionManagerPlayerConnected);
+        INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected);
         INSTALL_HOOK(getLogger(), LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerDisconnected);
         INSTALL_HOOK(getLogger(), LobbyGameStateController_HandleMultiplayerSessionManagerDisconnected);
 
