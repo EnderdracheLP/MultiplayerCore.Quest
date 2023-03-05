@@ -20,18 +20,28 @@ namespace MultiplayerCore {
     MAKE_HOOK_FIND_VERBOSE(JsonConvert_DeserializeObject_MultiplayerStatusData, getMultiplayerStatusData_GetStatus_MethodInfo(), MultiplayerStatusData*, StringW value, const MethodInfo* info)
     {
         getLogger().debug("[JsonConvert_DeserializeObject_MultiplayerStatusData] Called, value string '%s'", static_cast<std::string>(value).c_str());
+        getLogger().debug("[JsonConvert_DeserializeObject_MultiplayerStatusData] Checking pointers String value:'%p', MethodInfo info:'%p'", value.convert(), info);
+        
+        {
+            rapidjson::Document tempDoc;
+            if (tempDoc.Parse(static_cast<std::string>(value)).HasParseError()) {
+                getLogger().debug("[JsonConvert_DeserializeObject_MultiplayerStatusData] Parse error, cancelling call");
+                throw std::runtime_error("[JsonConvert_DeserializeObject_MultiplayerStatusData] Parse error");
+            }
+        }
         // We return an object because that's what it'd return anyways, some type of object
         // First, we get our generic container:
         auto* genMethod = info->genericMethod;
         // Then, we look at our context, and get our method instantiation
         auto* method_inst = genMethod->context.method_inst;
+        getLogger().debug("[JsonConvert_DeserializeObject_MultiplayerStatusData] Checking genericMethod pointers Il2CppGenericMethod info->genericMethod:'%p', Il2CppGenericInst genericMethod->context.method_inst:'%p'", genMethod, method_inst);
         // Then, we compare our types
         if (method_inst->type_argc == 1 && il2cpp_functions::type_equals(method_inst->type_argv[0], il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_type<MultiplayerStatusData*>::get())) {
             // THIS IS OUR CALL! LETS DO OUR CUSTOM BEHAVIOR HERE
             getLogger().debug("Our call");
             return MpStatusData::New_ctor(value);
         } else {
-            getLogger().debug("Not our call");
+            getLogger().debug("Not our call, calling orig");
             // call orig here, remember to pass the info parameter to your orig call!
             return JsonConvert_DeserializeObject_MultiplayerStatusData(value, info);
         }
