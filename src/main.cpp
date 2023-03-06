@@ -509,7 +509,7 @@ MAKE_HOOK_MATCH(GameServerLobbyFlowCoordinator_ShowSideViewControllers, &GameSer
 
 #pragma region Debug Logging Transition
 #include "GlobalNamespace/MenuTransitionsHelper.hpp"
-MAKE_HOOK_FIND_VERBOSE(MenuTransitionsHelper_StartMultiplayerLevel, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartMultiplayerLevel", 15), GlobalNamespace::MenuTransitionsHelper* self, 
+MAKE_HOOK_FIND_VERBOSE(MenuTransitionsHelper_StartMultiplayerLevel, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartMultiplayerLevel", 15), void, GlobalNamespace::MenuTransitionsHelper* self, 
 ::StringW gameMode, ::GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, ::GlobalNamespace::BeatmapDifficulty beatmapDifficulty, ::GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic, ::GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, ::GlobalNamespace::ColorScheme* overrideColorScheme, ::GlobalNamespace::GameplayModifiers* gameplayModifiers, ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, ::GlobalNamespace::PracticeSettings* practiceSettings, ::StringW backButtonText, bool useTestNoteCutSoundEffects, 
 ::System::Action* beforeSceneSwitchCallback, ::System::Action_1<::Zenject::DiContainer*>* afterSceneSwitchCallback, ::System::Action_2<::GlobalNamespace::MultiplayerLevelScenesTransitionSetupDataSO*, ::GlobalNamespace::MultiplayerResultsData*>* levelFinishedCallback, ::System::Action_1<::GlobalNamespace::DisconnectedReason>* didDisconnectCallback, const MethodInfo* info) {
     getLogger().info("StartMultiplayerLevel start");
@@ -520,11 +520,12 @@ MAKE_HOOK_FIND_VERBOSE(MenuTransitionsHelper_StartMultiplayerLevel, il2cpp_utils
 }
 
 #include "GlobalNamespace/GameScenesManager.hpp"
-MAKE_HOOK_MATCH(GameSceneManager_PushScenes, &GlobalNamespace::GameSceneManager::PushScenes, void, GlobalNamespace::GameSceneManager* self, 
+#include "Zenject/ZenjectSceneLoader.hpp"
+MAKE_HOOK_MATCH(GameScenesManager_PushScenes, &GlobalNamespace::GameScenesManager::PushScenes, void, GlobalNamespace::GameScenesManager* self, 
 ::GlobalNamespace::ScenesTransitionSetupDataSO* scenesTransitionSetupData, float minDuration, ::System::Action* afterMinDurationCallback, ::System::Action_1<::Zenject::DiContainer*>* finishCallback) {
     getLogger().info("PushScenes start");
     getLogger().debug("Check pointers scenesTransitionSetupData: %p, afterMinDurationCallback: %p, finishCallback: %p", scenesTransitionSetupData, afterMinDurationCallback, finishCallback);
-    GameSceneManager_PushScenes(self, scenesTransitionSetupData, minDuration, afterMinDurationCallback, finishCallback);
+    GameScenesManager_PushScenes(self, scenesTransitionSetupData, minDuration, afterMinDurationCallback, finishCallback);
     getLogger().info("PushScenes end");
 }
 #pragma endregion
@@ -559,7 +560,7 @@ MAKE_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_DidActivate, &Multiplaye
 
 #pragma region Debug Logging Transition
         INSTALL_HOOK(getLogger(), MenuTransitionsHelper_StartMultiplayerLevel);
-        INSTALL_HOOK(getLogger(), GameSceneManager_PushScenes);
+        INSTALL_HOOK(getLogger(), GameScenesManager_PushScenes);
 #pragma endregion
 
         // INSTALL_HOOK(getLogger(), GameServerLobbyFlowCoordinator_DidActivate);
