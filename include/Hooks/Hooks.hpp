@@ -43,12 +43,14 @@ namespace MultiplayerCore {
         static void Late_SessionManagerAndExtendedPlayerHooks();
         static void MultiplayerStatusHook();
         static void MultiplayerUnavailableReasonHook();
+        static void NetworkConfigHooks();
 
     public:
         static const void InstallEarlyHooks() {
             Early_NetworkPlayerEntitlementChecker();
             Early_SessionManagerAndExtendedPlayerHooks();
             MultiplayerStatusHook();
+            NetworkConfigHooks();
         }
 
         static const void InstallLateHooks() {
