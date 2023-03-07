@@ -7,10 +7,13 @@
 #include "GlobalNamespace/ClientCertificateValidator.hpp"
 #include "GlobalNamespace/UnifiedNetworkPlayerModel.hpp"
 #include "GlobalNamespace/UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType.hpp"
+#include "GlobalNamespace/MainSystemInit.hpp"
 
 namespace MultiplayerCore 
 {
-    DnsEndPointW NetworkConfigHooks::masterServerEndPoint;
+    GlobalNamespace::NetworkConfigSO* NetworkConfigHooks::networkConfig;
+    std::string NetworkConfigHooks::masterServerHostName;
+    int NetworkConfigHooks::masterServerPort;
     std::string NetworkConfigHooks::masterServerStatusUrl;
     std::string NetworkConfigHooks::quickPlaySetupUrl;
     int NetworkConfigHooks::maxPartySize;
@@ -19,126 +22,111 @@ namespace MultiplayerCore
     int NetworkConfigHooks::multiplayerPort;
     bool NetworkConfigHooks::disableGameLift;
 
-    void NetworkConfigHooks::UseMasterServer(DnsEndPointW endPoint, std::string statusUrl, int maxPartySize) {
-        getLogger().debug("Master server set to '%s'", endPoint.ToCPPString().c_str());
-        NetworkConfigHooks::masterServerEndPoint = endPoint;
+    std::string originalMasterServerHostName;
+    int originalMasterServerPort;
+    std::string originalMasterServerStatusUrl;
+    std::string originalQuickPlaySetupUrl;
+    int originalMaxPartySize;
+    bool originalForceGameLift;
+
+    void NetworkConfigHooks::UseMasterServer(std::string hostName, int port, std::string statusUrl, int maxPartySize) {
+        getLogger().debug("Master server set to '%s:%d'", hostName.c_str(), port);
+        NetworkConfigHooks::masterServerHostName = hostName;
+        NetworkConfigHooks::masterServerPort = port;
         NetworkConfigHooks::masterServerStatusUrl = statusUrl;
         NetworkConfigHooks::maxPartySize = maxPartySize;
         NetworkConfigHooks::quickPlaySetupUrl = statusUrl + "/mp_override.json";
+        if (NetworkConfigHooks::networkConfig) {
+            NetworkConfigHooks::networkConfig->masterServerHostName = NetworkConfigHooks::masterServerHostName;
+            NetworkConfigHooks::networkConfig->masterServerPort = NetworkConfigHooks::masterServerPort;
+            NetworkConfigHooks::networkConfig->multiplayerStatusUrl = NetworkConfigHooks::masterServerStatusUrl;
+            NetworkConfigHooks::networkConfig->quickPlaySetupUrl = NetworkConfigHooks::quickPlaySetupUrl;
+            NetworkConfigHooks::networkConfig->maxPartySize = NetworkConfigHooks::maxPartySize;
+        }
         NetworkConfigHooks::disableGameLift = true;
     }
-    void NetworkConfigHooks::UseMasterServer(DnsEndPointW endPoint, std::string statusUrl, int maxPartySize, std::string quickPlaySetupUrl) {
-        getLogger().debug("Master server set to '%s'", endPoint.ToCPPString().c_str());
-        NetworkConfigHooks::masterServerEndPoint = endPoint;
+    void NetworkConfigHooks::UseMasterServer(GlobalNamespace::DnsEndPoint* endPoint, std::string statusUrl, int maxPartySize, std::string quickPlaySetupUrl) {
+        getLogger().debug("Master server set to '%s'", static_cast<std::string>(endPoint->ToString()).c_str());
+        NetworkConfigHooks::masterServerHostName = static_cast<std::string>(endPoint->hostName);
+        NetworkConfigHooks::masterServerPort = endPoint->port;
         NetworkConfigHooks::masterServerStatusUrl = statusUrl;
         NetworkConfigHooks::maxPartySize = maxPartySize;
         NetworkConfigHooks::quickPlaySetupUrl = quickPlaySetupUrl.empty() ? statusUrl + "/mp_override.json" : quickPlaySetupUrl;
+        if (NetworkConfigHooks::networkConfig) {
+            NetworkConfigHooks::networkConfig->masterServerHostName = NetworkConfigHooks::masterServerHostName;
+            NetworkConfigHooks::networkConfig->masterServerPort = NetworkConfigHooks::masterServerPort;
+            NetworkConfigHooks::networkConfig->multiplayerStatusUrl = NetworkConfigHooks::masterServerStatusUrl;
+            NetworkConfigHooks::networkConfig->quickPlaySetupUrl = NetworkConfigHooks::quickPlaySetupUrl;
+            NetworkConfigHooks::networkConfig->maxPartySize = NetworkConfigHooks::maxPartySize;
+        }
         NetworkConfigHooks::disableGameLift = true;
     }
     void NetworkConfigHooks::UseOfficalServer() {
         getLogger().debug("Master server set to 'official'");
-        NetworkConfigHooks::masterServerEndPoint = DnsEndPointW();
+        NetworkConfigHooks::masterServerHostName = "";
+        NetworkConfigHooks::masterServerPort = 0;
         NetworkConfigHooks::masterServerStatusUrl = "";
         NetworkConfigHooks::maxPartySize = 0;
         NetworkConfigHooks::quickPlaySetupUrl = "";
+        if (NetworkConfigHooks::networkConfig) {
+            NetworkConfigHooks::networkConfig->masterServerHostName = originalMasterServerHostName;
+            NetworkConfigHooks::networkConfig->masterServerPort = originalMasterServerPort;
+            NetworkConfigHooks::networkConfig->multiplayerStatusUrl = originalMasterServerStatusUrl;
+            NetworkConfigHooks::networkConfig->quickPlaySetupUrl = originalQuickPlaySetupUrl;
+            NetworkConfigHooks::networkConfig->maxPartySize = originalMaxPartySize;
+            NetworkConfigHooks::networkConfig->forceGameLift = originalForceGameLift;
+        }
         NetworkConfigHooks::disableGameLift = false;
     }
 
+    MAKE_HOOK_MATCH(MainSystemInit_Init, &GlobalNamespace::MainSystemInit::Init, void, GlobalNamespace::MainSystemInit* self) {
+        MainSystemInit_Init(self);
+        getLogger().info("Original status URL: %s", static_cast<std::string>(self->networkConfig->get_multiplayerStatusUrl()).c_str());
+        getLogger().info("Original QuickPlaySetup URL: %s", static_cast<std::string>(self->networkConfig->quickPlaySetupUrl).c_str());
+        // getLogger().info("ServiceEnvironment: %d", self->networkConfig->get_serviceEnvironment().value);
 
-    MAKE_HOOK_MATCH(NetworkConfigSO_get_masterServerEndPoint, &GlobalNamespace::NetworkConfigSO::get_masterServerEndPoint, GlobalNamespace::DnsEndPoint*, GlobalNamespace::NetworkConfigSO* self)
-    {
-        if (!NetworkConfigHooks::masterServerEndPoint)
+        originalMasterServerHostName = static_cast<std::string>(self->networkConfig->masterServerHostName);
+        originalMasterServerPort = self->networkConfig->masterServerPort;
+        originalMasterServerStatusUrl = static_cast<std::string>(self->networkConfig->multiplayerStatusUrl);
+        originalQuickPlaySetupUrl = static_cast<std::string>(self->networkConfig->quickPlaySetupUrl);
+        originalMaxPartySize = self->networkConfig->maxPartySize;
+        originalForceGameLift = self->networkConfig->forceGameLift;
+        NetworkConfigHooks::networkConfig = reinterpret_cast<GlobalNamespace::NetworkConfigSO*>(self->networkConfig);
+
+        if (!NetworkConfigHooks::masterServerHostName.empty())
         {
-            getLogger().debug("NetworkConfigSO::get_masterServerEndPoint: No EndPoint set, using default");
-            return NetworkConfigSO_get_masterServerEndPoint(self);
+            getLogger().debug("MainSystemInit_Init overriding MasterServerHostName to '%s'", NetworkConfigHooks::masterServerHostName.c_str());
+            self->networkConfig->masterServerHostName = NetworkConfigHooks::masterServerHostName;
         }
 
-        getLogger().debug("NetworkConfigSO::get_masterServerEndPoint: Returning custom EndPoint");
-        return NetworkConfigHooks::masterServerEndPoint;
-    }
-
-    MAKE_HOOK_MATCH(NetworkConfigSO_get_multiplayerStatusUrl, &GlobalNamespace::NetworkConfigSO::get_multiplayerStatusUrl, StringW, GlobalNamespace::NetworkConfigSO* self)
-    {
-        if (NetworkConfigHooks::masterServerStatusUrl.empty())
+        if (NetworkConfigHooks::masterServerPort > 0)
         {
-            getLogger().debug("NetworkConfigSO::get_multiplayerStatusUrl: No URL set, using default");
-            return NetworkConfigSO_get_multiplayerStatusUrl(self);
+            getLogger().debug("MainSystemInit_Init overriding MasterServerPort to '%d'", NetworkConfigHooks::masterServerPort);
+            self->networkConfig->masterServerPort = NetworkConfigHooks::masterServerPort;
         }
 
-        getLogger().debug("NetworkConfigSO::get_masterServerStatusUrl: Returning custom URL");
-        return NetworkConfigHooks::masterServerStatusUrl;
-    }
-
-    MAKE_HOOK_MATCH(NetworkConfigSO_get_maxPartySize, &GlobalNamespace::NetworkConfigSO::get_maxPartySize, int, GlobalNamespace::NetworkConfigSO* self)
-    {
-        if (NetworkConfigHooks::maxPartySize == 0)
-        {
-            getLogger().debug("NetworkConfigSO::get_maxPartySize: No value set, using default");
-            return NetworkConfigSO_get_maxPartySize(self);
+        if (!NetworkConfigHooks::masterServerStatusUrl.empty()) {
+            getLogger().debug("MainSystemInit_Init overriding MasterServerStatusUrl to '%s'", NetworkConfigHooks::masterServerStatusUrl.c_str());
+            self->networkConfig->multiplayerStatusUrl = NetworkConfigHooks::masterServerStatusUrl;
         }
 
-        getLogger().debug("NetworkConfigSO::get_maxPartySize: Returning custom value");
-        return NetworkConfigHooks::maxPartySize;
-    }
 
-    MAKE_HOOK_MATCH(NetworkConfigSO_get_quickPlaySetupUrl, &GlobalNamespace::NetworkConfigSO::get_quickPlaySetupUrl, StringW, GlobalNamespace::NetworkConfigSO* self)
-    {
-        if (NetworkConfigHooks::quickPlaySetupUrl.empty())
-        {
-            getLogger().debug("NetworkConfigSO::get_quickPlaySetupUrl: No URL set, using default");
-            return NetworkConfigSO_get_quickPlaySetupUrl(self);
+        if (!NetworkConfigHooks::quickPlaySetupUrl.empty()) {
+            getLogger().debug("MainSystemInit_Init overriding QuickPlaySetupUrl to '%s'", NetworkConfigHooks::quickPlaySetupUrl.c_str());
+            self->networkConfig->quickPlaySetupUrl = NetworkConfigHooks::quickPlaySetupUrl;
         }
 
-        getLogger().debug("NetworkConfigSO::get_quickPlaySetupUrl: Returning custom URL");
-        return NetworkConfigHooks::quickPlaySetupUrl;
-    }
-
-    MAKE_HOOK_MATCH(NetworkConfigSO_get_discoveryPort, &GlobalNamespace::NetworkConfigSO::get_discoveryPort, int, GlobalNamespace::NetworkConfigSO* self)
-    {
-        if (NetworkConfigHooks::discoveryPort == 0)
-        {
-            getLogger().debug("NetworkConfigSO::get_discoveryPort: No value set, using default");
-            return NetworkConfigSO_get_discoveryPort(self);
+        if (NetworkConfigHooks::maxPartySize > 0) {
+            getLogger().debug("MainSystemInit_Init overriding MaxPartySize to '%d'", NetworkConfigHooks::maxPartySize);
+            self->networkConfig->maxPartySize = NetworkConfigHooks::maxPartySize;
         }
 
-        getLogger().debug("NetworkConfigSO::get_discoveryPort: Returning custom value");
-        return NetworkConfigHooks::discoveryPort;
-    }
-
-    MAKE_HOOK_MATCH(NetworkConfigSO_get_partyPort, &GlobalNamespace::NetworkConfigSO::get_partyPort, int, GlobalNamespace::NetworkConfigSO* self)
-    {
-        if (NetworkConfigHooks::partyPort == 0)
-        {
-            getLogger().debug("NetworkConfigSO::get_partyPort: No value set, using default");
-            return NetworkConfigSO_get_partyPort(self);
+        if (NetworkConfigHooks::disableGameLift) {
+            getLogger().debug("MainSystemInit_Init overriding forceGameLift to '%s'", NetworkConfigHooks::disableGameLift ? "false" : "true");
+            self->networkConfig->forceGameLift = !NetworkConfigHooks::disableGameLift;
         }
-
-        getLogger().debug("NetworkConfigSO::get_partyPort: Returning custom value");
-        return NetworkConfigHooks::partyPort;
-    }
-
-    MAKE_HOOK_MATCH(NetworkConfigSO_get_multiplayerPort, &GlobalNamespace::NetworkConfigSO::get_multiplayerPort, int, GlobalNamespace::NetworkConfigSO* self)
-    {
-        if (NetworkConfigHooks::multiplayerPort == 0)
-        {
-            getLogger().debug("NetworkConfigSO::get_multiplayerPort: No value set, using default");
-            return NetworkConfigSO_get_multiplayerPort(self);
-        }
-
-        getLogger().debug("NetworkConfigSO::get_multiplayerPort: Returning custom value");
-        return NetworkConfigHooks::multiplayerPort;
-    }
-
-    MAKE_HOOK_MATCH(NetworkConfigSO_get_forceGameLift, &GlobalNamespace::NetworkConfigSO::get_forceGameLift, bool, GlobalNamespace::NetworkConfigSO* self)
-    {
-        if (NetworkConfigHooks::disableGameLift)
-        {
-            getLogger().debug("NetworkConfigSO::get_forceGameLift: Disabling, Returning false");
-            return false;
-        }
-
-        getLogger().debug("NetworkConfigSO::get_forceGameLift: Returning default value");
-        return NetworkConfigSO_get_forceGameLift(self);
+        
+        getLogger().debug("MainSystemInit_Init finished");
     }
 
     MAKE_HOOK_MATCH(UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType, &GlobalNamespace::UnifiedNetworkPlayerModel::SetActiveNetworkPlayerModelType, void, GlobalNamespace::UnifiedNetworkPlayerModel* self, GlobalNamespace::UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType activeNetworkPlayerModelType)
@@ -154,7 +142,7 @@ namespace MultiplayerCore
 
     MAKE_HOOK_MATCH(ClientCertificateValidator_ValidateCertificateChainInternal, &GlobalNamespace::ClientCertificateValidator::ValidateCertificateChainInternal, void, GlobalNamespace::ClientCertificateValidator* self, GlobalNamespace::DnsEndPoint* endPoint, System::Security::Cryptography::X509Certificates::X509Certificate2* certificate, ::ArrayW<::ArrayW<uint8_t>> certificateChain)
     {
-        if (!NetworkConfigHooks::masterServerEndPoint)
+        if (NetworkConfigHooks::masterServerHostName.empty() || NetworkConfigHooks::masterServerPort == 0)
         {
             getLogger().debug("ClientCertificateValidator::ValidateCertificateChainInternal: No EndPoint set, using default");
             return ClientCertificateValidator_ValidateCertificateChainInternal(self, endPoint, certificate, certificateChain);
@@ -165,14 +153,7 @@ namespace MultiplayerCore
     void Hooks::NetworkConfigHooks()
     {
         getLogger().debug("Installing NetworkConfig hooks...");
-        INSTALL_HOOK(getLogger(), NetworkConfigSO_get_masterServerEndPoint);
-        INSTALL_HOOK(getLogger(), NetworkConfigSO_get_multiplayerStatusUrl);
-        INSTALL_HOOK(getLogger(), NetworkConfigSO_get_maxPartySize);
-        INSTALL_HOOK(getLogger(), NetworkConfigSO_get_quickPlaySetupUrl);
-        INSTALL_HOOK(getLogger(), NetworkConfigSO_get_discoveryPort);
-        INSTALL_HOOK(getLogger(), NetworkConfigSO_get_partyPort);
-        INSTALL_HOOK(getLogger(), NetworkConfigSO_get_multiplayerPort);
-        INSTALL_HOOK(getLogger(), NetworkConfigSO_get_forceGameLift);
+        INSTALL_HOOK(getLogger(), MainSystemInit_Init);
         INSTALL_HOOK(getLogger(), UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType);
         INSTALL_HOOK(getLogger(), ClientCertificateValidator_ValidateCertificateChainInternal);
         getLogger().debug("Installed NetworkConfig hooks!");
