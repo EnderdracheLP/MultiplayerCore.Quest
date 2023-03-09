@@ -1,6 +1,6 @@
 #include "main.hpp"
 #include "Hooks/Hooks.hpp"
-#include "NetworkConfigHooks.hpp"
+#include "ServerConfigManager.hpp"
 #include "System/Security/Cryptography/X509Certificates/X509Certificate2.hpp"
 #include "GlobalNamespace/DnsEndPoint.hpp"
 #include "GlobalNamespace/NetworkConfigSO.hpp"
@@ -14,26 +14,42 @@ namespace MultiplayerCore
     MasterServerConfig currentConfig;
     MasterServerConfig originalConfig;
 
-    GlobalNamespace::NetworkConfigSO* NetworkConfigHooks::networkConfig;
+    event<MasterServerConfig> ServerConfigManager::MasterServerChanged;
 
-    void NetworkConfigHooks::UseMasterServer(MasterServerConfig config) {
-        getLogger().debug("Master server set to '%s:%d'", config.masterServerHostName.c_str(), config.masterServerPort);
-        currentConfig = config;
-        if (NetworkConfigHooks::networkConfig) {
-            NetworkConfigHooks::networkConfig->masterServerHostName = currentConfig.masterServerHostName;
-            NetworkConfigHooks::networkConfig->masterServerPort = currentConfig.masterServerPort;
-            NetworkConfigHooks::networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl;
-            NetworkConfigHooks::networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl;
-            NetworkConfigHooks::networkConfig->maxPartySize = currentConfig.maxPartySize;
-            NetworkConfigHooks::networkConfig->discoveryPort = currentConfig.discoveryPort;
-            NetworkConfigHooks::networkConfig->partyPort = currentConfig.partyPort;
-            NetworkConfigHooks::networkConfig->multiplayerPort = currentConfig.multiplayerPort;
-            NetworkConfigHooks::networkConfig->forceGameLift = currentConfig.disableGameLift;
-        }
-        currentConfig.disableGameLift  = true;
+    // event_handler<MasterServerConfig> _masterServerConfigChangedHandler = MultiplayerCore::event_handler<MasterServerConfig>(HandleRegisterMpPacketCallbacks);
+
+
+    GlobalNamespace::NetworkConfigSO* networkConfig;
+
+    GlobalNamespace::NetworkConfigSO* ServerConfigManager::GetNetworkConfig()
+    {
+        return networkConfig;
     }
 
-    void NetworkConfigHooks::UseMasterServer(std::string hostName, int port, std::string statusUrl, int maxPartySize) {
+    MasterServerConfig ServerConfigManager::GetMasterServerConfig()
+    {
+        return currentConfig;
+    }
+
+    void ServerConfigManager::UseMasterServer(MasterServerConfig config) {
+        getLogger().debug("Master server set to '%s:%d'", config.masterServerHostName.c_str(), config.masterServerPort);
+        currentConfig = config;
+        if (networkConfig) {
+            networkConfig->masterServerHostName = currentConfig.masterServerHostName;
+            networkConfig->masterServerPort = currentConfig.masterServerPort;
+            networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl;
+            networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl;
+            networkConfig->maxPartySize = currentConfig.maxPartySize;
+            networkConfig->discoveryPort = currentConfig.discoveryPort;
+            networkConfig->partyPort = currentConfig.partyPort;
+            networkConfig->multiplayerPort = currentConfig.multiplayerPort;
+            networkConfig->forceGameLift = currentConfig.disableGameLift;
+        }
+        currentConfig.disableGameLift  = true;
+        ServerConfigManager::MasterServerChanged(currentConfig);
+    }
+
+    void ServerConfigManager::UseMasterServer(std::string hostName, int port, std::string statusUrl, int maxPartySize) {
         getLogger().debug("Master server set to '%s:%d'", hostName.c_str(), port);
         currentConfig.masterServerHostName = hostName;
         currentConfig.masterServerPort = port;
@@ -41,17 +57,18 @@ namespace MultiplayerCore
         currentConfig.maxPartySize  = maxPartySize;
         currentConfig.quickPlaySetupUrl  = statusUrl + "/mp_override.json";
         currentConfig.disableGameLift  = true;
-        if (NetworkConfigHooks::networkConfig) {
-            NetworkConfigHooks::networkConfig->masterServerHostName = currentConfig.masterServerHostName;
-            NetworkConfigHooks::networkConfig->masterServerPort = currentConfig.masterServerPort;
-            NetworkConfigHooks::networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl;
-            NetworkConfigHooks::networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl;
-            NetworkConfigHooks::networkConfig->maxPartySize = currentConfig.maxPartySize;
-            NetworkConfigHooks::networkConfig->forceGameLift = currentConfig.disableGameLift;
+        if (networkConfig) {
+            networkConfig->masterServerHostName = currentConfig.masterServerHostName;
+            networkConfig->masterServerPort = currentConfig.masterServerPort;
+            networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl;
+            networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl;
+            networkConfig->maxPartySize = currentConfig.maxPartySize;
+            networkConfig->forceGameLift = currentConfig.disableGameLift;
         }
+        ServerConfigManager::MasterServerChanged(currentConfig);
     }
 
-    void NetworkConfigHooks::UseMasterServer(GlobalNamespace::DnsEndPoint* endPoint, std::string statusUrl, int maxPartySize, std::string quickPlaySetupUrl) {
+    void ServerConfigManager::UseMasterServer(GlobalNamespace::DnsEndPoint* endPoint, std::string statusUrl, int maxPartySize, std::string quickPlaySetupUrl) {
         getLogger().debug("Master server set to '%s'", static_cast<std::string>(endPoint->ToString()).c_str());
         currentConfig.masterServerHostName  = static_cast<std::string>(endPoint->hostName);
         currentConfig.masterServerPort  = endPoint->port;
@@ -59,16 +76,18 @@ namespace MultiplayerCore
         currentConfig.maxPartySize  = maxPartySize;
         currentConfig.quickPlaySetupUrl  = quickPlaySetupUrl.empty() ? statusUrl + "/mp_override.json" : quickPlaySetupUrl;
         currentConfig.disableGameLift  = true;
-        if (NetworkConfigHooks::networkConfig) {
-            NetworkConfigHooks::networkConfig->masterServerHostName = currentConfig.masterServerHostName;
-            NetworkConfigHooks::networkConfig->masterServerPort = currentConfig.masterServerPort;
-            NetworkConfigHooks::networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl;
-            NetworkConfigHooks::networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl;
-            NetworkConfigHooks::networkConfig->maxPartySize = currentConfig.maxPartySize;
-            NetworkConfigHooks::networkConfig->forceGameLift = currentConfig.disableGameLift;
+        if (networkConfig) {
+            networkConfig->masterServerHostName = currentConfig.masterServerHostName;
+            networkConfig->masterServerPort = currentConfig.masterServerPort;
+            networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl;
+            networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl;
+            networkConfig->maxPartySize = currentConfig.maxPartySize;
+            networkConfig->forceGameLift = currentConfig.disableGameLift;
         }
+        ServerConfigManager::MasterServerChanged(currentConfig);
     }
-    void NetworkConfigHooks::UseOfficalServer() {
+
+    void ServerConfigManager::UseOfficalServer() {
         getLogger().debug("Master server set to 'official'");
         currentConfig.masterServerHostName  = "";
         currentConfig.masterServerPort  = 0;
@@ -76,17 +95,18 @@ namespace MultiplayerCore
         currentConfig.maxPartySize  = 0;
         currentConfig.quickPlaySetupUrl  = "";
         currentConfig.disableGameLift  = false;
-        if (NetworkConfigHooks::networkConfig) {
-            NetworkConfigHooks::networkConfig->masterServerHostName = originalConfig.masterServerHostName;
-            NetworkConfigHooks::networkConfig->masterServerPort = originalConfig.masterServerPort;
-            NetworkConfigHooks::networkConfig->multiplayerStatusUrl = originalConfig.masterServerStatusUrl;
-            NetworkConfigHooks::networkConfig->quickPlaySetupUrl = originalConfig.quickPlaySetupUrl;
-            NetworkConfigHooks::networkConfig->maxPartySize = originalConfig.maxPartySize;
-            NetworkConfigHooks::networkConfig->forceGameLift = originalConfig.disableGameLift;
-            NetworkConfigHooks::networkConfig->discoveryPort = originalConfig.discoveryPort;
-            NetworkConfigHooks::networkConfig->partyPort = originalConfig.partyPort;
-            NetworkConfigHooks::networkConfig->multiplayerPort = originalConfig.multiplayerPort;
+        if (networkConfig) {
+            networkConfig->masterServerHostName = originalConfig.masterServerHostName;
+            networkConfig->masterServerPort = originalConfig.masterServerPort;
+            networkConfig->multiplayerStatusUrl = originalConfig.masterServerStatusUrl;
+            networkConfig->quickPlaySetupUrl = originalConfig.quickPlaySetupUrl;
+            networkConfig->maxPartySize = originalConfig.maxPartySize;
+            networkConfig->forceGameLift = originalConfig.disableGameLift;
+            networkConfig->discoveryPort = originalConfig.discoveryPort;
+            networkConfig->partyPort = originalConfig.partyPort;
+            networkConfig->multiplayerPort = originalConfig.multiplayerPort;
         }
+        ServerConfigManager::MasterServerChanged(originalConfig);
     }
 
     MAKE_HOOK_MATCH(MainSystemInit_Init, &GlobalNamespace::MainSystemInit::Init, void, GlobalNamespace::MainSystemInit* self) {
@@ -104,7 +124,7 @@ namespace MultiplayerCore
         originalConfig.discoveryPort = self->networkConfig->discoveryPort;
         originalConfig.partyPort = self->networkConfig->partyPort;
         originalConfig.multiplayerPort = self->networkConfig->multiplayerPort;
-        NetworkConfigHooks::networkConfig = reinterpret_cast<GlobalNamespace::NetworkConfigSO*>(self->networkConfig);
+        networkConfig = reinterpret_cast<GlobalNamespace::NetworkConfigSO*>(self->networkConfig);
 
         if (!currentConfig.masterServerHostName .empty())
         {
@@ -137,6 +157,21 @@ namespace MultiplayerCore
         if (currentConfig.disableGameLift ) {
             getLogger().debug("MainSystemInit_Init overriding forceGameLift to '%s'", currentConfig.disableGameLift  ? "false" : "true");
             self->networkConfig->forceGameLift = !currentConfig.disableGameLift ;
+        }
+
+        if (currentConfig.discoveryPort  > 0) {
+            getLogger().debug("MainSystemInit_Init overriding discoveryPort to '%d'", currentConfig.discoveryPort );
+            self->networkConfig->discoveryPort = currentConfig.discoveryPort ;
+        }
+
+        if (currentConfig.partyPort  > 0) {
+            getLogger().debug("MainSystemInit_Init overriding partyPort to '%d'", currentConfig.partyPort );
+            self->networkConfig->partyPort = currentConfig.partyPort ;
+        }
+
+        if (currentConfig.multiplayerPort  > 0) {
+            getLogger().debug("MainSystemInit_Init overriding multiplayerPort to '%d'", currentConfig.multiplayerPort );
+            self->networkConfig->multiplayerPort = currentConfig.multiplayerPort ;
         }
         
         getLogger().debug("MainSystemInit_Init finished");

@@ -2,6 +2,7 @@
 #include <string>
 #include "GlobalNamespace/DnsEndPoint.hpp"
 #include "GlobalNamespace/NetworkConfigSO.hpp"
+#include "Utils/event.hpp"
 
 namespace MultiplayerCore {
     struct MasterServerConfig {
@@ -23,14 +24,22 @@ namespace MultiplayerCore {
         int multiplayerPort;
         bool disableGameLift;
     };
-    struct NetworkConfigHooks {
 
-        static GlobalNamespace::NetworkConfigSO* networkConfig;
+    struct ServerConfigManager {
+        // Event that is fired when the master server is changed.
+        static event<MasterServerConfig> MasterServerChanged;
 
         static void UseMasterServer(MasterServerConfig config);
         static void UseMasterServer(std::string hostName, int port, std::string statusUrl, int maxPartySize = MasterServerConfig::OfficialMaxPartySize);
         static void UseMasterServer(GlobalNamespace::DnsEndPoint* endPoint, std::string statusUrl, int maxPartySize = MasterServerConfig::OfficialMaxPartySize, std::string quickPlaySetupUrl = "");
+        
+        // This will set it back to the official server, which is not recommended,
+        // since connecting will not work, due to missing authentication.
         static void UseOfficalServer();
         
+        // Can be nullptr when called before MainSystemInit
+        static GlobalNamespace::NetworkConfigSO* GetNetworkConfig();
+
+        static MasterServerConfig GetMasterServerConfig();
     };
 }
