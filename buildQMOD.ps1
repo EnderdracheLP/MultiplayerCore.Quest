@@ -51,6 +51,11 @@ echo "Creating QMod $qmodName"
         $qmodName += "_$($version)"
         qpm-rust package edit --version $version
     }
+    else {
+        $qpm = "./qpm.json"
+        $qpmJson = Get-Content $qpm -Raw | ConvertFrom-Json
+        $qmodName += "_$($qpmJson.info.version)"
+    }
     & $PSScriptRoot/build.ps1 -clean:$clean -version:$version -release:$release
 
     if ($LASTEXITCODE -ne 0) {
