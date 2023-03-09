@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-22.04
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout
       with:
         submodules: true
@@ -113,7 +113,7 @@ jobs:
         cd ./build/
         pattern="lib${module_id}*.so"
         files=( $pattern )
-        echo ::set-output name=NAME::"${files[0]}"
+        echo "NAME=${files[0]}" >> $GITHUB_OUTPUT
 
     - name: Package QMOD
       run: |
@@ -127,6 +127,7 @@ jobs:
           files: |
             ./${{ env.module_id }}_${{ env.version }}.qmod
           body_path: ./rl-notes.md
+          generate_release_notes: true
           draft: true
 
     #- name: Create Release

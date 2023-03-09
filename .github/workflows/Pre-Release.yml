@@ -97,29 +97,44 @@ jobs:
         cd ./libs/arm64-v8a/
         pattern="lib${module_id}*.so"
         files=( $pattern )
-        echo ::set-output name=NAME::"${files[0]}"
+        echo "NAME=${files[0]}" >> $GITHUB_OUTPUT
     - name: Package QMOD
       run: |
         cd ${GITHUB_WORKSPACE}
         pwsh -Command ./buildQMOD.ps1 -package
+
+    # - name: Create Release
+    #   id: create_pre-release
+    #   uses: actions/create-release@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     tag_name: ${{ env.version }}
+    #     release_name: ${{ env.module_id }} ${{ env.version }} for Beat Saber ${{ env.BSVersion }}
+    #     body_path: ./pre-rl-notes.md
+    #     draft: false
+    #     prerelease: true
+
     - name: Create Release
-      id: create_pre-release
-      uses: actions/create-release@v1
+      id: release-qmod
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ env.version }}
-        release_name: ${{ env.module_id }} ${{ env.version }} for Beat Saber ${{ env.BSVersion }}
+        name: ${{ env.module_id }} ${{ env.version }} for Beat Saber ${{ env.BSVersion }}
+        files: ./${{ env.module_id }}.qmod
         body_path: ./pre-rl-notes.md
         draft: false
         prerelease: true
-    - name: Upload QMOD Pre-Release Asset
-      id: upload-prerelease-QMOD 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_pre-release.outputs.upload_url }}
-        asset_path: ./${{ env.module_id }}.qmod
-        asset_name: ${{ env.module_id }}.qmod
-        asset_content_type: application/qmod
+        generate_release_notes: true
+
+    # - name: Upload QMOD Pre-Release Asset
+    #   id: upload-prerelease-QMOD 
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_pre-release.outputs.upload_url }}
+    #     asset_path: ./${{ env.module_id }}.qmod
+    #     asset_name: ${{ env.module_id }}.qmod
+    #     asset_content_type: application/qmod

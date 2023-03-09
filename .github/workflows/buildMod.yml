@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-22.04
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout
       with:
         submodules: true
@@ -80,7 +80,7 @@ jobs:
         
     - name: QPM Dependencies Cache
       id: cache-qpm-deps
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-qpm-deps
       with:
@@ -119,7 +119,8 @@ jobs:
         cd ./build/
         pattern="lib${module_id}*.so"
         files=( $pattern )
-        echo ::set-output name=NAME::"${files[0]}"
+        echo "NAME=${files[0]}" >> $GITHUB_OUTPUT
+      # echo ::set-output name=NAME::"${files[0]}"
 
     - name: Package QMOD
       run: |
@@ -128,7 +129,7 @@ jobs:
 
 
     - name: Upload non-debug artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ steps.libname.outputs.NAME }}
         path: ./build/${{ steps.libname.outputs.NAME }}
@@ -136,7 +137,7 @@ jobs:
 
 
     - name: Upload debug artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: debug_${{ steps.libname.outputs.NAME }}
         path: ./build/debug/${{ steps.libname.outputs.NAME }}
@@ -144,7 +145,7 @@ jobs:
 
 
     - name: Upload QMOD
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ env.module_id }}-(UNZIP-for-QMOD).qmod
         path: ./${{ env.module_id }}_${{ env.version }}.qmod
