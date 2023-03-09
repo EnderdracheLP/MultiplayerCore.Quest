@@ -120,15 +120,22 @@ jobs:
         cd ${GITHUB_WORKSPACE}
         pwsh -Command ./buildQMOD.ps1 -package
 
+    - name: Copy Debug Artifact
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        cp ./build/debug/${{ steps.libname.outputs.NAME }} ./build/debug_${{ steps.libname.outputs.NAME }}
+
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-          name: ${{ env.module_id }} ${{ env.version }} for Beat Saber ${{ env.BSVersion }}
-          files: |
-            ./${{ env.module_id }}_${{ env.version }}.qmod
-          body_path: ./rl-notes.md
-          generate_release_notes: true
-          draft: true
+        name: ${{ env.module_id }} ${{ env.version }} for Beat Saber ${{ env.BSVersion }}
+        files: |
+          ./${{ env.module_id }}_${{ env.version }}.qmod
+          ./build/${{ steps.libname.outputs.NAME }}
+          ./build/debug_${{ steps.libname.outputs.NAME }}
+        body_path: ./rl-notes.md
+        generate_release_notes: true
+        draft: true
 
     #- name: Create Release
     #  id: create_release

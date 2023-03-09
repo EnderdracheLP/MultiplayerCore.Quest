@@ -115,14 +115,22 @@ jobs:
     #     draft: false
     #     prerelease: true
 
-    - name: Create Release
+    - name: Copy Debug Artifact
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        cp ./build/debug/${{ steps.libname.outputs.NAME }} ./build/debug_${{ steps.libname.outputs.NAME }}
+
+    - name: Create Pre-Release
       id: release-qmod
       uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         name: ${{ env.module_id }} ${{ env.version }} for Beat Saber ${{ env.BSVersion }}
-        files: ./${{ env.module_id }}.qmod
+        files: |
+          ./${{ env.module_id }}.qmod
+          ./build/${{ steps.libname.outputs.NAME }}
+          ./build/debug_${{ steps.libname.outputs.NAME }}
         body_path: ./pre-rl-notes.md
         draft: false
         prerelease: true
