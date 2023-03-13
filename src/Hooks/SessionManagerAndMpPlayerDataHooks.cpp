@@ -32,6 +32,8 @@
 #include "GlobalNamespace/ConnectedPlayerManager.hpp"
 #include "GlobalNamespace/BeatmapCharacteristicCollectionSO.hpp"
 #include "GlobalNamespace/BeatmapIdentifierNetSerializable.hpp"
+#include "GlobalNamespace/NetworkUtility.hpp"
+#include "GlobalNamespace/AuthenticationToken.hpp"
 
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Application.hpp"
@@ -357,8 +359,27 @@ namespace MultiplayerCore {
         return beatmap;
     }
 
+    MAKE_HOOK_MATCH(NetworkUtility_GetHashedUserId, &NetworkUtility::GetHashedUserId, StringW, StringW userId, AuthenticationToken::Platform platform) {
+        StringW hashedUserId;
+        StringW prefix;
+        if (getConfig().config.FindMember("UserIdPrefix") != getConfig().config.MemberEnd() && getConfig().config["UserIdPrefix"].IsString())
+            prefix = StringW(getConfig().config["UserIdPrefix"].GetString());
+        
+        if (platform == AuthenticationToken::Platform::OculusQuest || platform == AuthenticationToken::Platform::Oculus) {
+            getLogger().debug("User is on Quest, using custom prefix");
+            getLogger().debug("Setting userId to hash %s", static_cast<std::string>(StringW(prefix + StringW("OculusQuest#" + userId))).c_str());
+            hashedUserId = NetworkUtility::GetHashBase64(prefix + StringW("OculusQuest#" + userId));
+            getLogger().debug("Hashed userId is %s", static_cast<std::string>(hashedUserId).c_str());
+        }
+        else {
+            return NetworkUtility_GetHashedUserId(prefix ? prefix + userId : userId, platform);
+        }
+        return hashedUserId;
+    }
+
     void Hooks::Early_SessionManagerAndExtendedPlayerHooks() {
         INSTALL_HOOK(getLogger(), SessionManagerStart);
+        INSTALL_HOOK(getLogger(), NetworkUtility_GetHashedUserId);
     }
 
     void Hooks::Late_SessionManagerAndExtendedPlayerHooks() {
