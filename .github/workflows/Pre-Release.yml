@@ -24,7 +24,7 @@ jobs:
 
     - name: Cache Android NDK
       id: cache-ndk
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-ndk
       with:
@@ -56,7 +56,7 @@ jobs:
       
     - name: QPM Dependencies Cache
       id: cache-qpm-deps
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-qpm-deps
       with:
