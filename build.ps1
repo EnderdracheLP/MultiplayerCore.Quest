@@ -19,7 +19,7 @@ if ($release -ne $true -and -not $VERSION.Contains('-Dev')) {
 }
 
 if ([string]::IsNullOrEmpty($env:version) -and $VERSION) {
-    & qpm-rust package edit --version $VERSION
+    & qpm package edit --version $VERSION
 }
 
 if ((Test-Path "./extern/includes/beatsaber-hook/src/inline-hook/And64InlineHook.cpp", "./extern/includes/beatsaber-hook/src/inline-hook/inlineHook.c", "./extern/includes/beatsaber-hook/src/inline-hook/relocate.c") -contains $false) {

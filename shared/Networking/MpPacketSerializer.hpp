@@ -1,0 +1,143 @@
+#pragma once
+
+#include "custom-types/shared/macros.hpp"
+#include "lapiz/shared/macros.hpp"
+#if __has_include("logging.hpp")
+#include "logging.hpp"
+#endif
+
+#include "GlobalNamespace/INetworkPacketSubSerializer_1.hpp"
+#include "GlobalNamespace/IConnectedPlayer.hpp"
+#include "LiteNetLib/Utils/NetDataWriter.hpp"
+#include "LiteNetLib/Utils/NetDataReader.hpp"
+#include "LiteNetLib/Utils/INetSerializable.hpp"
+
+#include "System/IDisposable.hpp"
+#include "Zenject/IInitializable.hpp"
+
+#include "GlobalNamespace/MultiplayerSessionManager.hpp"
+
+#include <type_traits>
+#include <map>
+#include <list>
+
+namespace MultiplayerCore {
+    template<typename TPacket>
+    concept INetSerializable = requires(TPacket t) {
+        {t->i_INetSerializable()} -> std::same_as<LiteNetLib::Utils::INetSerializable*>;
+    };
+}
+
+using PacketHandler = std::function<void (LiteNetLib::Utils::NetDataReader*, int, GlobalNamespace::IConnectedPlayer*)>;
+
+template<>
+struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<void (GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::*)(LiteNetLib::Utils::NetDataWriter*, LiteNetLib::Utils::INetSerializable*)>(&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::Serialize)> {
+    static const MethodInfo* get() {
+        static auto klass = classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>*);
+        static auto* writer = &classof(LiteNetLib::Utils::NetDataWriter*)->byval_arg;
+        static auto* packet = &classof(LiteNetLib::Utils::INetSerializable*)->byval_arg;
+        return ::il2cpp_utils::FindMethod(klass, "Serialize", std::vector<Il2CppClass*>(), ::std::vector<const Il2CppType*>{writer, packet});
+    }
+};
+
+template<>
+struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<void (GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::*)(LiteNetLib::Utils::NetDataReader*, int, GlobalNamespace::IConnectedPlayer*)>(&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::Deserialize)> {
+    static const MethodInfo* get() {
+        static auto klass = classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>*);
+        static auto* reader = &classof(LiteNetLib::Utils::NetDataReader*)->byval_arg;
+        static auto* length = &classof(int)->byval_arg;
+        static auto* data = &classof(GlobalNamespace::IConnectedPlayer*)->byval_arg;
+
+        return ::il2cpp_utils::FindMethod(klass, "Deserialize", std::vector<Il2CppClass*>(), ::std::vector<const Il2CppType*>{reader, length, data});
+    }
+};
+
+template<>
+struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<bool (GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::*)(System::Type*)>(&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::HandlesType)> {
+    static const MethodInfo* get() {
+        static auto klass = classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>*);
+        static auto* type = &classof(System::Type*)->byval_arg;
+
+        return ::il2cpp_utils::FindMethod(klass, "Deserialize", std::vector<Il2CppClass*>(), ::std::vector<const Il2CppType*>{type});
+    }
+};
+
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, Il2CppObject, std::vector<Il2CppClass*>({classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*), classof(::Zenject::IInitializable*), classof(System::IDisposable*)}),
+    DECLARE_OVERRIDE_METHOD(void, Initialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::Zenject::IInitializable::Initialize>::get());
+    DECLARE_OVERRIDE_METHOD(void, Dispose, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::System::IDisposable::Dispose>::get());
+    DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::Serialize>::get(), LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet);
+    DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::Deserialize>::get(), LiteNetLib::Utils::NetDataReader* reader, int length, GlobalNamespace::IConnectedPlayer* data);
+    DECLARE_OVERRIDE_METHOD(bool, HandlesType, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::HandlesType>::get(), Il2CppReflectionType* type);
+
+    static const int ID = 100;
+
+    DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::MultiplayerSessionManager*, _sessionManager);
+
+    DECLARE_CTOR(ctor, GlobalNamespace::IMultiplayerSessionManager* sessionManager);
+
+    public:
+        GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>* i_INetworkPacketSubSerializer_1_IConnectedPlayer() { return reinterpret_cast<GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*>(this); }
+        Zenject::IInitializable* i_IInitializable() { return reinterpret_cast<::Zenject::IInitializable*>(this); }
+        System::IDisposable* i_IDisposable() { return reinterpret_cast<::System::IDisposable*>(this); }
+
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket>)
+        void RegisterCallback(std::function<void(TPacket)> callback) { RegisterCallback([callback](TPacket packet, GlobalNamespace::IConnectedPlayer* player){ callback(packet); }); }
+
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket>)
+        void RegisterCallback(std::function<void(TPacket, GlobalNamespace::IConnectedPlayer*)> callback) {
+            auto packetType = csTypeOf(TPacket);
+            registeredTypes.emplace_back(packetType);
+
+            std::string packetId(packetType->get_Name());
+
+            std::function<TPacket(LiteNetLib::Utils::NetDataReader*, int)> deserialize = [](LiteNetLib::Utils::NetDataReader* reader, int size) -> TPacket {
+                auto packet = il2cpp_utils::NewSpecific<TPacket>();
+                if (!packet) {
+                    // TODO: don't use this logging in header?
+                    #ifdef ERROR
+                        ERROR("Constructor for '{}' returned null!", csTypeOf(TPacket)->get_Name());
+                    #endif
+                    reader->SkipBytes(size);
+                } else packet->Deserialize(reader);
+                return packet;
+            };
+
+            packetHandlers[packetId] = [callback, deserialize](LiteNetLib::Utils::NetDataReader* reader, int size, GlobalNamespace::IConnectedPlayer* player){
+                callback(deserialize(reader, size), player);
+            };
+        }
+
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket>)
+        void UnregisterCallback() {
+            auto packetType = csTypeOf(TPacket);
+            std::string packetId(packetType->get_Name());
+
+            std::erase(registeredTypes, packetType);
+            packetHandlers.erase(packetId);
+        }
+
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket>)
+        void Send(TPacket packet) {
+            /* TODO: try catch, logging? */
+            if (_sessionManager) {
+                _sessionManager->Send(packet->i_INetSerializable());
+            }
+        }
+
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket>)
+        void SendUnreliable(TPacket packet) {
+            /* TODO: try catch, logging? */
+            if (_sessionManager) {
+                _sessionManager->SendUnreliable(packet->i_INetSerializable());
+            }
+        }
+
+    private:
+        std::list<Il2CppReflectionType*> registeredTypes;
+        std::map<std::string, PacketHandler> packetHandlers;
+)
