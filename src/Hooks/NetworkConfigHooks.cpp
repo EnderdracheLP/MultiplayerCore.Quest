@@ -14,17 +14,17 @@
 // File is equivalent to MultiplayerCore.Patchers.NetworkConfigPatcher from PC
 
 namespace MultiplayerCore::Hooks {
-    NetworkConfigHooks::ServerConfig NetworkConfigHooks::officialServerConfig{};
-    const NetworkConfigHooks::ServerConfig* NetworkConfigHooks::currentServerConfig{};
+    ServerConfig NetworkConfigHooks::officialServerConfig{};
+    const ServerConfig* NetworkConfigHooks::currentServerConfig{};
     GlobalNamespace::NetworkConfigSO* NetworkConfigHooks::networkConfig = nullptr;
-    UnorderedEventCallback<const NetworkConfigHooks::ServerConfig*> NetworkConfigHooks::ServerChanged{};
+    UnorderedEventCallback<const ServerConfig*> NetworkConfigHooks::ServerChanged{};
 
-    const NetworkConfigHooks::ServerConfig* NetworkConfigHooks::GetCurrentServerConfig() { return currentServerConfig; }
-    const NetworkConfigHooks::ServerConfig* NetworkConfigHooks::GetOfficialServerConfig() { return &officialServerConfig; }
+    const ServerConfig* NetworkConfigHooks::GetCurrentServer() { return currentServerConfig; }
+    const ServerConfig* NetworkConfigHooks::GetOfficialServer() { return &officialServerConfig; }
 
-    bool NetworkConfigHooks::IsOverridingAPI() { return GetCurrentServerConfig() != GetOfficialServerConfig(); }
+    bool NetworkConfigHooks::IsOverridingAPI() { return GetCurrentServer() != GetOfficialServer(); }
 
-    void NetworkConfigHooks::UseServerConfig(const ServerConfig* cfg) {
+    void NetworkConfigHooks::UseServer(const ServerConfig* cfg) {
         if (!cfg) {
             UseOfficialServer();
             return;
@@ -57,7 +57,7 @@ namespace MultiplayerCore::Hooks {
     }
 
     void NetworkConfigHooks::UseOfficialServer() {
-        UseServerConfig(&officialServerConfig);
+        UseServer(&officialServerConfig);
     }
 }
 
@@ -79,11 +79,11 @@ MAKE_AUTO_HOOK_MATCH(MainSystemInit_Init, &::GlobalNamespace::MainSystemInit::In
     officialConfig.disableGameLift = false;
     NetworkConfigHooks::networkConfig = self->networkConfig;
 
-    NetworkConfigHooks::UseServerConfig(NetworkConfigHooks::currentServerConfig);
+    NetworkConfigHooks::UseServer(NetworkConfigHooks::currentServerConfig);
 }
 
 MAKE_AUTO_HOOK_MATCH(UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType, &GlobalNamespace::UnifiedNetworkPlayerModel::SetActiveNetworkPlayerModelType, void, GlobalNamespace::UnifiedNetworkPlayerModel* self, GlobalNamespace::UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType activeNetworkPlayerModelType) {
-    auto currentConfig = NetworkConfigHooks::GetCurrentServerConfig();
+    auto currentConfig = NetworkConfigHooks::GetCurrentServer();
     if (currentConfig && currentConfig->disableGameLift) {
         DEBUG("Disabling GameLift, Setting to MasterServer");
         UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, GlobalNamespace::UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType::MasterServer);
@@ -94,7 +94,7 @@ MAKE_AUTO_HOOK_MATCH(UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType, 
 }
 
 MAKE_AUTO_HOOK_ORIG_MATCH(ClientCertificateValidator_ValidateCertificateChainInternal, &GlobalNamespace::ClientCertificateValidator::ValidateCertificateChainInternal, void, GlobalNamespace::ClientCertificateValidator* self, GlobalNamespace::DnsEndPoint* endPoint, System::Security::Cryptography::X509Certificates::X509Certificate2* certificate, ::ArrayW<::ArrayW<uint8_t>> certificateChain) {
-    auto currentConfig = NetworkConfigHooks::GetCurrentServerConfig();
+    auto currentConfig = NetworkConfigHooks::GetCurrentServer();
     if (!currentConfig || currentConfig->masterServerHostName.empty() || currentConfig->masterServerPort == 0) {
         DEBUG("No EndPoint set, using default");
         ClientCertificateValidator_ValidateCertificateChainInternal(self, endPoint, certificate, certificateChain);
