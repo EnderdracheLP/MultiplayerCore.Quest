@@ -113,8 +113,14 @@ namespace MultiplayerCore::Objects {
             _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).wait();
             gameplaySetupData->get_beatmapLevel()->beatmapLevel = beatmapLevelsModel->GetLevelPreviewForLevelId(levelId);
 
-            task->TrySetResult(beatmapLevelsModel->GetBeatmapLevelAsync(levelId, cancellationToken)->get_Result());
+            auto getTask = beatmapLevelsModel->GetBeatmapLevelAsync(levelId, cancellationToken);
+            while(!getTask->get_IsCompleted()) std::this_thread::yield();
+
+            auto result = getTask->get_Result();
+            task->TrySetResult(result);
             task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+
+            return result;
         });
 
         return task;
