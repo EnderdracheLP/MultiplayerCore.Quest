@@ -28,6 +28,8 @@ namespace MultiplayerCore::UI {
             GlobalNamespace::ILobbyPlayersDataModel* playersDataModel,
             MpColorsUI* colorsUI
     ) {
+        INVOKE_CTOR();
+
         _lobbySetupViewController = lobbySetupViewController;
         _playersDataModel = playersDataModel;
         _colorsUI = colorsUI;

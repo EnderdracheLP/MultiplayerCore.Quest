@@ -29,6 +29,8 @@ namespace MultiplayerCore::UI {
         Objects::MpLevelLoader* levelLoader,
         GlobalNamespace::CenterStageScreenController* screenController
     ) {
+        INVOKE_CTOR();
+
         _sessionManager = sessionManager;
         _gameStateController = gameStateController;
         _playersDataModel = playersDataModel;

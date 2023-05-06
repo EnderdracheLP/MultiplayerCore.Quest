@@ -11,6 +11,8 @@ DEFINE_TYPE(MultiplayerCore::UI, MpColorsUI);
 
 namespace MultiplayerCore::UI {
     void MpColorsUI::ctor(GlobalNamespace::LobbySetupViewController* lobbySetupViewController) {
+        INVOKE_CTOR();
+
         _lobbySetupViewController = lobbySetupViewController;
     }
 
