@@ -5,14 +5,6 @@
 
 #include "paper/shared/logger.hpp"
 
-namespace BSML
-{
-    class Logging
-    {
-    public:
-        static Logger& getLogger();
-    };
-}
 template <> struct fmt::formatter<::StringW> : formatter<string_view> {
     // parse is inherited from formatter<string_view>.
     template <typename FormatContext>
@@ -21,6 +13,7 @@ template <> struct fmt::formatter<::StringW> : formatter<string_view> {
     }
 };
 
+Logger& getLogger();
 #define INFO(...) Paper::Logger::fmtLog<Paper::LogLevel::INF>(__VA_ARGS__)
 #define ERROR(...) Paper::Logger::fmtLog<Paper::LogLevel::ERR>(__VA_ARGS__)
 #define CRITICAL(...) Paper::Logger::fmtLog<Paper::LogLevel::ERR>(__VA_ARGS__)
