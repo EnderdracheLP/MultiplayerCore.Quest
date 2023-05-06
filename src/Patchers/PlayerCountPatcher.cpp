@@ -10,6 +10,8 @@ namespace MultiplayerCore::Patchers {
         INVOKE_CTOR();
         _networkConfig = networkConfig;
         minPlayers = 2;
+
+        instance = this;
     }
 
     void PlayerCountPatcher::Dispose() { if (instance == this) instance = nullptr; }
