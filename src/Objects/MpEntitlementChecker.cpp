@@ -46,7 +46,7 @@ namespace MultiplayerCore::Objects {
         // and since this method shouldn't ever be called with Unknown, this is a nice way of doing this
 
         // TODO: check if this hacky way of doing it is fine
-        if (_entitlementsDictionary[userId][levelId] != entitlement) DEBUG("Entitlement from '{}' for '{}' is {}", userId, levelId, Utils::EnumUtils::GetEnumName(entitlement));
+        if (_entitlementsDictionary[userId][levelId] != entitlement || entitlement == GlobalNamespace::EntitlementsStatus::Unknown) DEBUG("Entitlement from '{}' for '{}' is {}", userId, levelId, Utils::EnumUtils::GetEnumName(entitlement));
 
         _entitlementsDictionary[userId][levelId] = entitlement;
 

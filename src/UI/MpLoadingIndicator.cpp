@@ -71,12 +71,13 @@ namespace MultiplayerCore::UI {
     }
 
     int MpLoadingIndicator::OkPlayerCountNoRequest() {
+        auto levelId = _levelLoader->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID();
+
         auto dict = _playersDataModel->i_ILobbyPlayerData();
         auto coll = dict->i_KeyValuePair_2_TKey_TValue();
         auto enumerable = coll->i_IEnumerable_1_T();
         auto enumerator_1 = enumerable->GetEnumerator();
         auto enumerator = enumerator_1->i_IEnumerator();
-        auto levelId = _levelLoader->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID();
 
         int okCount = 0;
         auto loggerContext = getLogger().WithContext("OkPlayerCountNoRequest");
@@ -89,7 +90,7 @@ namespace MultiplayerCore::UI {
             if (_entitlementChecker->GetUserEntitlementStatusWithoutRequest(tocheck, levelId) == GlobalNamespace::EntitlementsStatus::Ok) okCount++;
         }
 
-        il2cpp_utils::RunMethod(_playersDataModel, "System.IDisposable.Dispose");
+        il2cpp_utils::RunMethod(enumerator_1, "System.IDisposable.Dispose");
         return okCount;
     }
 
