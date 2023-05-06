@@ -50,11 +50,6 @@
       "additionalData": {}
     },
     {
-      "id": "cpp-semver",
-      "versionRange": "*",
-      "additionalData": {}
-    },
-    {
       "id": "modloader",
       "versionRange": "^1.2.3",
       "additionalData": {}
@@ -62,7 +57,9 @@
     {
       "id": "pinkcore",
       "versionRange": "^1.8.9",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     },
     {
       "id": "paper",
@@ -77,12 +74,16 @@
     {
       "id": "bsml",
       "versionRange": "^0.3.2",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     },
     {
       "id": "cpp-semver",
       "versionRange": "^0.1.2",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     }
   ],
   "workspace": null
