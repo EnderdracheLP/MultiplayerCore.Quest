@@ -4,6 +4,7 @@ DEFINE_TYPE(MultiplayerCore::Networking, MpPacketSerializer);
 
 namespace MultiplayerCore::Networking {
     void MpPacketSerializer::ctor(GlobalNamespace::IMultiplayerSessionManager* sessionManager) {
+        INVOKE_CTOR();
         _sessionManager = il2cpp_utils::try_cast<std::remove_pointer_t<decltype(_sessionManager)>>(sessionManager).value_or(nullptr);
     }
 

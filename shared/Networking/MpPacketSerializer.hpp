@@ -83,30 +83,27 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
 
         template<::MultiplayerCore::INetSerializable TPacket>
         requires(std::is_pointer_v<TPacket>)
+        static TPacket DeserializePacket(LiteNetLib::Utils::NetDataReader* reader, int size) {
+            auto packet = il2cpp_utils::NewSpecific<TPacket>();
+            if (!packet) {
+                reader->SkipBytes(size);
+            } else packet->Deserialize(reader);
+            return packet;
+        }
+
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket>)
         void RegisterCallback(std::function<void(TPacket)> callback) { RegisterCallback([callback](TPacket packet, GlobalNamespace::IConnectedPlayer* player){ callback(packet); }); }
 
         template<::MultiplayerCore::INetSerializable TPacket>
         requires(std::is_pointer_v<TPacket>)
         void RegisterCallback(std::function<void(TPacket, GlobalNamespace::IConnectedPlayer*)> callback) {
-            auto packetType = csTypeOf(TPacket);
+            Il2CppReflectionType* packetType = csTypeOf(TPacket);
             registeredTypes.emplace_back(packetType);
-
             std::string packetId(packetType->get_Name());
 
-            std::function<TPacket(LiteNetLib::Utils::NetDataReader*, int)> deserialize = [](LiteNetLib::Utils::NetDataReader* reader, int size) -> TPacket {
-                auto packet = il2cpp_utils::NewSpecific<TPacket>();
-                if (!packet) {
-                    // TODO: don't use this logging in header?
-                    #ifdef ERROR
-                        ERROR("Constructor for '{}' returned null!", csTypeOf(TPacket)->get_Name());
-                    #endif
-                    reader->SkipBytes(size);
-                } else packet->Deserialize(reader);
-                return packet;
-            };
-
-            packetHandlers[packetId] = [callback, deserialize](LiteNetLib::Utils::NetDataReader* reader, int size, GlobalNamespace::IConnectedPlayer* player){
-                callback(deserialize(reader, size), player);
+            packetHandlers[packetId] = [callback](LiteNetLib::Utils::NetDataReader* reader, int size, GlobalNamespace::IConnectedPlayer* player){
+                callback(DeserializePacket<TPacket>(reader, size), player);
             };
         }
 

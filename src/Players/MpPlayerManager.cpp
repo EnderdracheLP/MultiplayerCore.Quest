@@ -6,7 +6,7 @@
 DEFINE_TYPE(MultiplayerCore::Players, MpPlayerManager);
 
 namespace MultiplayerCore::Players {
-    void MpPlayerManager::New(MultiplayerCore::Networking::MpPacketSerializer* packetSerializer, GlobalNamespace::IPlatformUserModel* platformUserModel, GlobalNamespace::IMultiplayerSessionManager* sessionManager) {
+    void MpPlayerManager::ctor(MultiplayerCore::Networking::MpPacketSerializer* packetSerializer, GlobalNamespace::IPlatformUserModel* platformUserModel, GlobalNamespace::IMultiplayerSessionManager* sessionManager) {
         INVOKE_CTOR();
 
         _playerData = std::remove_pointer_t<decltype(_playerData)>::New_ctor();
