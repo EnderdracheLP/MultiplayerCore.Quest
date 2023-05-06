@@ -27,32 +27,21 @@ namespace MultiplayerCore::Objects {
     }
 
     void MpEntitlementChecker::Start_override() {
+        GlobalNamespace::NetworkPlayerEntitlementChecker::Start();
         rpcManager->add_setIsEntitledToLevelEvent(
             BSML::MakeSystemAction<StringW, StringW, GlobalNamespace::EntitlementsStatus>(this, ___HandleSetIsEntitledToLevel_MethodRegistrator.get())
         );
     }
 
     void MpEntitlementChecker::OnDestroy_override() {
-
+        GlobalNamespace::NetworkPlayerEntitlementChecker::OnDestroy();
     }
 
     void MpEntitlementChecker::HandleGetIsEntitledToLevel_override(StringW userId, StringW levelId) {
-        auto entitlementStatus = GetEntitlementStatus_override(levelId)->get_Result();
-        rpcManager->SetIsEntitledToLevel(levelId, entitlementStatus);
+        GlobalNamespace::NetworkPlayerEntitlementChecker::HandleGetIsEntitledToLevel(userId, levelId);
     }
 
     void MpEntitlementChecker::HandleSetIsEntitledToLevel(StringW userId, StringW levelId, GlobalNamespace::EntitlementsStatus entitlement) {
-        /*
-        auto userDictItr = _entitlementsDictionary.find(userId);
-        bool doLog = false;
-        if (userDictItr == _entitlementsDictionary.end()) doLog = true;
-        else {
-            auto& userDict = userDictItr->second;
-            auto currentEntitlementItr = userDict.find(levelId);
-            if (currentEntitlementItr == userDict.end() || currentEntitlementItr->second != entitlement) doLog = true;
-        }
-        */
-
         // operator[] auto inserts instances so we can just check like this,
         // and since this method shouldn't ever be called with Unknown, this is a nice way of doing this
 
@@ -67,13 +56,23 @@ namespace MultiplayerCore::Objects {
     }
 
     EntitlementsStatusTask* MpEntitlementChecker::GetEntitlementStatus_override(StringW levelId) {
+        auto levelHash = Utilities::HashForLevelId(levelId);
+        // not custom
+        if (levelHash.empty()) {
+            DEBUG("Not a custom level, returning base call");
+            return NetworkPlayerEntitlementChecker::GetEntitlementStatus(levelId);
+        }
+
         auto task = EntitlementsStatusTask::New_ctor();
         task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
 
         std::async(std::launch::async, [this, task, levelId](){
-            auto entitlement = GetEntitlementStatusAsync(levelId).get();
+            auto entitlement = GetEntitlementStatus(levelId);
+            DEBUG("Entitlement found for level {}: {}", levelId, Utils::EnumUtils::GetEnumName(entitlement));
+
             task->TrySetResult(entitlement);
             task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+            return entitlement;
         });
 
         return task;

@@ -14,6 +14,7 @@ using namespace MultiplayerCore::Objects;
 // override Start
 MAKE_AUTO_HOOK_MATCH(NetworkPlayerEntitlementChecker_Start, &::GlobalNamespace::NetworkPlayerEntitlementChecker::Start, void, GlobalNamespace::NetworkPlayerEntitlementChecker* self) {
     INVOKE_LOCK(NetworkPlayerEntitlementChecker_Start);
+
     if (!lock) {
         NetworkPlayerEntitlementChecker_Start(self);
     } else {
@@ -38,6 +39,7 @@ MAKE_AUTO_HOOK_MATCH(NetworkPlayerEntitlementChecker_OnDestroy, &::GlobalNamespa
             NetworkPlayerEntitlementChecker_OnDestroy(self);
     }
 }
+
 // override HandleGetIsEntitledToLevel
 MAKE_AUTO_HOOK_MATCH(NetworkPlayerEntitlementChecker_HandleGetIsEntitledToLevel, &::GlobalNamespace::NetworkPlayerEntitlementChecker::HandleGetIsEntitledToLevel, void, GlobalNamespace::NetworkPlayerEntitlementChecker* self, StringW userId, StringW levelId) {
     INVOKE_LOCK(NetworkPlayerEntitlementChecker_HandleGetIsEntitledToLevel);
