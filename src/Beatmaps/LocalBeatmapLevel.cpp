@@ -9,7 +9,8 @@ namespace MultiplayerCore::Beatmaps {
 
     void LocalBeatmapLevel::ctor_2(StringW hash, GlobalNamespace::IPreviewBeatmapLevel* preview) {
         INVOKE_CTOR();
-        INVOKE_BASE_CTOR(classof(Abstractions:: MpBeatmapLevel*));
+        INVOKE_BASE_CTOR(classof(Abstractions::MpBeatmapLevel*));
+
         set_levelHash(hash);
         _preview = preview;
 

@@ -4,7 +4,9 @@ DEFINE_TYPE(MultiplayerCore::Beatmaps, NoInfoBeatmapLevel);
 
 namespace MultiplayerCore::Beatmaps {
     void NoInfoBeatmapLevel::ctor_1(StringW hash) {
-        ctor();
+        INVOKE_CTOR();
+        INVOKE_BASE_CTOR(classof(Abstractions::MpBeatmapLevel*));
+
         set_levelHash(hash);
     }
 

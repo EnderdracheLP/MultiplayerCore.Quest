@@ -18,6 +18,9 @@ namespace RequirementUtils {
 
 namespace MultiplayerCore::Objects {
     void MpLevelLoader::ctor(GlobalNamespace::IMultiplayerSessionManager* sessionManager, MpLevelDownloader* levelDownloader, GlobalNamespace::NetworkPlayerEntitlementChecker* entitlementChecker, GlobalNamespace::IMenuRpcManager* rpcManager) {
+        INVOKE_CTOR();
+        INVOKE_BASE_CTOR(classof(GlobalNamespace::MultiplayerLevelLoader*));
+
         _sessionManager = sessionManager;
         _levelDownloader = levelDownloader;
         _entitlementChecker = il2cpp_utils::try_cast<MpEntitlementChecker>(entitlementChecker).value_or(nullptr);

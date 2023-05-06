@@ -10,6 +10,7 @@ namespace MultiplayerCore::Beatmaps {
     void NetworkBeatmapLevel::ctor_1(Packets::MpBeatmapPacket* packet) {
         INVOKE_CTOR();
         INVOKE_BASE_CTOR(classof(Abstractions::MpBeatmapLevel*));
+
         _packet = packet;
 		requirements[_packet->characteristic] = std::move(_packet->requirements);
 		difficultyColors[_packet->characteristic] = std::move(_packet->mapColors);

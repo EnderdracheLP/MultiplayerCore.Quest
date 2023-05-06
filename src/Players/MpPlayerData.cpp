@@ -3,7 +3,10 @@
 DEFINE_TYPE(MultiplayerCore::Players, MpPlayerData);
 
 namespace MultiplayerCore::Players {
-    void MpPlayerData::New() {}
+    void MpPlayerData::New() {
+        INVOKE_CTOR();
+        INVOKE_BASE_CTOR(classof(Networking::Abstractions::MpPacket*));
+    }
 
     void MpPlayerData::Serialize(LiteNetLib::Utils::NetDataWriter* writer) {
         writer->Put(platformId);

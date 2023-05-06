@@ -10,6 +10,7 @@ namespace MultiplayerCore::Beatmaps {
     void BeatSaverBeatmapLevel::ctor_1(StringW hash) {
         INVOKE_CTOR();
         INVOKE_BASE_CTOR(classof(Abstractions:: MpBeatmapLevel*));
+
         set_levelHash(hash);
     }
 

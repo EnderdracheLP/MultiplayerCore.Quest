@@ -5,6 +5,7 @@ DEFINE_TYPE(MultiplayerCore::Objects, BGNetDebugLogger);
 
 namespace MultiplayerCore::Objects {
     void BGNetDebugLogger::ctor() {
+        INVOKE_CTOR();
         BGNet::Logging::Debug::AddLogger(this->i_ILogger());
     }
 

@@ -20,7 +20,6 @@ namespace MultiplayerCore::Objects {
     void MpEntitlementChecker::ctor() {
         INVOKE_CTOR();
         INVOKE_BASE_CTOR(classof(GlobalNamespace::NetworkPlayerEntitlementChecker*));
-
     }
 
     void MpEntitlementChecker::Inject(GlobalNamespace::IMultiplayerSessionManager* sessionManager) {

@@ -16,6 +16,7 @@ namespace MultiplayerCore::Objects {
     void MpPlayersDataModel::ctor(Networking::MpPacketSerializer* packetSerializer, Beatmaps::Providers::MpBeatmapLevelProvider* beatmapLevelProvider) {
         INVOKE_CTOR();
         INVOKE_BASE_CTOR(classof(GlobalNamespace::LobbyPlayersDataModel*));
+
         _packetSerializer = packetSerializer;
         _beatmapLevelProvider = beatmapLevelProvider;
     }
