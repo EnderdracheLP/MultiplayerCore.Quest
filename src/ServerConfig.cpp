@@ -22,6 +22,7 @@
 namespace MultiplayerCore {
     rapidjson::Value ServerConfig::toJson(rapidjson::Document::AllocatorType& allocator) const {
         rapidjson::Value value;
+        value.SetObject();
 
         ADD_STRING(masterServerHostName);
         ADD_MEMBER(masterServerPort);
@@ -33,7 +34,7 @@ namespace MultiplayerCore {
         ADD_MEMBER(multiplayerPort);
         ADD_MEMBER(disableGameLift);
 
-        return std::move(value);
+        return value;
     }
 
     bool ServerConfig::readJson(const rapidjson::Value& json) {
