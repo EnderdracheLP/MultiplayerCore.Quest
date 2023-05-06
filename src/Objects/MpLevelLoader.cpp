@@ -24,6 +24,7 @@ namespace MultiplayerCore::Objects {
         _sessionManager = sessionManager;
         _levelDownloader = levelDownloader;
         _entitlementChecker = il2cpp_utils::try_cast<MpEntitlementChecker>(entitlementChecker).value_or(nullptr);
+        _rpcManager = rpcManager;
     }
 
     void MpLevelLoader::LoadLevel_override(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
