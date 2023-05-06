@@ -89,7 +89,7 @@ namespace MultiplayerCore::UI {
             if (_entitlementChecker->GetUserEntitlementStatusWithoutRequest(tocheck, levelId) == GlobalNamespace::EntitlementsStatus::Ok) okCount++;
         }
 
-        enumerator_1->i_IDisposable()->Dispose();
+        il2cpp_utils::RunMethod(_playersDataModel, "System.IDisposable.Dispose");
         return okCount;
     }
 
