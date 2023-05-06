@@ -12,6 +12,7 @@
 MAKE_AUTO_HOOK_MATCH(LobbyDataModelInstaller_InstallBindings, &::GlobalNamespace::LobbyDataModelInstaller::InstallBindings, void, GlobalNamespace::LobbyDataModelInstaller* self) {
     LobbyDataModelInstaller_InstallBindings(self);
     auto container = self->get_Container();
+    container->Unbind<GlobalNamespace::ILobbyPlayersDataModel*>();
     container->Unbind<GlobalNamespace::LobbyPlayersDataModel*>();
     auto bindarray = Lapiz::ArrayUtils::TypeArray<GlobalNamespace::ILobbyPlayersDataModel*, GlobalNamespace::LobbyPlayersDataModel*, MultiplayerCore::Objects::MpPlayersDataModel*, System::IDisposable*>();
     auto toarray = Lapiz::ArrayUtils::TypeArray<MultiplayerCore::Objects::MpPlayersDataModel*>();

@@ -15,6 +15,7 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvid
     GlobalNamespace::IPreviewBeatmapLevel* GetBeatmapFromLocalBeatmaps(const std::string& levelHash);
     GlobalNamespace::IPreviewBeatmapLevel* GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet);
 
+    DECLARE_DEFAULT_CTOR();
     protected:
         GlobalNamespace::IPreviewBeatmapLevel* GetBeatmapFromBeatSaver(std::string levelHash);
 )
