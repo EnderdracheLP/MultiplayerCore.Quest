@@ -54,7 +54,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, Il2CppOb
     DECLARE_BSML_PROPERTY(bool, buttonInteractable);
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::Vector3, modalPosition);
     DECLARE_INSTANCE_FIELD_PRIVATE(BSML::ModalView*, modal);
-    DECLARE_INSTANCE_FIELD_PRIVATE(ListWrapper<BSML::CustomCellInfo*>, data);
+    DECLARE_INSTANCE_FIELD_PRIVATE_DEFAULT(ListWrapper<BSML::CustomCellInfo*>, data, nullptr);
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::UI::Button*, infoButton);
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::Transform*, root);
 
