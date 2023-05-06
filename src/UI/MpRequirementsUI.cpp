@@ -60,7 +60,7 @@ namespace MultiplayerCore::UI {
 
     void MpRequirementsUI::BeatmapSelected(StringW) {
         auto beatmapLevel = _playersDataModel->i_ILobbyPlayerData()->get_Item(_playersDataModel->get_localUserId())->i_ILevelGameplaySetupData()->get_beatmapLevel();
-        auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr);
+        auto mpLevel = beatmapLevel ? il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr) : nullptr;
         if (mpLevel) {
             auto diffColors = mpLevel->difficultyColors;
 
