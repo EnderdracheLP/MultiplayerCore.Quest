@@ -1,7 +1,6 @@
 #pragma once
 
 #include "custom-types/shared/macros.hpp"
-#include "lapiz/shared/macros.hpp"
 #if __has_include("logging.hpp")
 #include "logging.hpp"
 #endif
@@ -58,11 +57,13 @@ struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<bool (Globa
         static auto klass = classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>*);
         static auto* type = &classof(System::Type*)->byval_arg;
 
-        return ::il2cpp_utils::FindMethod(klass, "Deserialize", std::vector<Il2CppClass*>(), ::std::vector<const Il2CppType*>{type});
+        return ::il2cpp_utils::FindMethod(klass, "HandlesType", std::vector<Il2CppClass*>(), ::std::vector<const Il2CppType*>{type});
     }
 };
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, Il2CppObject, std::vector<Il2CppClass*>({classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*), classof(::Zenject::IInitializable*), classof(System::IDisposable*)}),
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, Il2CppObject,
+    std::vector<Il2CppClass*>({classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*), classof(::Zenject::IInitializable*), classof(System::IDisposable*)}),
+
     DECLARE_OVERRIDE_METHOD(void, Initialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::Zenject::IInitializable::Initialize>::get());
     DECLARE_OVERRIDE_METHOD(void, Dispose, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::System::IDisposable::Dispose>::get());
     DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::Serialize>::get(), LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet);
