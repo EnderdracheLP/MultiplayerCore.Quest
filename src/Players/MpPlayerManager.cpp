@@ -1,6 +1,7 @@
 #include "Players/MpPlayerManager.hpp"
 #include "bsml/shared/Helpers/delegates.hpp"
 
+#include "GlobalNamespace/SharedCoroutineStarter.hpp"
 #include "System/Threading/Tasks/Task_1.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Players, MpPlayerManager);
@@ -14,6 +15,8 @@ namespace MultiplayerCore::Players {
         _packetSerializer = packetSerializer;
         _platformUserModel = platformUserModel;
         _sessionManager = sessionManager;
+
+        GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(AwaitUser()));
     }
 
     void MpPlayerManager::Initialize() {
