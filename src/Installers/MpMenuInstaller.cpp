@@ -18,9 +18,5 @@ namespace MultiplayerCore::Installers {
         container->BindInterfacesAndSelfTo<MpColorsUI*>()->AsSingle();
         container->BindInterfacesAndSelfTo<MpRequirementsUI*>()->AsSingle();
         container->BindInterfacesAndSelfTo<MpLoadingIndicator*>()->AsSingle();
-
-        // Inject sira stuff that didn't get injected on appinit
-        container->Inject(container->Resolve<GlobalNamespace::NetworkPlayerEntitlementChecker*>());
-        // probably not needed on quest because sira works different
     }
 }
