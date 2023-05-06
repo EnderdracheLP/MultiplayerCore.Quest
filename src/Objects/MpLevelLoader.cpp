@@ -36,9 +36,18 @@ namespace MultiplayerCore::Objects {
             getBeatmapLevelResultTask = StartDownloadBeatmapLevelAsyncTask(levelId, getBeatmapCancellationTokenSource->get_Token());
     }
 
-    void MpLevelLoader::Tick() {
+    void MpLevelLoader::Tick_override() {
         using MultiplayerBeatmapLoaderState = GlobalNamespace::MultiplayerLevelLoader::MultiplayerBeatmapLoaderState;
-        auto levelId = gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID();
+
+        auto beatmap = gameplaySetupData ? gameplaySetupData->get_beatmapLevel() : nullptr;
+        auto beatmapLevel = beatmap ? beatmap->get_beatmapLevel() : nullptr;
+        auto levelId = beatmapLevel ? beatmapLevel->get_levelID() : nullptr;
+
+        if (Il2CppString::IsNullOrEmpty(levelId)) {
+            GlobalNamespace::MultiplayerLevelLoader::Tick();
+            return;
+        }
+
         switch (loaderState) {
             case MultiplayerBeatmapLoaderState::LoadingBeatmap: {
                 GlobalNamespace::MultiplayerLevelLoader::Tick();
