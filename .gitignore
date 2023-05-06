@@ -65,3 +65,4 @@ ndkpath.txt
 *.log
 .vscode/launch.json.bak
 mod.json
+tombstone_*
