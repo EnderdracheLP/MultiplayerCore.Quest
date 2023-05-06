@@ -71,22 +71,24 @@ namespace MultiplayerCore::UI {
     }
 
     int MpLoadingIndicator::OkPlayerCountNoRequest() {
-        // TODO: check if this entire thing is fine with all these interface castings
         auto dict = _playersDataModel->i_ILobbyPlayerData();
         auto coll = dict->i_KeyValuePair_2_TKey_TValue();
-
-        int count = coll->get_Count();
-        auto enumerator_1 = coll->i_IEnumerable_1_T()->GetEnumerator();
+        auto enumerable = coll->i_IEnumerable_1_T();
+        auto enumerator_1 = enumerable->GetEnumerator();
         auto enumerator = enumerator_1->i_IEnumerator();
-
         auto levelId = _levelLoader->gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID();
 
         int okCount = 0;
+        auto loggerContext = getLogger().WithContext("OkPlayerCountNoRequest");
+        auto get_current_minfo = il2cpp_utils::FindMethodUnsafe(reinterpret_cast<Il2CppObject*>(enumerator)->klass, "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String,ILobbyPlayerData>>.get_Current", 0);
+        using KVP = System::Collections::Generic::KeyValuePair_2<StringW, GlobalNamespace::ILobbyPlayerData *>;
         while (enumerator->MoveNext()) {
-            auto cur = enumerator_1->get_Current();
+            auto cur = RET_0_UNLESS(loggerContext, il2cpp_utils::RunMethod<KVP>(enumerator, get_current_minfo));
+
             auto tocheck = cur.key;
             if (_entitlementChecker->GetUserEntitlementStatusWithoutRequest(tocheck, levelId) == GlobalNamespace::EntitlementsStatus::Ok) okCount++;
         }
+
         enumerator_1->i_IDisposable()->Dispose();
         return okCount;
     }
