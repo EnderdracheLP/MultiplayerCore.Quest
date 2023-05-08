@@ -88,7 +88,6 @@ namespace MultiplayerCore::Objects {
 
             task->TrySetResult(entitlement);
             task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
-            return entitlement;
         }).detach();
 
         return task;
