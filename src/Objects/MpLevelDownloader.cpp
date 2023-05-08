@@ -3,6 +3,8 @@
 #include "Utilities.hpp"
 #include "logging.hpp"
 
+#include "lapiz/shared/utilities/MainThreadScheduler.hpp"
+
 DEFINE_TYPE(MultiplayerCore::Objects, MpLevelDownloader);
 
 namespace MultiplayerCore::Objects {
@@ -40,26 +42,35 @@ namespace MultiplayerCore::Objects {
 
         auto bm = BeatSaver::API::GetBeatmapByHash(hash);
         if (bm.has_value()) {
-            // TODO: this is all sketch as fuck, check if this even makes sense
             bool done, result;
             auto onFinished =
                 [&done, &result](bool finished){
-                    result = finished;
+                    result = !finished;
                     done = true;
                 };
 
+            DEBUG("Starting beatsaver download");
             if (progress) {
                 BeatSaver::API::DownloadBeatmapAsync(bm.value(), onFinished, [progress](auto p){ progress(p);});
             } else {
                 BeatSaver::API::DownloadBeatmapAsync(bm.value(), onFinished);
             }
 
-            while(!done) {
-                std::this_thread::yield();
-            }
+            while(!done) std::this_thread::yield();
 
-            // TODO: should we also wait for songloader to be done reloading songs? check that
+            done = false;
+            DEBUG("Scheduling song refresh");
+            Lapiz::Utilities::MainThreadScheduler::Schedule([&done](){
+                DEBUG("Invoking song refresh");
+                RuntimeSongLoader::API::RefreshSongs(false, [&done](auto&){
+                    DEBUG("Song refresh finished");
+                    done = true;
+                });
+            });
 
+            while(!done) std::this_thread::yield();
+
+            DEBUG("Song download finished, result: {}", result);
             return result;
         } else {
             ERROR("Couldn't get beatmap by hash: {}", hash);
