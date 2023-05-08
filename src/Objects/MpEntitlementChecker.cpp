@@ -41,12 +41,28 @@ namespace MultiplayerCore::Objects {
         GlobalNamespace::NetworkPlayerEntitlementChecker::HandleGetIsEntitledToLevel(userId, levelId);
     }
 
+    static inline std::string_view EntitlementName(GlobalNamespace::EntitlementsStatus entitlement) {
+        switch (entitlement.value) {
+            case GlobalNamespace::EntitlementsStatus::Unknown:
+                return "Unknown";
+            case GlobalNamespace::EntitlementsStatus::NotOwned:
+                return "NotOwned";
+            case GlobalNamespace::EntitlementsStatus::NotDownloaded:
+                return "NotDownloaded";
+            case GlobalNamespace::EntitlementsStatus::Ok:
+                return "Ok";
+            default:
+                return "Null";
+        }
+    }
+
     void MpEntitlementChecker::HandleSetIsEntitledToLevel(StringW userId, StringW levelId, GlobalNamespace::EntitlementsStatus entitlement) {
         // operator[] auto inserts instances so we can just check like this,
         // and since this method shouldn't ever be called with Unknown, this is a nice way of doing this
 
         // TODO: check if this hacky way of doing it is fine
-        if (_entitlementsDictionary[userId][levelId] != entitlement || entitlement == GlobalNamespace::EntitlementsStatus::Unknown) DEBUG("Entitlement from '{}' for '{}' is {}", userId, levelId, Utils::EnumUtils::GetEnumName(entitlement));
+        if (_entitlementsDictionary[userId][levelId] != entitlement || entitlement == GlobalNamespace::EntitlementsStatus::Unknown)
+            DEBUG("Entitlement from '{}' for '{}' is {}", userId, levelId, EntitlementName(entitlement));
 
         _entitlementsDictionary[userId][levelId] = entitlement;
 
@@ -68,7 +84,7 @@ namespace MultiplayerCore::Objects {
 
         std::async(std::launch::async, [this, task, levelId](){
             auto entitlement = GetEntitlementStatus(levelId);
-            DEBUG("Entitlement found for level {}: {}", levelId, Utils::EnumUtils::GetEnumName(entitlement));
+            DEBUG("Entitlement found for level {}: {}", levelId, EntitlementName(entitlement));
 
             task->TrySetResult(entitlement);
             task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
@@ -112,8 +128,18 @@ namespace MultiplayerCore::Objects {
         if (beatmap.has_value()) {
             auto& versions = beatmap->GetVersions();
             const auto& beatmapVersion = std::find_if(versions.begin(), versions.end(), [&levelHash](const auto& v){
-                return v.GetHash() == levelHash;
+                auto toCheckHash = v.GetHash();
+                if (toCheckHash.size() != levelHash.size()) return false;
+                auto toCheckItr = toCheckHash.c_str();
+                auto levelHashItr = levelHash.c_str();
+                auto toCheckEnd = toCheckItr + toCheckHash.size();
+
+                for (;toCheckItr < toCheckEnd; toCheckItr++, levelHashItr++) {
+                    if (tolower(*toCheckItr) != tolower(*levelHashItr)) return false;
+                }
+                return true;
             });
+
             if (beatmapVersion == versions.end()) {
                 WARNING("Level hash {} was not found in map versions provided by beatsaver!", levelHash);
                 return GlobalNamespace::EntitlementsStatus::NotOwned;
