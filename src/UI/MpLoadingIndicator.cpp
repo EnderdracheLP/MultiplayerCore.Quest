@@ -62,6 +62,7 @@ namespace MultiplayerCore::UI {
             _gameStateController->get_levelStartInitiated() &&
             _levelLoader->gameplaySetupData != nullptr
         ) {
+            // FIXME: this will currently never find the entitlement for the local player, and it will always find an "extra" player because of the server being registered as one, this should be fixed
             int okCount = OkPlayerCountNoRequest();
             int totalCount = IReadOnlyDictionary_2_Count(_playersDataModel->i_ILobbyPlayerData());
             _loadingControl->ShowLoading(fmt::format("{} of {} players ready...", okCount, totalCount));
