@@ -17,11 +17,11 @@
 #include "Zenject/ITickable.hpp"
 #include "UnityEngine/GameObject.hpp"
 
-// TODO: fields
 DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpLoadingIndicator, Il2CppObject,
     std::vector<Il2CppClass*>({classof(::System::IDisposable*), classof(::Zenject::IInitializable*), classof(::Zenject::ITickable*)}),
 
     DECLARE_INSTANCE_FIELD_PRIVATE(double, _downloadProgress);
+    DECLARE_INSTANCE_FIELD_PRIVATE(bool, _isDownloading);
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::GameObject*, vert);
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::IMultiplayerSessionManager*, _sessionManager);
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::ILobbyGameStateController*, _gameStateController);
@@ -47,5 +47,4 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpLoadingIndicator, Il2Cpp
 
     public:
         int OkPlayerCountNoRequest();
-        bool get_isDownloading();
 )
