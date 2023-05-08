@@ -61,8 +61,8 @@ namespace MultiplayerCore::Objects {
                         if (extraSongData.has_value()) {
                             const auto& difficulties = extraSongData->difficulties;
 
-                            auto bmDiff = gameplaySetupData->get_beatmapLevel()->get_beatmapDifficulty();
-                            auto ch = gameplaySetupData->get_beatmapLevel()->get_beatmapCharacteristic()->get_name();
+                            auto bmDiff = beatmap->get_beatmapDifficulty();
+                            auto ch = beatmap->get_beatmapCharacteristic()->get_name();
                             auto diff = std::find_if(difficulties.begin(), difficulties.end(), [bmDiff, ch](const auto& x){
                                 return x.difficulty == bmDiff && x.beatmapCharacteristicName == ch;
                             });
