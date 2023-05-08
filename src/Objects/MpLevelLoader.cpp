@@ -1,6 +1,7 @@
 #include "Objects/MpLevelLoader.hpp"
 #include "Utilities.hpp"
 #include "Utils/ExtraSongData.hpp"
+#include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include "logging.hpp"
 
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
@@ -112,12 +113,22 @@ namespace MultiplayerCore::Objects {
 
         std::async(std::launch::async, [this, levelId, task, cancellationToken](){
             _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).wait();
-            gameplaySetupData->get_beatmapLevel()->beatmapLevel = beatmapLevelsModel->GetLevelPreviewForLevelId(levelId);
 
-            auto getTask = beatmapLevelsModel->GetBeatmapLevelAsync(levelId, cancellationToken);
-            while(!getTask->get_IsCompleted()) std::this_thread::yield();
+            GlobalNamespace::IPreviewBeatmapLevel* getPreviewBeatmapLevelResult = nullptr;
+            Lapiz::Utilities::MainThreadScheduler::Schedule([&getPreviewBeatmapLevelResult, beatmapLevelsModel = beatmapLevelsModel, levelId](){
+                getPreviewBeatmapLevelResult = beatmapLevelsModel->GetLevelPreviewForLevelId(levelId);
+            });
+            while(!getPreviewBeatmapLevelResult) std::this_thread::yield();
+            gameplaySetupData->get_beatmapLevel()->beatmapLevel = getPreviewBeatmapLevelResult;
 
+            System::Threading::Tasks::Task_1<GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult>* getTask = nullptr;
+            Lapiz::Utilities::MainThreadScheduler::Schedule([&getTask, beatmapLevelsModel = beatmapLevelsModel, levelId, cancellationToken](){
+                getTask = beatmapLevelsModel->GetBeatmapLevelAsync(levelId, cancellationToken);
+            });
+            while(!getTask || !getTask->get_IsCompleted()) std::this_thread::yield();
             auto result = getTask->get_Result();
+
+            DEBUG("GetBeatmapLevelAsync result isError: {}", result.isError);
             task->TrySetResult(result);
             task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
 
