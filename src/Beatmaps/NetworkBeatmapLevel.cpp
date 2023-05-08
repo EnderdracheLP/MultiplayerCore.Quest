@@ -30,7 +30,7 @@ namespace MultiplayerCore::Beatmaps {
                         BeatSaver::API::GetCoverImageAsync(beatmap.value(), [this](std::vector<uint8_t> bytes){
                             Lapiz::Utilities::MainThreadScheduler::Schedule([this, bytes = il2cpp_utils::vectorToArray(bytes)] {
                                 coverImageTask->TrySetResult(BSML::Utilities::LoadSpriteRaw(bytes));
-                                reinterpret_cast<System::Threading::Tasks::Task*>(coverImageTask)->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+                                coverImageTask->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
                             });
                         });
                     } else {
