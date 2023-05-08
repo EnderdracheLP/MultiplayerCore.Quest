@@ -54,7 +54,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerPlayerPlacement_GetAngleBetweenPlayersWithEvenAd
 }
 
 // possibly does not call orig
-MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerLayoutProvider_GetAngleBetweenPlayersWithEvenAdjustment, &::GlobalNamespace::MultiplayerLayoutProvider::CalculateLayout, GlobalNamespace::MultiplayerPlayerLayout, GlobalNamespace::MultiplayerLayoutProvider* self, int activePlayersCount) {
+MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerLayoutProvider_CalculateLayout, &::GlobalNamespace::MultiplayerLayoutProvider::CalculateLayout, GlobalNamespace::MultiplayerPlayerLayout, GlobalNamespace::MultiplayerLayoutProvider* self, int activePlayersCount) {
     auto patcher = PlayerCountPatcher::get_instance();
     if (!patcher->get_AddEmptyPlayerSlotForEvenCount()) {
         auto layout = activePlayersCount == 2 ? GlobalNamespace::MultiplayerPlayerLayout::Duel : GlobalNamespace::MultiplayerPlayerLayout::Circle;
@@ -64,7 +64,7 @@ MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerLayoutProvider_GetAngleBetweenPlayersWithEv
         if (action) action->Invoke(layout, activePlayersCount);
         return layout;
     } else {
-        return MultiplayerLayoutProvider_GetAngleBetweenPlayersWithEvenAdjustment(self, activePlayersCount);
+        return MultiplayerLayoutProvider_CalculateLayout(self, activePlayersCount);
     }
 
 }
