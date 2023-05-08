@@ -14,7 +14,7 @@ using namespace MultiplayerCore::UI;
 namespace MultiplayerCore::Installers {
     void MpMenuInstaller::InstallBindings() {
         auto container = get_Container();
-        // TODO: uncomment
+
         container->BindInterfacesAndSelfTo<MpColorsUI*>()->AsSingle();
         container->BindInterfacesAndSelfTo<MpRequirementsUI*>()->AsSingle();
         container->BindInterfacesAndSelfTo<MpLoadingIndicator*>()->AsSingle();

@@ -12,7 +12,7 @@
 
 MAKE_AUTO_HOOK_MATCH(MultiplayerMenuInstaller_InstallBindings, &::GlobalNamespace::MultiplayerMenuInstaller::InstallBindings, void, GlobalNamespace::MultiplayerMenuInstaller* self) {
     MultiplayerMenuInstaller_InstallBindings(self);
-    // TODO: check if this works
+
     auto container = self->get_Container();
     container->Unbind<GlobalNamespace::MultiplayerLevelLoader*>();
     auto bindarray = Lapiz::ArrayUtils::TypeArray<GlobalNamespace::MultiplayerLevelLoader*, MultiplayerCore::Objects::MpLevelLoader*, Zenject::ITickable*>();

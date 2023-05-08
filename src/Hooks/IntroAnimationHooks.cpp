@@ -24,7 +24,6 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerIntroAnimationController_PlayIntroAnimation, &::
         auto newPlayableGameObject = UnityEngine::GameObject::New_ctor();
         self->introPlayableDirector = newPlayableGameObject->AddComponent<UnityEngine::Playables::PlayableDirector*>();
 
-        // TODO: check if icall correct
         using PlayableDirector_SetPlayableAsset = function_ptr_t<void, UnityEngine::Playables::PlayableDirector*, UnityEngine::ScriptableObject*>;
         static auto playableDirector_SetPlayableAsset = reinterpret_cast<PlayableDirector_SetPlayableAsset>(il2cpp_functions::resolve_icall("UnityEngine.Playables.PlayableDirector::SetPlayableAsset"));
         playableDirector_SetPlayableAsset(self->introPlayableDirector, originalDirector->get_playableAsset());

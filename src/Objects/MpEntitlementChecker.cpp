@@ -61,7 +61,6 @@ namespace MultiplayerCore::Objects {
         // operator[] auto inserts instances so we can just check like this,
         // and since this method shouldn't ever be called with Unknown, this is a nice way of doing this
 
-        // TODO: check if this hacky way of doing it is fine
         if (_entitlementsDictionary[userId][levelId] != entitlement || entitlement == GlobalNamespace::EntitlementsStatus::Unknown)
             DEBUG("Entitlement from '{}' for '{}' is {}", userId, levelId, EntitlementName(entitlement));
 
