@@ -4,6 +4,7 @@
 #include "Utilities.hpp"
 #include "logging.hpp"
 
+#include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include "bsml/shared/Helpers/delegates.hpp"
 #include "songdownloader/shared/BeatSaverAPI.hpp"
 
@@ -79,22 +80,29 @@ namespace MultiplayerCore::Objects {
             return NetworkPlayerEntitlementChecker::GetEntitlementStatus(levelId);
         }
 
-        auto task = EntitlementsStatusTask::New_ctor();
+        auto existingTask = _entitlementsTasks.find(levelId);
+        if (existingTask != _entitlementsTasks.end()) {
+            return existingTask->second.ptr();
+        }
+
+        auto task = EntitlementsStatusTask::New_ctor(GlobalNamespace::EntitlementsStatus::NotOwned);
         task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
+        _entitlementsTasks[levelId] = task;
 
         std::thread([this, task, levelId](){
             auto entitlement = GetEntitlementStatus(levelId);
             DEBUG("Entitlement found for level {}: {}", levelId, EntitlementName(entitlement));
 
-            task->TrySetResult(entitlement);
-            task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+            // TODO: check if this is really the case or if it was something else
+            // don't ask me why but not setting the result on main thread crashes
+            Lapiz::Utilities::MainThreadScheduler::Schedule([task, entitlement] {
+                DEBUG("Set result: {}", task->TrySetResult(entitlement));
+                task->m_result = entitlement;
+                task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+            });
         }).detach();
 
         return task;
-    }
-
-    std::future<GlobalNamespace::EntitlementsStatus> MpEntitlementChecker::GetEntitlementStatusAsync(std::string levelId) {
-        return std::async(std::launch::async, std::bind(&MpEntitlementChecker::GetEntitlementStatus, this, levelId));
     }
 
     GlobalNamespace::EntitlementsStatus MpEntitlementChecker::GetEntitlementStatus(std::string levelId) {

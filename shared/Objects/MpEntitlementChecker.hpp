@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <string>
 
-// TODO: check if this is even going to work... might just need to be replaced with C++ std::map with mutexes?
 using EntitlementsStatusTask = ::System::Threading::Tasks::Task_1<::GlobalNamespace::EntitlementsStatus>;
 
 DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpEntitlementChecker, GlobalNamespace::NetworkPlayerEntitlementChecker,
@@ -31,10 +30,10 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpEntitlementChecker, GlobalName
 
     DECLARE_CTOR(ctor);
     public:
-        std::future<GlobalNamespace::EntitlementsStatus> GetEntitlementStatusAsync(std::string levelId);
         UnorderedEventCallback<std::string, std::string, GlobalNamespace::EntitlementsStatus> receivedEntitlementEvent;
 
     private:
         GlobalNamespace::EntitlementsStatus GetEntitlementStatus(std::string levelId);
         std::unordered_map<std::string, std::unordered_map<std::string, GlobalNamespace::EntitlementsStatus>> _entitlementsDictionary;
+        std::unordered_map<std::string, SafePtr<EntitlementsStatusTask>> _entitlementsTasks;
 )
