@@ -6,8 +6,6 @@
 #include <future>
 #include <unordered_map>
 
-// TODO: check if this can just be done using songdownloader instead? maybe wrapping SongDownloader with this is more convenient?
-
 DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelDownloader, Il2CppObject,
     DECLARE_CTOR(ctor);
     public:

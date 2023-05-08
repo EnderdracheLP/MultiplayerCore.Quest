@@ -22,7 +22,7 @@ extern "C" void setup(ModInfo& info) {
 
 extern "C" void load() {
     auto& logger = getLogger();
-    // TODO: load configs & server configs
+
     il2cpp_functions::Init();
     custom_types::Register::AutoRegister();
     Hooks::InstallHooks(logger);

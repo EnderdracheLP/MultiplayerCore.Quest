@@ -13,7 +13,6 @@
 
 #include "System/Collections/Concurrent/ConcurrentDictionary_2.hpp"
 
-// TODO: check if this is even going to work because MpPlayerData is a custom class
 using ConcurrentPlayerDataDictionary = System::Collections::Concurrent::ConcurrentDictionary_2<StringW, MultiplayerCore::Players::MpPlayerData*>;
 
 DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Players, MpPlayerManager, Il2CppObject, std::vector<Il2CppClass*>({classof(::Zenject::IInitializable*), classof(::System::IDisposable*)}),

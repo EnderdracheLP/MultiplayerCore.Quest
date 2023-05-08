@@ -16,8 +16,6 @@
 #include "bsml/shared/BSML/Components/CustomListTableData.hpp"
 #include "bsml/shared/BSML/Components/ModalView.hpp"
 
-
-// TODO: fields
 DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, Il2CppObject,
     std::vector<Il2CppClass*>({classof(::System::IDisposable*), classof(::Zenject::IInitializable*)}),
 
