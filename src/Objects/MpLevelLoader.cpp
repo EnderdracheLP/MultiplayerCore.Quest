@@ -81,7 +81,7 @@ namespace MultiplayerCore::Objects {
             } break;
             case MultiplayerBeatmapLoaderState::WaitingForCountdown: {
                 if (_sessionManager->get_syncTime() >= startTime) {
-                    bool allFinished = false;
+                    bool allFinished = true;
                     int pCount = _sessionManager->get_connectedPlayerCount();
                     for (std::size_t i = 0; i < pCount; i++) {
                         auto p = _sessionManager->GetConnectedPlayer(i);
