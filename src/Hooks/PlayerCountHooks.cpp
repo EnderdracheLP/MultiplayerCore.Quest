@@ -30,7 +30,6 @@ MAKE_AUTO_HOOK_MATCH(CreateServerFormController_Setup, &::GlobalNamespace::Creat
 }
 
 MAKE_AUTO_HOOK_MATCH(CreateServerFormController_get_formData, &::GlobalNamespace::CreateServerFormController::get_formData, GlobalNamespace::CreateServerFormData, GlobalNamespace::CreateServerFormController* self) {
-    // TODO: check if this will be valid, alternatively we could just edit the assembly to just use the value instead of clamping it...
     auto res = CreateServerFormController_get_formData(self);
     res.maxPlayers = self->maxPlayersList->get_value();
     return res;
