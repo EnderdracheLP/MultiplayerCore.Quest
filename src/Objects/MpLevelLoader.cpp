@@ -29,10 +29,12 @@ namespace MultiplayerCore::Objects {
     }
 
     void MpLevelLoader::LoadLevel_override(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
-        // TODO: null check anyone?
-        std::string levelId(gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID());
-        auto levelHash = Utilities::HashForLevelId(levelId);
-        DEBUG("Loading Level {}", levelHash);
+        auto difficultyBeatmap = gameplaySetupData ? gameplaySetupData->get_beatmapLevel() : nullptr;
+        auto preview = difficultyBeatmap ? difficultyBeatmap->get_beatmapLevel() : nullptr;
+        std::string levelId(preview ? preview->get_levelID() : "");
+        auto levelHash = !levelId.empty() ? Utilities::HashForLevelId(levelId) : "";
+
+        DEBUG("Loading Level '{}'", levelHash.empty() ? levelId : levelHash);
         LoadLevel(gameplaySetupData, initialStartTime);
         if (!levelHash.empty() && !RuntimeSongLoader::API::GetLevelByHash(levelHash).has_value())
             getBeatmapLevelResultTask = StartDownloadBeatmapLevelAsyncTask(levelId, getBeatmapCancellationTokenSource->get_Token());
