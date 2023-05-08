@@ -54,7 +54,8 @@ namespace MultiplayerCore::UI {
     }
 
     void MpLoadingIndicator::Tick() {
-        if (_isDownloading) {
+        if (get_isDownloading()) {
+            _loadingControl->ShowDownloadingProgress(fmt::format("Downloading ({:.2f}%)...", (float)_downloadProgress), _downloadProgress);
             return;
         } else if (
             _screenController->get_countdownShown() &&
@@ -96,7 +97,8 @@ namespace MultiplayerCore::UI {
     }
 
     void MpLoadingIndicator::Report(double value) {
-        _isDownloading = value < 1.0;
-        _loadingControl->ShowDownloadingProgress(fmt::format("Downloading ({:.2f}%)...", (float)value), value);
+        _downloadProgress = value;
     }
+
+    bool MpLoadingIndicator::get_isDownloading() { return _downloadProgress < 1.0; }
 }

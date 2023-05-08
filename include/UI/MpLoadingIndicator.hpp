@@ -21,7 +21,7 @@
 DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpLoadingIndicator, Il2CppObject,
     std::vector<Il2CppClass*>({classof(::System::IDisposable*), classof(::Zenject::IInitializable*), classof(::Zenject::ITickable*)}),
 
-    DECLARE_INSTANCE_FIELD_PRIVATE(bool, _isDownloading);
+    DECLARE_INSTANCE_FIELD_PRIVATE(double, _downloadProgress);
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::GameObject*, vert);
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::IMultiplayerSessionManager*, _sessionManager);
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::ILobbyGameStateController*, _gameStateController);
@@ -36,7 +36,6 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpLoadingIndicator, Il2Cpp
     DECLARE_OVERRIDE_METHOD(void, Tick, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::Zenject::ITickable::Tick>::get());
     DECLARE_INSTANCE_METHOD(void, Report, double value);
 
-
     DECLARE_CTOR(ctor,
         GlobalNamespace::IMultiplayerSessionManager* sessionManager,
         GlobalNamespace::ILobbyGameStateController* gameStateController,
@@ -48,4 +47,5 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpLoadingIndicator, Il2Cpp
 
     public:
         int OkPlayerCountNoRequest();
+        bool get_isDownloading();
 )
