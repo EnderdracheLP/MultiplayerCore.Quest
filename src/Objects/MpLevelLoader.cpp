@@ -111,29 +111,29 @@ namespace MultiplayerCore::Objects {
         auto task = System::Threading::Tasks::Task_1<GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult>::New_ctor(0);
         task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
 
-        std::async(std::launch::async, [this, levelId, task, cancellationToken](){
+        std::thread([this, levelId, task, cancellationToken](){
             _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).wait();
 
-            GlobalNamespace::IPreviewBeatmapLevel* getPreviewBeatmapLevelResult = nullptr;
+            std::optional<GlobalNamespace::IPreviewBeatmapLevel*> getPreviewBeatmapLevelResult;
             Lapiz::Utilities::MainThreadScheduler::Schedule([&getPreviewBeatmapLevelResult, beatmapLevelsModel = beatmapLevelsModel, levelId](){
                 getPreviewBeatmapLevelResult = beatmapLevelsModel->GetLevelPreviewForLevelId(levelId);
+                DEBUG("Got level {}", fmt::ptr(getPreviewBeatmapLevelResult.value()));
             });
-            while(!getPreviewBeatmapLevelResult) std::this_thread::yield();
-            gameplaySetupData->get_beatmapLevel()->beatmapLevel = getPreviewBeatmapLevelResult;
+            while(!getPreviewBeatmapLevelResult.has_value()) std::this_thread::yield();
+            gameplaySetupData->get_beatmapLevel()->beatmapLevel = getPreviewBeatmapLevelResult.value();
 
-            System::Threading::Tasks::Task_1<GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult>* getTask = nullptr;
+            std::optional<System::Threading::Tasks::Task_1<GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult>*> getTask;
             Lapiz::Utilities::MainThreadScheduler::Schedule([&getTask, beatmapLevelsModel = beatmapLevelsModel, levelId, cancellationToken](){
                 getTask = beatmapLevelsModel->GetBeatmapLevelAsync(levelId, cancellationToken);
+                DEBUG("Got task {}", fmt::ptr(getTask.value()));
             });
-            while(!getTask || !getTask->get_IsCompleted()) std::this_thread::yield();
-            auto result = getTask->get_Result();
+            while(!getTask.has_value() || !getTask.value()->get_IsCompleted()) std::this_thread::yield();
+            auto result = getTask.value()->get_Result();
 
             DEBUG("GetBeatmapLevelAsync result isError: {}", result.isError);
             task->TrySetResult(result);
             task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
-
-            return result;
-        });
+        }).detach();
 
         return task;
     }

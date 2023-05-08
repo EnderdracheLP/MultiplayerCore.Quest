@@ -82,14 +82,14 @@ namespace MultiplayerCore::Objects {
         auto task = EntitlementsStatusTask::New_ctor();
         task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
 
-        std::async(std::launch::async, [this, task, levelId](){
+        std::thread([this, task, levelId](){
             auto entitlement = GetEntitlementStatus(levelId);
             DEBUG("Entitlement found for level {}: {}", levelId, EntitlementName(entitlement));
 
             task->TrySetResult(entitlement);
             task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
             return entitlement;
-        });
+        }).detach();
 
         return task;
     }
