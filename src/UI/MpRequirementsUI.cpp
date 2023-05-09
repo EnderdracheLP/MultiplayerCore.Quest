@@ -77,11 +77,15 @@ namespace MultiplayerCore::UI {
                 }
             }
 
-            auto reqItr = mpLevel->requirements.find(chName);
-            if (reqItr == mpLevel->requirements.end()) reqItr = mpLevel->requirements.find(chSerName);
+            auto reqMapItr = mpLevel->requirements.find(chName);
+            if (reqMapItr == mpLevel->requirements.end()) reqMapItr = mpLevel->requirements.find(chSerName);
 
-            if (reqItr != mpLevel->requirements.end())
-                buttonShouldBeActive = buttonShouldBeActive || !reqItr->second.empty();
+            if (reqMapItr != mpLevel->requirements.end()) {
+                auto reqItr = reqMapItr->second.find(beatmapLevel->beatmapDifficulty.value);
+                if (reqItr != reqMapItr->second.end()) {
+                    buttonShouldBeActive = buttonShouldBeActive || !reqItr->second.empty();
+                }
+            }
 
             buttonShouldBeActive = buttonShouldBeActive || !mpLevel->contributors.empty();
 
@@ -143,15 +147,22 @@ namespace MultiplayerCore::UI {
                         );
                         data->Add(cell);
                     }
+                } else {
+                    ERROR("Issue finding diff {} to get requirements", diff.value);
                 }
+            } else {
+                ERROR("Issue finding characteristic {} to get requirements", chname);
             }
 
             // contributors
             if (!mpLevel->contributors.empty()) {
+                DEBUG("Adding contributors");
                 for (const auto& contributor : mpLevel->contributors) {
                     // TODO: actually load the proper sprites, but skipping for now
                     data->Add(BSML::CustomCellInfo::construct(contributor.name, contributor.role, get_InfoIcon()));
                 }
+            } else {
+                DEBUG("No Contributors found");
             }
 
             // colors
@@ -162,15 +173,19 @@ namespace MultiplayerCore::UI {
                 if (colorsItr != colorMapItr->second.end()) {
                     if (colorsItr->second.AnyAreNotNull())
                         colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors Available", "Click here to preview it.", get_ColorsIcon());
+                } else {
+                    ERROR("Issue finding diff {} to get colors", diff.value);
                 }
+            } else {
+                ERROR("Issue finding characteristic {} to get colors", chname);
             }
 
-            if (!colorCell && il2cpp_utils::try_cast<Beatmaps::BeatSaverBeatmapLevel>(mpLevel).has_value()) {
+            if (!colorCell && il2cpp_utils::try_cast<Beatmaps::BeatSaverBeatmapLevel>(mpLevel).has_value())
                 colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors", "Click here to preview it.", get_ColorsIcon());
-            }
 
             if (colorCell) data->Add(colorCell);
 
+            DEBUG("There should be {} cells", data->get_Count());
             list->tableView->ReloadData();
             list->tableView->ScrollToCellWithIdx(0, HMUI::TableView::ScrollPositionType::Beginning, false);
         }

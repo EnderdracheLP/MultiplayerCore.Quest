@@ -14,6 +14,7 @@
               anchor-pos-x='-3'
               size-delta-y='0'>
         <list id='list'
+              data='data'
               expand-cell='true'
               select-cell='Select'
               pref-height='55'
