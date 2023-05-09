@@ -24,8 +24,12 @@
 #include "GlobalNamespace/IMultiplayerSessionManager.hpp"
 #include "GlobalNamespace/ConnectedPlayerHelpers.hpp"
 #include "GlobalNamespace/MultiplayerLevelCompletionResults.hpp"
+#include "GlobalNamespace/AvatarPoseRestrictions.hpp"
+#include "GlobalNamespace/MultiplayerLobbyController.hpp"
+#include "GlobalNamespace/MenuEnvironmentManager.hpp"
 #include "UnityEngine/Quaternion.hpp"
 #include "UnityEngine/Transform.hpp"
+#include "UnityEngine/GameObject.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
 #include "System/Action_1.hpp"
 
@@ -138,4 +142,40 @@ MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerPlayersManager_SpawnPlayers, &MultiplayerPl
             self->connectedPlayerControllersMap->set_Item(userId, multiplayerConnectedFacade);
         }
     }
+}
+
+MAKE_AUTO_HOOK_ORIG_MATCH(AvatarPoseRestrictions_HandleAvatarPoseControllerPositionsWillBeSet, &AvatarPoseRestrictions::HandleAvatarPoseControllerPositionsWillBeSet, void, AvatarPoseRestrictions* self, Quaternion headRotation, Vector3 headPosition, Vector3 leftHandPosition, Vector3 rightHandPosition, ByRef<Vector3> newHeadPosition, ByRef<Vector3> newLeftHandPosition, ByRef<Vector3> newRightHandPosition) {
+    newHeadPosition.heldRef = headPosition;
+    newLeftHandPosition.heldRef = self->LimitHandPositionRelativeToHead(leftHandPosition, headPosition);
+    newRightHandPosition.heldRef = self->LimitHandPositionRelativeToHead(rightHandPosition, headPosition);
+}
+
+MAKE_AUTO_HOOK_MATCH(MultiplayerLobbyController_ActivateMultiplayerLobby_2nd, &MultiplayerLobbyController::ActivateMultiplayerLobby, void, MultiplayerLobbyController* self) {
+    MultiplayerLobbyController_ActivateMultiplayerLobby_2nd(self);
+
+    // port from the old mpcore code, customizes the lobby slightly
+    auto placeManager = self->multiplayerLobbyAvatarPlaceManager;
+    auto menuEnvironmentManager = self->menuEnvironmentManager;
+    auto stageManager = self->multiplayerLobbyCenterStageManager;
+    auto lobbyStateDataModel = placeManager->lobbyStateDataModel;
+
+    auto innerCircleRadius = placeManager->innerCircleRadius;
+    auto minOuterCircleRadius = placeManager->minOuterCircleRadius;
+
+    auto maxPlayerCount = lobbyStateDataModel->get_configuration().maxPlayerCount;
+    auto angleBetweenPlayersWithEvenAdjustment = MultiplayerPlayerPlacement::GetAngleBetweenPlayersWithEvenAdjustment(maxPlayerCount, MultiplayerPlayerLayout::Circle);
+    auto outerCircleRadius = std::max(MultiplayerPlayerPlacement::GetOuterCircleRadius(angleBetweenPlayersWithEvenAdjustment, innerCircleRadius), minOuterCircleRadius);
+
+    static auto SetActiveForTransformInObjectTransform = +[](MenuEnvironmentManager* envManager, StringW name, bool active){
+        auto t = envManager->get_transform()->Find(name);
+        if (t) t->get_gameObject()->SetActive(active);
+        else DEBUG("Unable to set active state '{}' on 'MenuEnvironmentManager/{}', it was not found", active, name);
+    };
+
+    bool buildingsEnabled = maxPlayerCount <= 18;
+    SetActiveForTransformInObjectTransform(menuEnvironmentManager, "MultiplayerLobbyEnvironment/ConstructionL", buildingsEnabled);
+    SetActiveForTransformInObjectTransform(menuEnvironmentManager, "MultiplayerLobbyEnvironment/ConstructionR", buildingsEnabled);
+
+    float centerScreenScale = outerCircleRadius / minOuterCircleRadius;
+    stageManager->get_transform()->set_localScale({ centerScreenScale, centerScreenScale, centerScreenScale });
 }
