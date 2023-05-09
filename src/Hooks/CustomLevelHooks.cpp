@@ -57,3 +57,32 @@ MAKE_AUTO_HOOK_MATCH(QuickPlaySetupModel_IsQuickPlaySetupTaskValid, &::GlobalNam
     if (NetworkConfigHooks::IsOverridingAPI()) return false;
     return res;
 }
+
+MAKE_AUTO_HOOK_MATCH(LevelSelectionNavigationController_Setup, &::GlobalNamespace::LevelSelectionNavigationController::Setup, void,
+    GlobalNamespace::LevelSelectionNavigationController* self,
+    GlobalNamespace::SongPackMask songPackMask,
+    GlobalNamespace::BeatmapDifficultyMask allowedBeatmapDifficultyMask,
+    ::ArrayW<GlobalNamespace::BeatmapCharacteristicSO*> notAllowedCharacteristics,
+    bool hidePacksIfOneOrNone,
+    bool hidePracticeButton,
+    ::StringW actionButtonText,
+    GlobalNamespace::IBeatmapLevelPack* levelPackToBeSelectedAfterPresent,
+    GlobalNamespace::SelectLevelCategoryViewController::LevelCategory startLevelCategory,
+    GlobalNamespace::IPreviewBeatmapLevel* beatmapLevelToBeSelectedAfterPresent,
+    bool enableCustomLevels
+) {
+    ConstString custom_levelpack_CustomLevels("custom_levelpack_CustomLevels");
+    LevelSelectionNavigationController_Setup(
+        self,
+        songPackMask,
+        allowedBeatmapDifficultyMask,
+        notAllowedCharacteristics,
+        hidePacksIfOneOrNone,
+        hidePracticeButton,
+        actionButtonText,
+        levelPackToBeSelectedAfterPresent,
+        startLevelCategory,
+        beatmapLevelToBeSelectedAfterPresent,
+        enableCustomLevels || songPackMask.Contains(StringW(custom_levelpack_CustomLevels))
+    );
+}

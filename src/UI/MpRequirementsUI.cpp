@@ -62,25 +62,30 @@ namespace MultiplayerCore::UI {
         auto beatmapLevel = _playersDataModel->i_ILobbyPlayerData()->get_Item(_playersDataModel->get_localUserId())->i_ILevelGameplaySetupData()->get_beatmapLevel();
         auto mpLevel = beatmapLevel ? il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr) : nullptr;
         if (mpLevel) {
-            auto diffColors = mpLevel->difficultyColors;
+            bool buttonShouldBeActive = false;
+            std::string chName(beatmapLevel->get_beatmapCharacteristic()->get_name());
+            std::string chSerName(beatmapLevel->get_beatmapCharacteristic()->get_serializedName());
 
-            auto colorMapItr = diffColors.find(beatmapLevel->get_beatmapCharacteristic()->get_name());
-            if (colorMapItr == diffColors.end()) colorMapItr = diffColors.find(beatmapLevel->get_beatmapCharacteristic()->get_serializedName());
+            auto& diffColors = mpLevel->difficultyColors;
+            auto colorMapItr = diffColors.find(chName);
+            if (colorMapItr == diffColors.end()) colorMapItr = diffColors.find(chSerName);
 
             if (colorMapItr != diffColors.end()) {
-                auto& chName = colorMapItr->first;
                 auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value);
                 if (colorItr != colorMapItr->second.end()) {
-                    set_buttonInteractable(colorItr->second.AnyAreNotNull());
-                } else {
-                    auto reqsItr = mpLevel->requirements.find(chName);
-                    if (reqsItr != mpLevel->requirements.end()) {
-                        set_buttonInteractable(!reqsItr->second.empty());
-                    }
+                    buttonShouldBeActive = colorItr->second.AnyAreNotNull();
                 }
-            } else if (!mpLevel->contributors.empty()) {
-                set_buttonInteractable(true);
             }
+
+            auto reqItr = mpLevel->requirements.find(chName);
+            if (reqItr == mpLevel->requirements.end()) reqItr = mpLevel->requirements.find(chSerName);
+
+            if (reqItr != mpLevel->requirements.end())
+                buttonShouldBeActive = buttonShouldBeActive || !reqItr->second.empty();
+
+            buttonShouldBeActive = buttonShouldBeActive || !mpLevel->contributors.empty();
+
+            set_buttonInteractable(buttonShouldBeActive);
         } else {
             set_buttonInteractable(false);
         }
@@ -104,10 +109,11 @@ namespace MultiplayerCore::UI {
         auto localUserId = _playersDataModel->get_localUserId();
         GlobalNamespace::ILobbyPlayerData* localPlayerDataModel = nullptr;
         if (!_playersDataModel->i_ILobbyPlayerData()->TryGetValue(localUserId, byref(localPlayerDataModel))) {
+            ERROR("Could not get local player info");
             return;
         }
         auto level = localPlayerDataModel->i_ILevelGameplaySetupData()->get_beatmapLevel();
-        auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(level).value_or(nullptr);
+        auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(level->get_beatmapLevel()).value_or(nullptr);
 
         if (mpLevel) {
             auto diffColorsMap = mpLevel->difficultyColors;
@@ -150,15 +156,20 @@ namespace MultiplayerCore::UI {
 
             // colors
             auto colorMapItr = diffColorsMap.find(chname);
+            BSML::CustomCellInfo* colorCell = nullptr;
             if (colorMapItr != diffColorsMap.end()) {
                 auto colorsItr = colorMapItr->second.find(diff);
                 if (colorsItr != colorMapItr->second.end()) {
                     if (colorsItr->second.AnyAreNotNull())
-                        data->Add(BSML::CustomCellInfo::construct("<size=75%>Custom Colors Available", "Click here to preview it.", get_ColorsIcon()));
+                        colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors Available", "Click here to preview it.", get_ColorsIcon());
                 }
-            } else if (il2cpp_utils::try_cast<Beatmaps::BeatSaverBeatmapLevel>(mpLevel).has_value()) {
-                data->Add(BSML::CustomCellInfo::construct("<size=75%>Custom Colors", "Click here to preview it.", get_ColorsIcon()));
             }
+
+            if (!colorCell && il2cpp_utils::try_cast<Beatmaps::BeatSaverBeatmapLevel>(mpLevel).has_value()) {
+                colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors", "Click here to preview it.", get_ColorsIcon());
+            }
+
+            if (colorCell) data->Add(colorCell);
 
             list->tableView->ReloadData();
             list->tableView->ScrollToCellWithIdx(0, HMUI::TableView::ScrollPositionType::Beginning, false);
