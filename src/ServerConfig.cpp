@@ -24,15 +24,15 @@ namespace MultiplayerCore {
         rapidjson::Value value;
         value.SetObject();
 
-        ADD_STRING(masterServerHostName);
-        ADD_MEMBER(masterServerPort);
+        ADD_STRING(graphUrl);
         ADD_STRING(masterServerStatusUrl);
         ADD_STRING(quickPlaySetupUrl);
+
         ADD_MEMBER(maxPartySize);
         ADD_MEMBER(discoveryPort);
         ADD_MEMBER(partyPort);
         ADD_MEMBER(multiplayerPort);
-        ADD_MEMBER(disableGameLift);
+        ADD_MEMBER(forceGameLift);
 
         return value;
     }
@@ -40,15 +40,15 @@ namespace MultiplayerCore {
     bool ServerConfig::readJson(const rapidjson::Value& json) {
         bool missedAnyImportantFields = false;
 
-        GET_STRING(masterServerHostName, true);
-        GET_T(masterServerPort, Int, true);
+        GET_STRING(graphUrl, true);
         GET_STRING(masterServerStatusUrl, true);
         GET_STRING(quickPlaySetupUrl, false);
+
         GET_T(maxPartySize, Int, false);
         GET_T(discoveryPort, Int, false);
         GET_T(partyPort, Int, false);
         GET_T(multiplayerPort, Int, false);
-        GET_T(disableGameLift, Bool, false);
+        GET_T(forceGameLift, Bool, true);
 
         return !missedAnyImportantFields;
     }

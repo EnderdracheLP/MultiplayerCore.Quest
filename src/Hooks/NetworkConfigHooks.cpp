@@ -33,24 +33,23 @@ namespace MultiplayerCore::Hooks {
         currentServerConfig = cfg;
 
         if (networkConfig) {
-            networkConfig->masterServerHostName = cfg->masterServerHostName;
-            LOG_VALUE("masterServerHostName", masterServerHostName);
-            networkConfig->masterServerPort = cfg->masterServerPort;
-            LOG_VALUE("masterServerPort", masterServerPort);
+            networkConfig->graphUrl = cfg->graphUrl;
+            LOG_VALUE("graphUrl", graphUrl);
             networkConfig->multiplayerStatusUrl = cfg->masterServerStatusUrl;
             LOG_VALUE("multiplayerStatusUrl", masterServerStatusUrl);
             networkConfig->quickPlaySetupUrl = cfg->quickPlaySetupUrl;
             LOG_VALUE("quickPlaySetupUrl", quickPlaySetupUrl);
+
             networkConfig->maxPartySize = cfg->maxPartySize;
             LOG_VALUE("maxPartySize", maxPartySize);
-            networkConfig->forceGameLift = cfg->disableGameLift;
-            LOG_VALUE("forceGameLift", disableGameLift);
             networkConfig->discoveryPort = cfg->discoveryPort;
             LOG_VALUE("discoveryPort", discoveryPort);
             networkConfig->partyPort = cfg->partyPort;
             LOG_VALUE("partyPort", partyPort);
             networkConfig->multiplayerPort = cfg->multiplayerPort;
             LOG_VALUE("multiplayerPort", multiplayerPort);
+            networkConfig->forceGameLift = cfg->forceGameLift;
+            LOG_VALUE("forceGameLift", forceGameLift);
         }
 
         ServerChanged.invoke(cfg);
@@ -67,21 +66,22 @@ MAKE_AUTO_HOOK_MATCH(MainSystemInit_Init, &::GlobalNamespace::MainSystemInit::In
     MainSystemInit_Init(self);
     // construct original config from base game values
     auto& officialConfig = NetworkConfigHooks::officialServerConfig;
-    officialConfig.masterServerHostName  = static_cast<std::string>(self->networkConfig->masterServerHostName);
-    officialConfig.masterServerPort  = self->networkConfig->masterServerPort;
+    officialConfig.graphUrl  = static_cast<std::string>(self->networkConfig->graphUrl);
     officialConfig.masterServerStatusUrl  = static_cast<std::string>(self->networkConfig->multiplayerStatusUrl);
     officialConfig.quickPlaySetupUrl = static_cast<std::string>(self->networkConfig->quickPlaySetupUrl);
+
     officialConfig.maxPartySize = self->networkConfig->maxPartySize;
-    officialConfig.disableGameLift = self->networkConfig->forceGameLift;
     officialConfig.discoveryPort = self->networkConfig->discoveryPort;
     officialConfig.partyPort = self->networkConfig->partyPort;
     officialConfig.multiplayerPort = self->networkConfig->multiplayerPort;
-    officialConfig.disableGameLift = false;
+    officialConfig.forceGameLift = self->networkConfig->forceGameLift;
+
     NetworkConfigHooks::networkConfig = self->networkConfig;
 
     NetworkConfigHooks::UseServer(NetworkConfigHooks::currentServerConfig);
 }
 
+/*
 MAKE_AUTO_HOOK_MATCH(UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType, &GlobalNamespace::UnifiedNetworkPlayerModel::SetActiveNetworkPlayerModelType, void, GlobalNamespace::UnifiedNetworkPlayerModel* self, GlobalNamespace::UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType activeNetworkPlayerModelType) {
     auto currentConfig = NetworkConfigHooks::GetCurrentServer();
     if (currentConfig && currentConfig->disableGameLift) {
@@ -92,10 +92,11 @@ MAKE_AUTO_HOOK_MATCH(UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType, 
     DEBUG("Using Default");
     UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, activeNetworkPlayerModelType);
 }
+*/
 
 MAKE_AUTO_HOOK_ORIG_MATCH(ClientCertificateValidator_ValidateCertificateChainInternal, &GlobalNamespace::ClientCertificateValidator::ValidateCertificateChainInternal, void, GlobalNamespace::ClientCertificateValidator* self, GlobalNamespace::DnsEndPoint* endPoint, System::Security::Cryptography::X509Certificates::X509Certificate2* certificate, ::ArrayW<::ArrayW<uint8_t>> certificateChain) {
     auto currentConfig = NetworkConfigHooks::GetCurrentServer();
-    if (!currentConfig || currentConfig->masterServerHostName.empty() || currentConfig->masterServerPort == 0) {
+    if (!currentConfig || currentConfig->graphUrl.empty()) {
         DEBUG("No EndPoint set, using default");
         ClientCertificateValidator_ValidateCertificateChainInternal(self, endPoint, certificate, certificateChain);
         return;

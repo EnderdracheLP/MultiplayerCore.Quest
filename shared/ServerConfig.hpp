@@ -9,11 +9,8 @@
 namespace MultiplayerCore {
     struct ServerConfig {
         ServerConfig() {};
-        ServerConfig(std::string hostName, int port, std::string statusUrl, int maxPartySize = OFFICIAL_MAX_PARTY_SIZE, std::string quickPlaySetupUrl = "", int discoveryPort = 0, int partyPort = 0, int multiplayerPort = 0, bool disableGameLift = false)
-        : masterServerHostName(hostName), masterServerPort(port), masterServerStatusUrl(statusUrl), maxPartySize(maxPartySize), quickPlaySetupUrl(quickPlaySetupUrl.empty() ? statusUrl + "/mp_override.json" : quickPlaySetupUrl), discoveryPort(discoveryPort), partyPort(partyPort), multiplayerPort(multiplayerPort), disableGameLift(disableGameLift) { }
-
-        ServerConfig(GlobalNamespace::DnsEndPoint* endPoint, std::string statusUrl, int maxPartySize = OFFICIAL_MAX_PARTY_SIZE, std::string quickPlaySetupUrl = "", int discoveryPort = 0, int partyPort = 0, int multiplayerPort = 0, bool disableGameLift = false)
-        : ServerConfig(endPoint->hostName, endPoint->port, statusUrl, maxPartySize, quickPlaySetupUrl, discoveryPort, partyPort, multiplayerPort, disableGameLift) { }
+        ServerConfig(std::string graphUrl, std::string statusUrl, int maxPartySize = OFFICIAL_MAX_PARTY_SIZE, std::string quickPlaySetupUrl = "", int discoveryPort = 0, int partyPort = 0, int multiplayerPort = 0, bool forceGameLift = true)
+        : graphUrl(graphUrl), masterServerStatusUrl(statusUrl), maxPartySize(maxPartySize), quickPlaySetupUrl(quickPlaySetupUrl.empty() ? statusUrl + "/mp_override.json" : quickPlaySetupUrl), discoveryPort(discoveryPort), partyPort(partyPort), multiplayerPort(multiplayerPort), forceGameLift(forceGameLift) { }
 
         /// @brief Serialize this to json
         /// @param allocator the allocator to use
@@ -25,8 +22,7 @@ namespace MultiplayerCore {
         /// @return all important fields found
         bool readJson(const rapidjson::Value& json);
 
-        std::string masterServerHostName;
-        int masterServerPort;
+        std::string graphUrl;
         std::string masterServerStatusUrl;
         std::string quickPlaySetupUrl;
 
@@ -34,6 +30,6 @@ namespace MultiplayerCore {
         int discoveryPort;
         int partyPort;
         int multiplayerPort;
-        bool disableGameLift;
+        bool forceGameLift;
     };
 }
