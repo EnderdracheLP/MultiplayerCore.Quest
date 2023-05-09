@@ -22,7 +22,7 @@ namespace MultiplayerCore::Hooks {
     const ServerConfig* NetworkConfigHooks::GetCurrentServer() { return currentServerConfig; }
     const ServerConfig* NetworkConfigHooks::GetOfficialServer() { return &officialServerConfig; }
 
-    bool NetworkConfigHooks::IsOverridingAPI() { return GetCurrentServer() != GetOfficialServer(); }
+    bool NetworkConfigHooks::IsOverridingAPI() { return GetCurrentServer() && GetCurrentServer() != GetOfficialServer(); }
 
     void NetworkConfigHooks::UseServer(const ServerConfig* cfg) {
         if (!cfg) {
@@ -81,25 +81,25 @@ MAKE_AUTO_HOOK_MATCH(MainSystemInit_Init, &::GlobalNamespace::MainSystemInit::In
     NetworkConfigHooks::UseServer(NetworkConfigHooks::currentServerConfig);
 }
 
-/*
 MAKE_AUTO_HOOK_MATCH(UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType, &GlobalNamespace::UnifiedNetworkPlayerModel::SetActiveNetworkPlayerModelType, void, GlobalNamespace::UnifiedNetworkPlayerModel* self, GlobalNamespace::UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType activeNetworkPlayerModelType) {
     auto currentConfig = NetworkConfigHooks::GetCurrentServer();
-    if (currentConfig && currentConfig->disableGameLift) {
-        DEBUG("Disabling GameLift, Setting to MasterServer");
-        UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, GlobalNamespace::UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType::MasterServer);
+    if (NetworkConfigHooks::IsOverridingAPI()) {
+        DEBUG("Disabling MasterServer, Setting to GameLift");
+        UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, GlobalNamespace::UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType::GameLift);
         return;
     }
+
     DEBUG("Using Default");
     UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, activeNetworkPlayerModelType);
 }
-*/
 
+// possibly does not call orig
 MAKE_AUTO_HOOK_ORIG_MATCH(ClientCertificateValidator_ValidateCertificateChainInternal, &GlobalNamespace::ClientCertificateValidator::ValidateCertificateChainInternal, void, GlobalNamespace::ClientCertificateValidator* self, GlobalNamespace::DnsEndPoint* endPoint, System::Security::Cryptography::X509Certificates::X509Certificate2* certificate, ::ArrayW<::ArrayW<uint8_t>> certificateChain) {
-    auto currentConfig = NetworkConfigHooks::GetCurrentServer();
-    if (!currentConfig || currentConfig->graphUrl.empty()) {
-        DEBUG("No EndPoint set, using default");
-        ClientCertificateValidator_ValidateCertificateChainInternal(self, endPoint, certificate, certificateChain);
+    if (NetworkConfigHooks::IsOverridingAPI()) {
+        DEBUG("Ignoring certificate validation");
         return;
     }
-    DEBUG("Ignoring certificate validation");
+
+    DEBUG("No EndPoint set, using default");
+    ClientCertificateValidator_ValidateCertificateChainInternal(self, endPoint, certificate, certificateChain);
 }
