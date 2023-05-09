@@ -18,25 +18,23 @@ namespace MultiplayerCore::Beatmaps {
         if (extraSongData.has_value()) {
             auto& difficulties = extraSongData->difficulties;
             for (const auto& difficulty : difficulties) {
-				if (!requirements.contains(difficulty.beatmapCharacteristicName)) {
+                if (difficulty.additionalDifficultyData) {
                     auto& list = requirements[difficulty.beatmapCharacteristicName][difficulty.difficulty];
-                    if (difficulty.additionalDifficultyData)
-                        for (const auto& req : difficulty.additionalDifficultyData->requirements)
-                            list.emplace_back(req);
+                    for (const auto& req : difficulty.additionalDifficultyData->requirements)
+                        list.emplace_back(req);
                 }
 
-                if (!difficultyColors.contains(difficulty.beatmapCharacteristicName)) {
-                    difficultyColors[difficulty.beatmapCharacteristicName][difficulty.difficulty] =
-                        Abstractions::DifficultyColors(
-                            difficulty.colorLeft, difficulty.colorRight,
-                            difficulty.envColorLeft, difficulty.envColorRight,
-                            difficulty.envColorLeftBoost, difficulty.envColorRightBoost,
-                            difficulty.obstacleColor
-                        );
-                }
+                difficultyColors[difficulty.beatmapCharacteristicName][difficulty.difficulty] =
+                    Abstractions::DifficultyColors(
+                        difficulty.colorLeft, difficulty.colorRight,
+                        difficulty.envColorLeft, difficulty.envColorRight,
+                        difficulty.envColorLeftBoost, difficulty.envColorRightBoost,
+                        difficulty.obstacleColor
+                    );
             }
 
-            contributors = std::move(extraSongData->contributors);
+            for (const auto& contributor : extraSongData->contributors)
+                contributors.emplace_back(contributor);
         }
     }
 
