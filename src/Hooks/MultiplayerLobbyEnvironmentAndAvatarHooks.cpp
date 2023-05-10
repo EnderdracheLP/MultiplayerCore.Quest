@@ -39,6 +39,9 @@
 using namespace GlobalNamespace;
 using namespace UnityEngine;
 
+// FIXME: these hooks are causing the lobby to crash, probably because they're not implemented correctly
+// for now we will just ignore the add empty slot stuff, but in the future a solution for that should be found... maybe make them edit the positions of things afterwards
+/*
 // reimplementation so methods get called like shown
 MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerLobbyAvatarManager_AddPlayer, &MultiplayerLobbyAvatarManager::AddPlayer, void, MultiplayerLobbyAvatarManager* self, IConnectedPlayer* connectedPlayer) {
     if (connectedPlayer->get_isMe()) return;
@@ -143,17 +146,19 @@ MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerPlayersManager_SpawnPlayers, &MultiplayerPl
         }
     }
 }
+*/
 
+// allow players to go anywhere
 MAKE_AUTO_HOOK_ORIG_MATCH(AvatarPoseRestrictions_HandleAvatarPoseControllerPositionsWillBeSet, &AvatarPoseRestrictions::HandleAvatarPoseControllerPositionsWillBeSet, void, AvatarPoseRestrictions* self, Quaternion headRotation, Vector3 headPosition, Vector3 leftHandPosition, Vector3 rightHandPosition, ByRef<Vector3> newHeadPosition, ByRef<Vector3> newLeftHandPosition, ByRef<Vector3> newRightHandPosition) {
     newHeadPosition.heldRef = headPosition;
     newLeftHandPosition.heldRef = self->LimitHandPositionRelativeToHead(leftHandPosition, headPosition);
     newRightHandPosition.heldRef = self->LimitHandPositionRelativeToHead(rightHandPosition, headPosition);
 }
 
+// customize lobby slightly and make center screen bigger / smaller
 MAKE_AUTO_HOOK_MATCH(MultiplayerLobbyController_ActivateMultiplayerLobby_2nd, &MultiplayerLobbyController::ActivateMultiplayerLobby, void, MultiplayerLobbyController* self) {
     MultiplayerLobbyController_ActivateMultiplayerLobby_2nd(self);
 
-    // port from the old mpcore code, customizes the lobby slightly
     auto placeManager = self->multiplayerLobbyAvatarPlaceManager;
     auto menuEnvironmentManager = self->menuEnvironmentManager;
     auto stageManager = self->multiplayerLobbyCenterStageManager;
