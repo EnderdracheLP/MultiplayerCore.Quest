@@ -30,6 +30,7 @@ DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Players, MpPlayerData, MultiplayerCore
 
     DECLARE_INSTANCE_FIELD(StringW, platformId);
     DECLARE_INSTANCE_FIELD(Platform, platform);
+    DECLARE_INSTANCE_FIELD(StringW, gameVersion);
 
     DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::LiteNetLib::Utils::INetSerializable::Serialize>::get(), LiteNetLib::Utils::NetDataWriter* writer);
     DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::LiteNetLib::Utils::INetSerializable::Deserialize>::get(), LiteNetLib::Utils::NetDataReader* reader);
