@@ -58,6 +58,7 @@ namespace MultiplayerCore::Players {
 
     void MpPlayerManager::HandlePlayerData(MpPlayerData* packet, GlobalNamespace::IConnectedPlayer* player) {
         _playerData->set_Item(player->get_userId(), packet);
+        PlayerConnectedEvent.invoke(player, packet);
     }
 
     bool MpPlayerManager::TryGetPlayer(StringW userId, MpPlayerData*& outplayer) {
