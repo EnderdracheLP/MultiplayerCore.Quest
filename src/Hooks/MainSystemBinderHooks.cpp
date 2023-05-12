@@ -13,7 +13,7 @@ MAKE_AUTO_HOOK_ORIG_MATCH(MainSystemInit_InstallBindings, &::GlobalNamespace::Ma
     MainSystemInit_InstallBindings(self, container);
 
     container->Unbind<GlobalNamespace::NetworkPlayerEntitlementChecker*>();
-    auto bindArr = Lapiz::ArrayUtils::TypeArray<GlobalNamespace::NetworkPlayerEntitlementChecker*>();
-    auto toArr = Lapiz::ArrayUtils::TypeArray<MultiplayerCore::Objects::MpEntitlementChecker*>();
-    container->Bind(bindArr)->To(toArr)->FromNewComponentOnRoot()->AsSingle()->NonLazy();
+    auto bindarray = Lapiz::ArrayUtils::TypeArray<GlobalNamespace::NetworkPlayerEntitlementChecker*>();
+    auto toarray = Lapiz::ArrayUtils::TypeArray<MultiplayerCore::Objects::MpEntitlementChecker*>();
+    container->Bind(reinterpret_cast<::System::Collections::Generic::IEnumerable_1<System::Type*>*>(bindarray.convert()))->To(reinterpret_cast<::System::Collections::Generic::IEnumerable_1<System::Type*>*>(toarray.convert()))->FromNewComponentOnRoot()->AsSingle()->NonLazy();
 }

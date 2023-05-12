@@ -16,5 +16,5 @@ MAKE_AUTO_HOOK_MATCH(LobbyDataModelInstaller_InstallBindings, &::GlobalNamespace
     container->Unbind<GlobalNamespace::LobbyPlayersDataModel*>();
     auto bindarray = Lapiz::ArrayUtils::TypeArray<GlobalNamespace::ILobbyPlayersDataModel*, GlobalNamespace::LobbyPlayersDataModel*, MultiplayerCore::Objects::MpPlayersDataModel*, System::IDisposable*>();
     auto toarray = Lapiz::ArrayUtils::TypeArray<MultiplayerCore::Objects::MpPlayersDataModel*>();
-    container->Bind(bindarray)->To(toarray)->AsSingle();
+    container->Bind(reinterpret_cast<::System::Collections::Generic::IEnumerable_1<System::Type*>*>(bindarray.convert()))->To(reinterpret_cast<::System::Collections::Generic::IEnumerable_1<System::Type*>*>(toarray.convert()))->AsSingle();
 }

@@ -17,5 +17,5 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerMenuInstaller_InstallBindings, &::GlobalNamespac
     container->Unbind<GlobalNamespace::MultiplayerLevelLoader*>();
     auto bindarray = Lapiz::ArrayUtils::TypeArray<GlobalNamespace::MultiplayerLevelLoader*, MultiplayerCore::Objects::MpLevelLoader*, Zenject::ITickable*>();
     auto toarray = Lapiz::ArrayUtils::TypeArray<MultiplayerCore::Objects::MpLevelLoader*>();
-    container->Bind(bindarray)->To(toarray)->AsSingle();
+    container->Bind(reinterpret_cast<::System::Collections::Generic::IEnumerable_1<System::Type*>*>(bindarray.convert()))->To(reinterpret_cast<::System::Collections::Generic::IEnumerable_1<System::Type*>*>(toarray.convert()))->AsSingle();
 }
