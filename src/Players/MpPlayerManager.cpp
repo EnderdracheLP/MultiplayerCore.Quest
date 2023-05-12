@@ -62,11 +62,16 @@ namespace MultiplayerCore::Players {
     }
 
     bool MpPlayerManager::TryGetPlayer(StringW userId, MpPlayerData*& outplayer) {
-        return _playerData->TryGetValue(userId, byref(outplayer));
+        if (_playerData->ContainsKey(userId)) {
+            outplayer = _playerData->get_Item(userId);
+            return true;
+        }
+        return false;
     }
 
     MpPlayerData* MpPlayerManager::GetPlayer(StringW userId) {
-        MpPlayerData* retval = nullptr;
-        return _playerData->TryGetValue(userId, retval) ? retval : nullptr;
+        MpPlayerData* player = nullptr;
+        TryGetPlayer(userId, player);
+        return player;
     }
 }
