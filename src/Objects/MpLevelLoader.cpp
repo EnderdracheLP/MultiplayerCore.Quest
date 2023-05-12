@@ -65,7 +65,7 @@ namespace MultiplayerCore::Objects {
                             const auto& difficulties = extraSongData->difficulties;
 
                             auto bmDiff = beatmap->get_beatmapDifficulty();
-                            auto ch = beatmap->get_beatmapCharacteristic()->get_name();
+                            auto ch = beatmap->get_beatmapCharacteristic()->get_serializedName();
                             auto diff = std::find_if(difficulties.begin(), difficulties.end(), [bmDiff, ch](const auto& x){
                                 return x.difficulty == bmDiff && x.beatmapCharacteristicName == ch;
                             });
@@ -73,6 +73,7 @@ namespace MultiplayerCore::Objects {
                             if (diff != difficulties.end() && diff->additionalDifficultyData.has_value()) {
                                 for (const auto& req : diff->additionalDifficultyData->requirements) {
                                     if (!RequirementUtils::GetRequirementInstalled(req)) {
+                                        _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::NotOwned);
                                         difficultyBeatmap = nullptr;
                                         break;
                                     }
