@@ -51,7 +51,7 @@ public:
         static const MethodInfo* getInfo() { return ::il2cpp_utils::il2cpp_type_check::MetadataGetter<mPtr>::get(); }                               \
         static funcType* trampoline() { return &name_; }                                                                                            \
         static inline retval (*name_)(__VA_ARGS__) = nullptr;                                                                                       \
-        static funcType hook() { return hook_##name_; }                                                                                             \
+        static funcType hook() { return &::Hooking::HookCatchWrapper<&hook_##name_, funcType>::wrapper; }                                           \
         static retval hook_##name_(__VA_ARGS__);                                                                                                    \
     };                                                                                                                                              \
     AUTO_INSTALL(name_)                                                                                                                             \
@@ -79,7 +79,7 @@ public:
         static const MethodInfo* getInfo() { return ::il2cpp_utils::il2cpp_type_check::MetadataGetter<mPtr>::get(); }                               \
         static funcType* trampoline() { return &name_; }                                                                                            \
         static inline retval (*name_)(__VA_ARGS__) = nullptr;                                                                                       \
-        static funcType hook() { return hook_##name_; }                                                                                             \
+        static funcType hook() { return &::Hooking::HookCatchWrapper<&hook_##name_, funcType>::wrapper; }                                           \
         static retval hook_##name_(__VA_ARGS__);                                                                                                    \
     };                                                                                                                                              \
     AUTO_INSTALL_ORIG(name_)                                                                                                                        \
