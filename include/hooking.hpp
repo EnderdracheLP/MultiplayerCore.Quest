@@ -22,6 +22,16 @@ public:
     }
 };
 
+#define AUTO_INSTALL_PATCH(name_) \
+    struct Auto_Patch_##name_                                                   \
+    {                                                                           \
+        Auto_Patch_##name_()                                                    \
+        {                                                                       \
+            ::Hooks::AddInstallFunc(Patch_##name_);                             \
+        }                                                                       \
+    };                                                                          \
+    static Auto_Patch_##name_ Auto_Patch_Instance_##name_;
+
 #define AUTO_INSTALL_ORIG(name_)                                               \
     struct Auto_Hook_##name_                                                   \
     {                                                                          \
