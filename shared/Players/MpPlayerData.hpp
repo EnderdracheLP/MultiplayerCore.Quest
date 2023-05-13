@@ -25,7 +25,7 @@ struct ::il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_class<MultiplayerCore::P
 };
 static_assert(sizeof(MultiplayerCore::Players::Platform) == sizeof(int));
 
-DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Players, MpPlayerData, MultiplayerCore::Networking::Abstractions::MpPacket, "MultiplayerCore.Players",
+DECLARE_CLASS_CUSTOM(MultiplayerCore::Players, MpPlayerData, MultiplayerCore::Networking::Abstractions::MpPacket,
     DECLARE_CTOR(New);
 
     DECLARE_INSTANCE_FIELD(StringW, platformId);

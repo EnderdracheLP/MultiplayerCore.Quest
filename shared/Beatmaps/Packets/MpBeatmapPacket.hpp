@@ -8,7 +8,7 @@
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 #include <list>
 
-DECLARE_CLASS_CUSTOM_DLL(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, MultiplayerCore::Networking::Abstractions::MpPacket, "MultiplayerCore.Beatmaps.Packets",
+DECLARE_CLASS_CUSTOM(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, MultiplayerCore::Networking::Abstractions::MpPacket,
     DECLARE_INSTANCE_FIELD(StringW, levelHash);
     DECLARE_INSTANCE_FIELD(StringW, songName);
     DECLARE_INSTANCE_FIELD(StringW, songSubName);
