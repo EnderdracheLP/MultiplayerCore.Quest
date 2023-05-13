@@ -67,7 +67,7 @@ namespace MultiplayerCore::Objects {
         DEBUG("Local player selected song '{}'", id);
         auto hash = Utilities::HashForLevelId(id);
         if (!hash.empty()) {
-            auto isMpBeatmapLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel*>(beatmapLevel->get_beatmapLevel()).has_value();
+            auto isMpBeatmapLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).has_value();
             if (!isMpBeatmapLevel)
                 beatmapLevel->set_beatmapLevel(_beatmapLevelProvider->GetBeatmapAsync(hash).get());
             _packetSerializer->Send(MpBeatmapPacket::New_1(beatmapLevel));
