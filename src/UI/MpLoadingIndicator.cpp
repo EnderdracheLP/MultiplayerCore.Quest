@@ -65,7 +65,8 @@ namespace MultiplayerCore::UI {
         ) {
             // FIXME: this will currently never find the entitlement for the local player, and it will always find an "extra" player because of the server being registered as one, this should be fixed
             int okCount = OkPlayerCountNoRequest();
-            int totalCount = IReadOnlyDictionary_2_Count(_playersDataModel->i_ILobbyPlayerData());
+            // We subtract 1 since we don't count the server
+            int totalCount = IReadOnlyDictionary_2_Count(_playersDataModel->i_ILobbyPlayerData()) - 1;
             _loadingControl->ShowLoading(fmt::format("{} of {} players ready...", okCount, totalCount));
         } else {
             _loadingControl->Hide();
@@ -81,7 +82,8 @@ namespace MultiplayerCore::UI {
         auto enumerator_1 = enumerable->GetEnumerator();
         auto enumerator = enumerator_1->i_IEnumerator();
 
-        int okCount = 0;
+        // Starts at 1 because the local player is already checked at this point
+        int okCount = 1;
         auto loggerContext = getLogger().WithContext("OkPlayerCountNoRequest");
         auto get_current_minfo = il2cpp_utils::FindMethodUnsafe(reinterpret_cast<Il2CppObject*>(enumerator)->klass, "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String,ILobbyPlayerData>>.get_Current", 0);
         using KVP = System::Collections::Generic::KeyValuePair_2<StringW, GlobalNamespace::ILobbyPlayerData *>;
