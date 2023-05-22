@@ -23,23 +23,24 @@ namespace MultiplayerCore::Beatmaps {
 			coverImageTask = System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));
             coverImageTask->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
 
-            // TODO: turn lambdas into callbacks or something with std::bind
-            BeatSaver::API::GetBeatmapByHashAsync(get_levelHash(),
-                [this](auto beatmap) {
-                    if (beatmap.has_value()) {
-                        BeatSaver::API::GetCoverImageAsync(beatmap.value(), [this](std::vector<uint8_t> bytes){
-                            Lapiz::Utilities::MainThreadScheduler::Schedule([this, bytes = il2cpp_utils::vectorToArray(bytes)] {
-                                coverImageTask->TrySetResult(BSML::Utilities::LoadSpriteRaw(bytes));
-                                coverImageTask->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
-                            });
-                        });
-                    } else {
-                        coverImageTask->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
-                    }
-                }
-            );
+            BeatSaver::API::GetBeatmapByHashAsync(get_levelHash(), std::bind(&NetworkBeatmapLevel::OnGetBeatmapComplete, this, std::placeholders::_1));
         }
         return coverImageTask;
+    }
+
+    void NetworkBeatmapLevel::OnGetBeatmapComplete(std::__ndk1::optional<BeatSaver::Beatmap> beatmapOpt) {
+        if (beatmapOpt.has_value()) {
+            BeatSaver::API::GetCoverImageAsync(beatmapOpt.value(), std::bind(&NetworkBeatmapLevel::OnGetCoverImageComplete, this, std::placeholders::_1));
+        } else {
+            coverImageTask->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+        }
+    }
+
+    void NetworkBeatmapLevel::OnGetCoverImageComplete(std::vector<uint8_t> bytes) {
+        Lapiz::Utilities::MainThreadScheduler::Schedule([this, bytes = il2cpp_utils::vectorToArray(bytes)] {
+            coverImageTask->TrySetResult(BSML::Utilities::LoadSpriteRaw(bytes));
+            coverImageTask->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
+        });
     }
 
     StringW NetworkBeatmapLevel::get_songName() { return _packet->songName; }
