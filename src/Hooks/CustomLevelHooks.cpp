@@ -18,8 +18,6 @@
 #include "GlobalNamespace/QuickPlaySetupModel.hpp"
 #include "GlobalNamespace/BeatmapIdentifierNetSerializable.hpp"
 
-// File is equivalent to MultiplayerCore.Patchers.CustomLevelsPatcher from PC
-// TODO: check if we need to do anythnig to enable custom levels in multi
 using namespace MultiplayerCore;
 using namespace MultiplayerCore::Hooks;
 
