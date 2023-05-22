@@ -134,6 +134,9 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
         template<::MultiplayerCore::INetSerializable TPacket>
         requires(std::is_pointer_v<TPacket>)
         void RegisterCallback(const std::string& packetId, std::function<void(TPacket, GlobalNamespace::IConnectedPlayer*)> callback) {
+            Il2CppReflectionType* packetType = csTypeOf(TPacket);
+            registeredTypes.emplace_back(packetType);
+
             packetHandlers[packetId] = [callback](LiteNetLib::Utils::NetDataReader* reader, int size, GlobalNamespace::IConnectedPlayer* player){
                 callback(DeserializePacket<TPacket>(reader, size), player);
             };
