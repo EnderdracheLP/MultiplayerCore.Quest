@@ -10,11 +10,13 @@
 #include "LiteNetLib/Utils/NetDataWriter.hpp"
 #include "LiteNetLib/Utils/NetDataReader.hpp"
 #include "LiteNetLib/Utils/INetSerializable.hpp"
+#include "GlobalNamespace/IPoolablePacket.hpp"
 
 #include "System/IDisposable.hpp"
 #include "Zenject/IInitializable.hpp"
 
 #include "GlobalNamespace/MultiplayerSessionManager.hpp"
+#include "GlobalNamespace/ThreadStaticPacketPool_1.hpp"
 
 #include <type_traits>
 #include <map>
@@ -24,6 +26,12 @@ namespace MultiplayerCore {
     template<typename TPacket>
     concept INetSerializable = requires(TPacket t) {
         {t->i_INetSerializable()} -> std::same_as<LiteNetLib::Utils::INetSerializable*>;
+    };
+
+    template<typename TPacket>
+    concept IPoolablePacket = INetSerializable<TPacket> && requires(TPacket t) {
+        {t->i_IPoolablePacket()} -> std::same_as<GlobalNamespace::IPoolablePacket*>;
+        {GlobalNamespace::ThreadStaticPacketPool_1<TPacket>::get_pool()->Obtain()} -> std::same_as<TPacket>;
     };
 }
 
@@ -81,10 +89,22 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
         Zenject::IInitializable* i_IInitializable() { return reinterpret_cast<::Zenject::IInitializable*>(this); }
         System::IDisposable* i_IDisposable() { return reinterpret_cast<::System::IDisposable*>(this); }
 
+        template<::MultiplayerCore::IPoolablePacket TPacket>
+        requires(std::is_pointer_v<TPacket>)
+        static TPacket ObtainPacket() {
+            return GlobalNamespace::ThreadStaticPacketPool_1<TPacket>::get_pool()->Obtain();
+        }
+
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket> && !::MultiplayerCore::IPoolablePacket<TPacket>)
+        static TPacket ObtainPacket() {
+            return il2cpp_utils::NewSpecific<TPacket>();
+        }
+
         template<::MultiplayerCore::INetSerializable TPacket>
         requires(std::is_pointer_v<TPacket>)
         static TPacket DeserializePacket(LiteNetLib::Utils::NetDataReader* reader, int size) {
-            auto packet = il2cpp_utils::NewSpecific<TPacket>();
+            auto packet = ObtainPacket<TPacket>();
             if (!packet) {
                 reader->SkipBytes(size);
             } else packet->Deserialize(reader);
