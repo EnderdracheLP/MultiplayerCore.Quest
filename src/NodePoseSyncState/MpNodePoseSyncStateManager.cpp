@@ -4,6 +4,7 @@ DEFINE_TYPE(MultiplayerCore::NodePoseSyncState, MpNodePoseSyncStateManager);
 
 namespace MultiplayerCore::NodePoseSyncState {
     void MpNodePoseSyncStateManager::ctor() {
+        INVOKE_CTOR();
         INVOKE_BASE_CTOR(classof(GlobalNamespace::NodePoseSyncStateManager*));
         deltaUpdateFrequency = 0.01f;
         fullStateUpdateFrequency = 0.1f;
