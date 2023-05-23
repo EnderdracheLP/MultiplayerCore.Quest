@@ -18,7 +18,14 @@ static std::string maximumBsVersion;
 MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason, &::GlobalNamespace::MultiplayerUnavailableReasonMethods::TryGetMultiplayerUnavailableReason, bool, GlobalNamespace::MultiplayerStatusData *data, ByRef<GlobalNamespace::MultiplayerUnavailableReason> reason) {
     reason.heldRef = GlobalNamespace::MultiplayerUnavailableReason(0);
     auto mpData = il2cpp_utils::try_cast<MultiplayerCore::Models::MpStatusData>(data).value_or(nullptr);
-    if (!mpData) return MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason(data, reason);
+    if (!mpData) 
+    {
+        if (!data) {
+            reason.heldRef = GlobalNamespace::MultiplayerUnavailableReason::NetworkUnreachable;
+            return true;
+        };
+        return MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason(data, reason);
+    }
 
     if (!mpData->requiredMods.empty()) {
         auto mods = Modloader::getMods();
