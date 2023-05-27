@@ -78,7 +78,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
     DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::Deserialize>::get(), LiteNetLib::Utils::NetDataReader* reader, int length, GlobalNamespace::IConnectedPlayer* data);
     DECLARE_OVERRIDE_METHOD(bool, HandlesType, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::HandlesType>::get(), Il2CppReflectionType* type);
 
-    static const int ID = 100;
+    static const uint8_t ID = 100u;
 
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::MultiplayerSessionManager*, _sessionManager);
 
