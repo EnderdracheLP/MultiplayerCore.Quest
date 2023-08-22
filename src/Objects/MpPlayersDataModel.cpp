@@ -43,7 +43,9 @@ namespace MultiplayerCore::Objects {
     }
 
     void MpPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap_override(StringW userId) {
-        auto localPlayerData = playersData->get_Item(userId);
+        GlobalNamespace::LobbyPlayerData* localPlayerData = nullptr;
+        if (!playersData->TryGetValue(userId, byref(localPlayerData))) return; // if we can't get the player, just return
+
         auto previewBeatmap = localPlayerData ? localPlayerData->get_beatmapLevel() : nullptr;
         auto level = previewBeatmap ? previewBeatmap->get_beatmapLevel() : nullptr;
         std::string levelId(level ? level->get_levelID() : "");
