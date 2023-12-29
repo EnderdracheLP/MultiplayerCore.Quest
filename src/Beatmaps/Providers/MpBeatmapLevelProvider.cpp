@@ -38,7 +38,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
     GlobalNamespace::IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromLocalBeatmaps(const std::string& levelHash) {
         GlobalNamespace::CustomPreviewBeatmapLevel* preview = RuntimeSongLoader::API::GetLevelByHash(levelHash).value_or(nullptr);
         if (!preview) return nullptr;
-        return LocalBeatmapLevel::New_ctor(levelHash, preview->i_IPreviewBeatmapLevel())->i_IPreviewBeatmapLevel();
+        return *LocalBeatmapLevel::New_ctor(levelHash, *preview);
     }
 
     GlobalNamespace::IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet) {

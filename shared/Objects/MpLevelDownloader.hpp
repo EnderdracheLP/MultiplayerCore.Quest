@@ -6,7 +6,7 @@
 #include <future>
 #include <unordered_map>
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelDownloader, Il2CppObject,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelDownloader, System::Object,
     DECLARE_CTOR(ctor);
     public:
         std::shared_future<bool> TryDownloadLevelAsync(std::string levelId, std::function<void(double)> progress = nullptr);

@@ -33,9 +33,9 @@ namespace MultiplayerCore::UI {
     }
 
     void MpColorsUI::Parse() {
-        if (!modal || !modal->m_CachedPtr.m_value) {
+        if (!modal || !modal->m_CachedPtr) {
             BSML::parse_and_construct(
-                IncludedAssets::ColorsUI_bsml,
+                Assets::ColorsUI_bsml,
                 _lobbySetupViewController->GetComponentInChildren<GlobalNamespace::LevelBar*>()->get_transform(),
                 this
             );

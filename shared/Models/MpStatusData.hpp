@@ -7,5 +7,5 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Models, MpStatusData, GlobalNamespace::Mu
     DECLARE_CTOR(New, StringW json);
     DECLARE_INSTANCE_FIELD(StringW, maximumAppVersion);
     public:
-        std::vector<ModInfo> requiredMods;
+        std::vector<modloader::ModInfo> requiredMods;
 )

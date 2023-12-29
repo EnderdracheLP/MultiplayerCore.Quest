@@ -19,12 +19,12 @@ namespace MultiplayerCore::Beatmaps {
             auto& difficulties = extraSongData->difficulties;
             for (const auto& difficulty : difficulties) {
                 if (difficulty.additionalDifficultyData) {
-                    auto& list = requirements[difficulty.beatmapCharacteristicName][difficulty.difficulty];
+                    auto& list = requirements[difficulty.beatmapCharacteristicName][difficulty.difficulty.value__];
                     for (const auto& req : difficulty.additionalDifficultyData->requirements)
                         list.emplace_back(req);
                 }
 
-                difficultyColors[difficulty.beatmapCharacteristicName][difficulty.difficulty] =
+                difficultyColors[difficulty.beatmapCharacteristicName][difficulty.difficulty.value__] =
                     Abstractions::DifficultyColors(
                         difficulty.colorLeft, difficulty.colorRight,
                         difficulty.envColorLeft, difficulty.envColorRight,

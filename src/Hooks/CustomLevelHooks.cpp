@@ -22,13 +22,20 @@ using namespace MultiplayerCore;
 using namespace MultiplayerCore::Hooks;
 
 MAKE_AUTO_HOOK_MATCH(LobbySetupViewController_SetPlayersMissingLevelText, &::GlobalNamespace::LobbySetupViewController::SetPlayersMissingLevelText, void, GlobalNamespace::LobbySetupViewController* self, StringW playersMissingLevelText) {
-    if (!Il2CppString::IsNullOrEmpty(playersMissingLevelText) && self->startGameReadyButton->get_interactable()) {
+    if (!System::String::IsNullOrEmpty(playersMissingLevelText) && self->_startGameReadyButton->get_interactable()) {
         self->SetStartGameEnabled(GlobalNamespace::CannotStartGameReason::DoNotOwnSong);
     }
     LobbySetupViewController_SetPlayersMissingLevelText(self, playersMissingLevelText);
 }
 
-MAKE_AUTO_HOOK_MATCH(BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap, &::GlobalNamespace::BeatmapIdentifierNetSerializableHelper::ToPreviewDifficultyBeatmap, ::GlobalNamespace::PreviewDifficultyBeatmap*, ::GlobalNamespace::BeatmapIdentifierNetSerializable* beatmapId, ::GlobalNamespace::BeatmapLevelsModel* beatmapLevelsModel, ::GlobalNamespace::BeatmapCharacteristicCollectionSO* beatmapCharacteristicCollection) {
+MAKE_AUTO_HOOK_MATCH(
+    BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap,
+    &::GlobalNamespace::BeatmapIdentifierNetSerializableHelper::ToPreviewDifficultyBeatmap,
+    ::GlobalNamespace::PreviewDifficultyBeatmap*,
+    ::GlobalNamespace::BeatmapIdentifierNetSerializable* beatmapId,
+    ::GlobalNamespace::BeatmapLevelsModel* beatmapLevelsModel,
+    ::GlobalNamespace::BeatmapCharacteristicCollection* beatmapCharacteristicCollection
+) {
     auto res = BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyBeatmap(beatmapId, beatmapLevelsModel, beatmapCharacteristicCollection);
     if (!res->get_beatmapLevel())
         res->set_beatmapLevel(
@@ -40,7 +47,7 @@ MAKE_AUTO_HOOK_MATCH(BeatmapIdentifierNetSerializableHelper_ToPreviewDifficultyB
 }
 
 MAKE_AUTO_HOOK_MATCH(JoinQuickPlayViewController_Setup, &::GlobalNamespace::JoinQuickPlayViewController::Setup, void, ::GlobalNamespace::JoinQuickPlayViewController* self, GlobalNamespace::QuickPlaySetupData *quickPlaySetupData, GlobalNamespace::MultiplayerModeSettings *multiplayerModeSettings) {
-    if (NetworkConfigHooks::IsOverridingAPI()) self->beatmapDifficultyDropdown->set_includeAllDifficulties(true);
+    if (NetworkConfigHooks::IsOverridingAPI()) self->_beatmapDifficultyDropdown->set_includeAllDifficulties(true);
     JoinQuickPlayViewController_Setup(self, quickPlaySetupData, multiplayerModeSettings);
 }
 
@@ -70,6 +77,8 @@ MAKE_AUTO_HOOK_MATCH(LevelSelectionNavigationController_Setup, &::GlobalNamespac
     bool enableCustomLevels
 ) {
     ConstString custom_levelpack_CustomLevels("custom_levelpack_CustomLevels");
+    static auto customLevels_Packmask = GlobalNamespace::SongPackMask::op_Implicit___GlobalNamespace__SongPackMask(custom_levelpack_CustomLevels);
+
     LevelSelectionNavigationController_Setup(
         self,
         songPackMask,
@@ -81,6 +90,6 @@ MAKE_AUTO_HOOK_MATCH(LevelSelectionNavigationController_Setup, &::GlobalNamespac
         levelPackToBeSelectedAfterPresent,
         startLevelCategory,
         beatmapLevelToBeSelectedAfterPresent,
-        enableCustomLevels || songPackMask.Contains(StringW(custom_levelpack_CustomLevels))
+        enableCustomLevels || songPackMask.Contains(customLevels_Packmask)
     );
 }

@@ -16,7 +16,7 @@
 #include "bsml/shared/BSML/Components/CustomListTableData.hpp"
 #include "bsml/shared/BSML/Components/ModalView.hpp"
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, Il2CppObject,
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, System::Object,
     std::vector<Il2CppClass*>({classof(::System::IDisposable*), classof(::Zenject::IInitializable*)}),
 
     DECLARE_INSTANCE_FIELD_PRIVATE(System::Action_1<StringW>*, beatmapSelectedAction);
@@ -52,12 +52,12 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, Il2CppOb
     DECLARE_BSML_PROPERTY(bool, buttonInteractable);
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::Vector3, modalPosition);
     DECLARE_INSTANCE_FIELD_PRIVATE(BSML::ModalView*, modal);
-    DECLARE_INSTANCE_FIELD_PRIVATE_DEFAULT(ListWrapper<BSML::CustomCellInfo*>, data, nullptr);
+    DECLARE_INSTANCE_FIELD_PRIVATE(ListW<BSML::CustomCellInfo*>, data);
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::UI::Button*, infoButton);
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::Transform*, root);
 
-    DECLARE_OVERRIDE_METHOD(void, Dispose, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::System::IDisposable::Dispose>::get());
-    DECLARE_OVERRIDE_METHOD(void, Initialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::Zenject::IInitializable::Initialize>::get());
+    DECLARE_OVERRIDE_METHOD_MATCH(void, Dispose, &::System::IDisposable::Dispose);
+    DECLARE_OVERRIDE_METHOD_MATCH(void, Initialize, &::Zenject::IInitializable::Initialize);
 
     DECLARE_CTOR(ctor,
             GlobalNamespace::LobbySetupViewController* lobbySetupViewController,

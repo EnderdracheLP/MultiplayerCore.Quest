@@ -1,4 +1,5 @@
 #include "Objects/BGNetDebugLogger.hpp"
+#include "System/Exception.hpp"
 #include "logging.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Objects, BGNetDebugLogger);

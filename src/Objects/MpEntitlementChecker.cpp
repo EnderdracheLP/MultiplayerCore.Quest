@@ -29,7 +29,7 @@ namespace MultiplayerCore::Objects {
 
     void MpEntitlementChecker::Start_override() {
         GlobalNamespace::NetworkPlayerEntitlementChecker::Start();
-        rpcManager->add_setIsEntitledToLevelEvent(
+        _rpcManager->add_setIsEntitledToLevelEvent(
             BSML::MakeSystemAction<StringW, StringW, GlobalNamespace::EntitlementsStatus>(this, ___HandleSetIsEntitledToLevel_MethodRegistrator.get())
         );
     }
@@ -43,7 +43,7 @@ namespace MultiplayerCore::Objects {
     }
 
     static inline std::string_view EntitlementName(GlobalNamespace::EntitlementsStatus entitlement) {
-        switch (entitlement.value) {
+        switch (entitlement) {
             case GlobalNamespace::EntitlementsStatus::Unknown:
                 return "Unknown";
             case GlobalNamespace::EntitlementsStatus::NotOwned:
@@ -96,7 +96,7 @@ namespace MultiplayerCore::Objects {
             // don't ask me why but not setting the result on main thread crashes
             Lapiz::Utilities::MainThreadScheduler::Schedule([task, entitlement] {
                 DEBUG("Set result: {}", task->TrySetResult(entitlement));
-                task->m_result = entitlement;
+                task->___m_result = entitlement;
                 task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
             });
         }).detach();

@@ -8,12 +8,12 @@ namespace MultiplayerCore::NodePoseSyncState {
     }
 
     void MpNodePoseSyncStatePacket::Serialize(LiteNetLib::Utils::NetDataWriter* writer) {
-        writer->Put(deltaUpdateFrequency);
-        writer->Put(fullStateUpdateFrequency);
+        writer->Put(deltaUpdateFrequencyMs);
+        writer->Put(fullStateUpdateFrequencyMs);
     }
 
     void MpNodePoseSyncStatePacket::Deserialize(LiteNetLib::Utils::NetDataReader* reader) {
-        deltaUpdateFrequency = reader->GetFloat();
-        fullStateUpdateFrequency = reader->GetFloat();
+        deltaUpdateFrequencyMs = reader->GetLong();
+        fullStateUpdateFrequencyMs = reader->GetLong();
     }
 }

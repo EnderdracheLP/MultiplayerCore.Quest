@@ -10,7 +10,7 @@ using namespace MultiplayerCore::Objects;
 
 std::list<GlobalNamespace::MultiplayerLevelLoader*> LoadLevel_executing;
 // override LoadLevel
-MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerLevelLoader_LoadLevel, &GlobalNamespace::MultiplayerLevelLoader::LoadLevel, void, GlobalNamespace::MultiplayerLevelLoader* self, GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, float initialStartTime) {
+MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerLevelLoader_LoadLevel, &GlobalNamespace::MultiplayerLevelLoader::LoadLevel, void, GlobalNamespace::MultiplayerLevelLoader* self, GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, long initialStartTime) {
     INVOKE_LOCK(MultiplayerLevelLoader_LoadLevel);
     if (!lock) {
         MultiplayerLevelLoader_LoadLevel(self, gameplaySetupData, initialStartTime);

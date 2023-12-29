@@ -8,18 +8,27 @@
 #include "bsml/shared/BSML.hpp"
 #include "bsml/shared/Helpers/utilities.hpp"
 
+#include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 #include "GlobalNamespace/EditableBeatmapSelectionView.hpp"
 #include "GlobalNamespace/LevelBar.hpp"
 #include "GlobalNamespace/ILobbyPlayerData.hpp"
+#include "GlobalNamespace/ILevelGameplaySetupData.hpp"
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
-#include "HMUI/TableView_ScrollPositionType.hpp"
 
 DEFINE_TYPE(MultiplayerCore::UI, MpRequirementsUI);
 
 // Accessing "private" method from pinkcore
 namespace RequirementUtils {
     bool GetRequirementInstalled(std::string requirement);
+}
+
+static constexpr inline UnityEngine::Vector3 operator*(UnityEngine::Vector3 vec, float val) {
+    return {
+        vec.x * val,
+        vec.y * val,
+        vec.z * val,
+    };
 }
 
 namespace MultiplayerCore::UI {
@@ -33,12 +42,12 @@ namespace MultiplayerCore::UI {
         _lobbySetupViewController = lobbySetupViewController;
         _playersDataModel = playersDataModel;
         _colorsUI = colorsUI;
-        data = List<BSML::CustomCellInfo*>::New_ctor();
+        data = ListW<BSML::CustomCellInfo*>::New();
     }
 
     void MpRequirementsUI::Initialize() {
         auto bar = _lobbySetupViewController->GetComponentInChildren<GlobalNamespace::EditableBeatmapSelectionView*>()->get_transform()->Find("LevelBarSimple")->GetComponent<GlobalNamespace::LevelBar*>();
-        BSML::parse_and_construct(IncludedAssets::RequirementsButton_bsml, bar->get_transform(), this);
+        BSML::parse_and_construct(Assets::RequirementsButton_bsml, bar->get_transform(), this);
         auto buttonT = infoButton->get_transform();
         buttonT->set_localScale(buttonT->get_localScale() * 0.7f);
         buttonT->get_gameObject()->SetActive(true);
@@ -59,7 +68,11 @@ namespace MultiplayerCore::UI {
     }
 
     void MpRequirementsUI::BeatmapSelected(StringW) {
-        auto beatmapLevel = _playersDataModel->i_ILobbyPlayerData()->get_Item(_playersDataModel->get_localUserId())->i_ILevelGameplaySetupData()->get_beatmapLevel();
+        using namespace System::Collections::Generic;
+        auto localUserId = _playersDataModel->localUserId;
+        auto playerDict = static_cast<IReadOnlyDictionary_2<StringW, GlobalNamespace::ILobbyPlayerData*>*>(*_playersDataModel);
+        auto playerData = playerDict->Item[localUserId];
+        auto beatmapLevel = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*playerData)->beatmapLevel;
         auto mpLevel = beatmapLevel ? il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr) : nullptr;
         if (mpLevel) {
             bool buttonShouldBeActive = false;
@@ -71,7 +84,7 @@ namespace MultiplayerCore::UI {
             if (colorMapItr == diffColors.end()) colorMapItr = diffColors.find(chSerName);
 
             if (colorMapItr != diffColors.end()) {
-                auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value);
+                auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
                 if (colorItr != colorMapItr->second.end()) {
                     buttonShouldBeActive = colorItr->second.AnyAreNotNull();
                 }
@@ -81,7 +94,7 @@ namespace MultiplayerCore::UI {
             if (reqMapItr == mpLevel->requirements.end()) reqMapItr = mpLevel->requirements.find(chSerName);
 
             if (reqMapItr != mpLevel->requirements.end()) {
-                auto reqItr = reqMapItr->second.find(beatmapLevel->beatmapDifficulty.value);
+                auto reqItr = reqMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
                 if (reqItr != reqMapItr->second.end()) {
                     buttonShouldBeActive = buttonShouldBeActive || !reqItr->second.empty();
                 }
@@ -101,8 +114,9 @@ namespace MultiplayerCore::UI {
     }
 
     void MpRequirementsUI::ShowRequirements() {
-        if (!modal || !modal->m_CachedPtr.m_value) {
-            BSML::parse_and_construct(IncludedAssets::RequirementsUI_bsml, root, this);
+        using namespace System::Collections::Generic;
+        if (!modal || !modal->m_CachedPtr) {
+            BSML::parse_and_construct(Assets::RequirementsUI_bsml, root, this);
             modalPosition = modal->get_transform()->get_localPosition();
         }
 
@@ -112,11 +126,12 @@ namespace MultiplayerCore::UI {
 
         auto localUserId = _playersDataModel->get_localUserId();
         GlobalNamespace::ILobbyPlayerData* localPlayerDataModel = nullptr;
-        if (!_playersDataModel->i_ILobbyPlayerData()->TryGetValue(localUserId, byref(localPlayerDataModel))) {
+        auto playerDict = static_cast<IReadOnlyDictionary_2<StringW, GlobalNamespace::ILobbyPlayerData*>*>(*_playersDataModel);
+        if (!playerDict->TryGetValue(localUserId, byref(localPlayerDataModel))) {
             ERROR("Could not get local player info");
             return;
         }
-        auto level = localPlayerDataModel->i_ILevelGameplaySetupData()->get_beatmapLevel();
+        auto level = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*localPlayerDataModel)->beatmapLevel;
         auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(level->get_beatmapLevel()).value_or(nullptr);
 
         if (mpLevel) {
@@ -136,7 +151,7 @@ namespace MultiplayerCore::UI {
             // requirements
             auto reqItr = reqsMap.find(chname);
             if (reqItr != reqsMap.end()) {
-                auto reqsItr = reqItr->second.find(diff.value);
+                auto reqsItr = reqItr->second.find(diff.value__);
                 if (reqsItr != reqItr->second.end()) {
                     for (const auto& req : reqsItr->second) {
                         auto installed = RequirementUtils::GetRequirementInstalled(req);
@@ -148,7 +163,7 @@ namespace MultiplayerCore::UI {
                         data->Add(cell);
                     }
                 } else {
-                    ERROR("Issue finding diff {} to get requirements", diff.value);
+                    ERROR("Issue finding diff {} to get requirements", diff.value__);
                 }
             } else {
                 ERROR("Issue finding characteristic {} to get requirements", chname);
@@ -169,12 +184,12 @@ namespace MultiplayerCore::UI {
             auto colorMapItr = diffColorsMap.find(chname);
             BSML::CustomCellInfo* colorCell = nullptr;
             if (colorMapItr != diffColorsMap.end()) {
-                auto colorsItr = colorMapItr->second.find(diff);
+                auto colorsItr = colorMapItr->second.find(diff.value__);
                 if (colorsItr != colorMapItr->second.end()) {
                     if (colorsItr->second.AnyAreNotNull())
                         colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors Available", "Click here to preview it.", get_ColorsIcon());
                 } else {
-                    ERROR("Issue finding diff {} to get colors", diff.value);
+                    ERROR("Issue finding diff {} to get colors", diff.value__);
                 }
             } else {
                 ERROR("Issue finding characteristic {} to get colors", chname);
@@ -192,8 +207,12 @@ namespace MultiplayerCore::UI {
     }
 
     void MpRequirementsUI::Select(HMUI::TableView* tableView, int index) {
-        auto localUserData = _playersDataModel->i_ILobbyPlayerData()->get_Item(_playersDataModel->get_localUserId());
-        auto beatmapLevel = localUserData->i_ILevelGameplaySetupData()->get_beatmapLevel();
+        using namespace System::Collections::Generic;
+        auto localUserId = _playersDataModel->get_localUserId();
+        auto playerDict = static_cast<IReadOnlyDictionary_2<StringW, GlobalNamespace::ILobbyPlayerData*>*>(*_playersDataModel);
+
+        auto localUserData = playerDict->Item[localUserId];
+        auto beatmapLevel = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*localUserData)->beatmapLevel;
         auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr);
         if (mpLevel) {
             auto diffColors = mpLevel->difficultyColors;
@@ -204,7 +223,7 @@ namespace MultiplayerCore::UI {
             list->tableView->ClearSelection();
             if (colorMapItr != diffColors.end()) {
                 if (list->data[index]->icon == get_ColorsIcon()) {
-                    auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value);
+                    auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
                     if (colorItr != colorMapItr->second.end()) {
                         modal->Hide();
                         _colorsUI->ShowColors(colorItr->second);
@@ -229,8 +248,8 @@ namespace MultiplayerCore::UI {
 
 #define DEFINE_ICON(icon) \
     UnityEngine::Sprite* MpRequirementsUI::get_##icon##Icon() { \
-        if (!_##icon##Icon || !_##icon##Icon->m_CachedPtr.m_value) { \
-            auto& data = IncludedAssets::icon##_png;\
+        if (!_##icon##Icon || !_##icon##Icon->m_CachedPtr) { \
+            auto& data = Assets::icon##_png;\
             _##icon##Icon = BSML::Utilities::LoadSpriteRaw(data);\
         }\
         return _##icon##Icon;\
