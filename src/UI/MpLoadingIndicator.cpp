@@ -51,7 +51,7 @@ namespace MultiplayerCore::UI {
 
     void MpLoadingIndicator::Initialize() {
         BSML::parse_and_construct(Assets::LoadingIndicator_bsml, _screenController->get_transform(), this);
-        auto existingLoadingControl = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::LoadingControl*>().First()->get_gameObject();
+        auto existingLoadingControl = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::LoadingControl*>()->First()->gameObject;
         auto go = UnityEngine::Object::Instantiate(existingLoadingControl, vert->get_transform());
         _loadingControl = go->GetComponent<GlobalNamespace::LoadingControl*>();
         _loadingControl->Hide();
@@ -81,7 +81,7 @@ namespace MultiplayerCore::UI {
     int MpLoadingIndicator::OkPlayerCountNoRequest() {
         using namespace System::Collections;
         using namespace System::Collections::Generic;
-        auto levelId = _levelLoader->_gameplaySetupData->get_beatmapLevel()->get_beatmapLevel()->get_levelID();
+        auto levelId = _levelLoader->_gameplaySetupData->beatmapLevel->beatmapLevel->levelID;
 
         auto& dict = *_playersDataModel;
         auto enumerable = static_cast<IEnumerable_1<KeyValuePair_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>>*>(dict);
@@ -91,16 +91,13 @@ namespace MultiplayerCore::UI {
         // Starts at 1 because the local player is already checked at this point
         int okCount = 1;
         auto loggerContext = getLogger().WithContext("OkPlayerCountNoRequest");
-        auto get_current_minfo = il2cpp_utils::FindMethodUnsafe(reinterpret_cast<System::Object*>(enumerator)->klass, "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String,ILobbyPlayerData>>.get_Current", 0);
-        using KVP = System::Collections::Generic::KeyValuePair_2<StringW, GlobalNamespace::ILobbyPlayerData *>;
         while (enumerator->MoveNext()) {
-            auto cur = RET_0_UNLESS(loggerContext, il2cpp_utils::RunMethod<KVP>(enumerator, get_current_minfo));
-
+            auto cur = enumerator_1->Current;
             auto tocheck = cur.key;
             if (_entitlementChecker->GetUserEntitlementStatusWithoutRequest(tocheck, levelId) == GlobalNamespace::EntitlementsStatus::Ok) okCount++;
         }
 
-        il2cpp_utils::RunMethod(enumerator_1, "System.IDisposable.Dispose");
+        enumerator_1->i___System__IDisposable()->Dispose();
         return okCount;
     }
 

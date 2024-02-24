@@ -40,7 +40,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerIntroAnimationController_PlayIntroAnimation, &::
         );
     }
 
-    auto tl = reinterpret_cast<UnityEngine::Timeline::TimelineAsset*>(self->_introPlayableDirector->get_playableAsset());
+    auto tl = self->_introPlayableDirector->get_playableAsset().cast<UnityEngine::Timeline::TimelineAsset>();
     ArrayW<UnityEngine::Timeline::TrackAsset*> outputTracks(tl->GetOutputTracks());
     for (auto track : outputTracks) {
         auto audioTrack = il2cpp_utils::try_cast<UnityEngine::Timeline::AudioTrack>(track);

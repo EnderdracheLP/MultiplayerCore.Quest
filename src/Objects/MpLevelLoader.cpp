@@ -119,7 +119,7 @@ namespace MultiplayerCore::Objects {
             _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).wait();
 
             std::optional<GlobalNamespace::IPreviewBeatmapLevel*> getPreviewBeatmapLevelResult;
-            Lapiz::Utilities::MainThreadScheduler::Schedule([&getPreviewBeatmapLevelResult, beatmapLevelsModel = _beatmapLevelsModel, levelId](){
+            Lapiz::Utilities::MainThreadScheduler::Schedule([&getPreviewBeatmapLevelResult, beatmapLevelsModel = _beatmapLevelsModel.unsafePtr(), levelId](){
                 getPreviewBeatmapLevelResult = beatmapLevelsModel->GetLevelPreviewForLevelId(levelId);
                 DEBUG("Got level {}", fmt::ptr(getPreviewBeatmapLevelResult.value()));
             });
@@ -127,7 +127,7 @@ namespace MultiplayerCore::Objects {
             _gameplaySetupData->get_beatmapLevel()->beatmapLevel = getPreviewBeatmapLevelResult.value();
 
             std::optional<System::Threading::Tasks::Task_1<GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult>*> getTask;
-            Lapiz::Utilities::MainThreadScheduler::Schedule([&getTask, beatmapLevelsModel = _beatmapLevelsModel, levelId, cancellationToken](){
+            Lapiz::Utilities::MainThreadScheduler::Schedule([&getTask, beatmapLevelsModel = _beatmapLevelsModel.unsafePtr(), levelId, cancellationToken](){
                 getTask = beatmapLevelsModel->GetBeatmapLevelAsync(levelId, cancellationToken);
                 DEBUG("Got task {}", fmt::ptr(getTask.value()));
             });

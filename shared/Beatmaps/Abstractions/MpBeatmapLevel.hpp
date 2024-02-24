@@ -35,6 +35,8 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Beatmaps::Abstractions, MpBeat
     DECLARE_OVERRIDE_METHOD_MATCH(float, get_shufflePeriod, &::GlobalNamespace::IPreviewBeatmapLevel::get_shufflePeriod);
     DECLARE_OVERRIDE_METHOD_MATCH(::GlobalNamespace::EnvironmentInfoSO*, get_environmentInfo, &::GlobalNamespace::IPreviewBeatmapLevel::get_environmentInfo);
     DECLARE_OVERRIDE_METHOD_MATCH(::GlobalNamespace::EnvironmentInfoSO*, get_allDirectionsEnvironmentInfo, &::GlobalNamespace::IPreviewBeatmapLevel::get_allDirectionsEnvironmentInfo);
+    DECLARE_OVERRIDE_METHOD_MATCH(::ArrayW<::GlobalNamespace::EnvironmentInfoSO*>, get_environmentInfos, &::GlobalNamespace::IPreviewBeatmapLevel::get_environmentInfos);
+    DECLARE_OVERRIDE_METHOD_MATCH(::GlobalNamespace::PlayerSensitivityFlag, get_contentRating, &::GlobalNamespace::IPreviewBeatmapLevel::get_contentRating);
 
     DECLARE_OVERRIDE_METHOD_MATCH(::System::Threading::Tasks::Task_1<::UnityEngine::Sprite*>*, GetCoverImageAsync, &::GlobalNamespace::IPreviewBeatmapLevel::GetCoverImageAsync, ::System::Threading::CancellationToken cancellationToken);
 

@@ -18,7 +18,7 @@ namespace MultiplayerCore::UI {
 
     void MpColorsUI::PostParse() {
         _colorSchemeView = UnityEngine::Object::Instantiate(
-            UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ColorSchemeView*>().First(),
+            UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ColorSchemeView*>()->First(),
             selectedColorTransform
         );
 

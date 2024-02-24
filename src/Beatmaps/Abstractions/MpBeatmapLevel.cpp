@@ -21,6 +21,9 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
     float MpBeatmapLevel::get_shufflePeriod() { return 0; }
     ::GlobalNamespace::EnvironmentInfoSO* MpBeatmapLevel::get_environmentInfo() { return nullptr; }
     ::GlobalNamespace::EnvironmentInfoSO* MpBeatmapLevel::get_allDirectionsEnvironmentInfo() { return nullptr; }
+    ::ArrayW<::GlobalNamespace::EnvironmentInfoSO*> MpBeatmapLevel::get_environmentInfos() { return ArrayW<::GlobalNamespace::EnvironmentInfoSO*>::Empty(); };
+    ::GlobalNamespace::PlayerSensitivityFlag MpBeatmapLevel::get_contentRating() { return ::GlobalNamespace::PlayerSensitivityFlag::Unknown; }
+
     ::System::Threading::Tasks::Task_1<::UnityEngine::Sprite*>* MpBeatmapLevel::GetCoverImageAsync(::System::Threading::CancellationToken cancellationToken) {
         return ::System::Threading::Tasks::Task_1<::UnityEngine::Sprite*>::FromResult<UnityEngine::Sprite*>(nullptr);
     }

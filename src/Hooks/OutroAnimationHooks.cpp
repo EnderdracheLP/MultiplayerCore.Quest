@@ -21,7 +21,7 @@ static ListW<GlobalNamespace::IConnectedPlayer*> GetActivePlayersAttacher(ListW<
     auto activePlayers = ListW<GlobalNamespace::IConnectedPlayer*>::New();
 
     // take 4 max
-    auto count = std::min(allActiveAtGameStartPlayers.size(), 4);
+    auto count = std::min((int)allActiveAtGameStartPlayers.size(), 4);
     for (int i = 0; i < count; i++) activePlayers->Add(allActiveAtGameStartPlayers[i]);
 
     return activePlayers;
@@ -42,7 +42,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerResultsPyramidView_SetupResults, &::GlobalNamesp
     auto resultsDataList = ListW<GlobalNamespace::MultiplayerPlayerResultsData*>(resultsData);
     auto max5Data = System::Collections::Generic::List_1<GlobalNamespace::MultiplayerPlayerResultsData*>::New_ctor();
 
-    auto count = std::min(resultsDataList.size(), 5);
+    auto count = std::min((int)resultsDataList.size(), 5);
     for (int i = 0; i < count; i++) max5Data->Add(resultsDataList[i]);
 
     MultiplayerResultsPyramidView_SetupResults(self, *max5Data, badgeStartTransform, badgeMidTransform);

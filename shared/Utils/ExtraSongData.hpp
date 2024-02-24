@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../_config.h"
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 
 #include "UnityEngine/Color.hpp"
@@ -17,8 +18,8 @@
     if (col##Itr != mEnd) col = col##Itr->value.GetFloat();
 
 namespace MultiplayerCore::Utils {
-    struct ExtraSongData {
-        struct Contributor {
+    struct MPCORE_EXPORT ExtraSongData {
+        struct MPCORE_EXPORT Contributor {
             Contributor(const std::string& name, const std::string& role, const std::string& iconPath) :
                 name(name), role(role), iconPath(iconPath) {}
 
@@ -26,7 +27,7 @@ namespace MultiplayerCore::Utils {
             const std::string name, role, iconPath;
         };
 
-        struct RequirementData {
+        struct MPCORE_EXPORT RequirementData {
             RequirementData(std::vector<std::string>& requirements, std::vector<std::string>& suggestions, std::vector<std::string>& warnings, std::vector<std::string>& information) :
                 requirements(std::move(requirements)), suggestions(std::move(suggestions)), warnings(std::move(warnings)), information(std::move(information)) {}
 			const std::vector<std::string> requirements;
@@ -35,7 +36,7 @@ namespace MultiplayerCore::Utils {
 			const std::vector<std::string> information;
         };
 
-        struct MapColor : UnityEngine::Color {
+        struct MPCORE_EXPORT MapColor : UnityEngine::Color {
             constexpr MapColor() : UnityEngine::Color(1.0f, 1.0f, 1.0f, 1.0f) {}
 
             constexpr MapColor(float r, float g, float b) : UnityEngine::Color(r, g, b, 1.0f) {}
@@ -61,7 +62,7 @@ namespace MultiplayerCore::Utils {
         };
         static_assert(sizeof(MapColor) == sizeof(UnityEngine::Color), "Size of MapColor and UnityEngine color did not match!");
 
-        struct DifficultyData {
+        struct MPCORE_EXPORT DifficultyData {
             DifficultyData() {}
 
             DifficultyData(

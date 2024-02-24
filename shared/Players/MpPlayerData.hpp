@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../_config.h"
 #include "custom-types/shared/macros.hpp"
 #include "Zenject/IInitializable.hpp"
 #include "System/IDisposable.hpp"
@@ -7,7 +8,7 @@
 #include "../Networking/Abstractions/MpPacket.hpp"
 
 namespace MultiplayerCore::Players {
-    enum class Platform {
+    enum class MPCORE_EXPORT Platform {
         Unknown = 0,
         Steam = 1,
         OculusPC = 2,
