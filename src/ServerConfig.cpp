@@ -33,6 +33,7 @@ namespace MultiplayerCore {
         ADD_MEMBER(partyPort);
         ADD_MEMBER(multiplayerPort);
         ADD_MEMBER(forceGameLift);
+        ADD_MEMBER(disableSSL);
 
         return value;
     }
@@ -49,6 +50,7 @@ namespace MultiplayerCore {
         GET_T(partyPort, Int, false);
         GET_T(multiplayerPort, Int, false);
         GET_T(forceGameLift, Bool, true);
+        GET_T(disableSSL, Bool, true);
 
         return !missedAnyImportantFields;
     }

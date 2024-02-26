@@ -6,6 +6,7 @@
 #include "GlobalNamespace/MainSystemInit.hpp"
 #include "GlobalNamespace/ClientCertificateValidator.hpp"
 #include "GlobalNamespace/UnifiedNetworkPlayerModel.hpp"
+#include "IgnoranceCore/IgnoranceClient.hpp"
 #include "System/Security/Cryptography/X509Certificates/X509Certificate2.hpp"
 
 #define LOG_VALUE(identifier, value) DEBUG("Overriding NetworkConfigSO::" identifier " to '{}'", cfg->value)
@@ -103,4 +104,16 @@ MAKE_AUTO_HOOK_ORIG_MATCH(ClientCertificateValidator_ValidateCertificateChainInt
 
     DEBUG("No EndPoint set, using default");
     ClientCertificateValidator_ValidateCertificateChainInternal(self, endPoint, certificate, certificateChain);
+}
+
+MAKE_AUTO_HOOK_MATCH(IgnoranceClient_Start, &IgnoranceCore::IgnoranceClient::Start, void, IgnoranceCore::IgnoranceClient* self) {
+    if (NetworkConfigHooks::IsOverridingAPI()) {
+        auto cfg = NetworkConfigHooks::GetCurrentServer();
+        DEBUG("Changing IgnoranceClient ssl usage");
+
+        self->UseSsl = !cfg->disableSSL;
+        self->ValidateCertificate = !cfg->disableSSL;
+    }
+
+    IgnoranceClient_Start(self);
 }
