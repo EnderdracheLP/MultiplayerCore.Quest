@@ -27,7 +27,7 @@ namespace MultiplayerCore::Objects {
 
         if (dl == downloads.end() || (status == std::future_status::ready && !fut.get())) {
             DEBUG("Starting download: {}", levelId);
-            downloads[levelId] = fut = std::async(std::launch::async, std::bind(&MpLevelDownloader::TryDownloadLevelInternal, this, levelId, progress));
+            downloads[levelId] = fut = il2cpp_utils::il2cpp_async(std::launch::async, std::bind(&MpLevelDownloader::TryDownloadLevelInternal, this, levelId, progress));
         }
 
         return fut;

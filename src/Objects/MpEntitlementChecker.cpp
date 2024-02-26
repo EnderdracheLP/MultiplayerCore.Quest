@@ -88,7 +88,7 @@ namespace MultiplayerCore::Objects {
         task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
         _entitlementsTasks[levelId] = task;
 
-        std::thread([this, task, levelId](){
+        il2cpp_utils::il2cpp_aware_thread([this, task, levelId](){
             auto entitlement = GetEntitlementStatus(levelId);
             DEBUG("Entitlement found for level {}: {}", levelId, EntitlementName(entitlement));
 
