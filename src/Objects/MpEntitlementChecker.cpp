@@ -3,12 +3,14 @@
 #include "Utils/EnumUtils.hpp"
 #include "Utilities.hpp"
 #include "logging.hpp"
+#include "tasks.hpp"
 
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include "bsml/shared/Helpers/delegates.hpp"
 #include "songdownloader/shared/BeatSaverAPI.hpp"
 
 #include "GlobalNamespace/IMenuRpcManager.hpp"
+#include "GlobalNamespace/IConnectedPlayer.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Objects, MpEntitlementChecker);
 
@@ -66,9 +68,7 @@ namespace MultiplayerCore::Objects {
 
         _entitlementsDictionary[userId][levelId] = entitlement;
 
-        // make a copy of the event to prevent issues with unsubbing while invoking the event
-        auto ev = receivedEntitlementEvent;
-        ev.invoke(userId, levelId, entitlement);
+        receivedEntitlementEvent.invoke(userId, levelId, entitlement);
     }
 
     EntitlementsStatusTask* MpEntitlementChecker::GetEntitlementStatus_override(StringW levelId) {
@@ -79,28 +79,18 @@ namespace MultiplayerCore::Objects {
             return NetworkPlayerEntitlementChecker::GetEntitlementStatus(levelId);
         }
 
-        auto existingTask = _entitlementsTasks.find(levelId);
-        if (existingTask != _entitlementsTasks.end()) {
+        if (auto existingTask = _entitlementsTasks.find(levelId); existingTask != _entitlementsTasks.end()) {
             return existingTask->second.ptr();
         }
 
-        auto task = EntitlementsStatusTask::New_ctor(GlobalNamespace::EntitlementsStatus::NotOwned);
-        task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
-        _entitlementsTasks[levelId] = task;
-
-        il2cpp_utils::il2cpp_aware_thread([this, task, levelId](){
+        auto task = StartTask<GlobalNamespace::EntitlementsStatus>([this, levelId](){
             auto entitlement = GetEntitlementStatus(levelId);
             DEBUG("Entitlement found for level {}: {}", levelId, EntitlementName(entitlement));
+            _entitlementsDictionary[_sessionManager->localPlayer->userId][levelId] = entitlement;
+            return entitlement;
+        });
 
-            // TODO: check if this is really the case or if it was something else
-            // don't ask me why but not setting the result on main thread crashes
-            Lapiz::Utilities::MainThreadScheduler::Schedule([task, entitlement] {
-                DEBUG("Set result: {}", task->TrySetResult(entitlement));
-                task->___m_result = entitlement;
-                task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
-            });
-        }).detach();
-
+        _entitlementsTasks[levelId] = task;
         return task;
     }
 

@@ -3,6 +3,7 @@
 #include "Utils/ExtraSongData.hpp"
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include "logging.hpp"
+#include "tasks.hpp"
 
 #include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
@@ -48,7 +49,7 @@ namespace MultiplayerCore::Objects {
         auto beatmapLevel = beatmap ? beatmap->get_beatmapLevel() : nullptr;
         auto levelId = beatmapLevel ? beatmapLevel->get_levelID() : nullptr;
 
-        if (System::String::IsNullOrEmpty(levelId)) {
+        if (!levelId || System::String::IsNullOrEmpty(levelId)) {
             GlobalNamespace::MultiplayerLevelLoader::Tick();
             return;
         }
@@ -112,10 +113,7 @@ namespace MultiplayerCore::Objects {
     }
 
     System::Threading::Tasks::Task_1<GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult>* MpLevelLoader::StartDownloadBeatmapLevelAsyncTask(std::string levelId, System::Threading::CancellationToken cancellationToken) {
-        auto task = System::Threading::Tasks::Task_1<GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult>::FromResult(GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult{});
-        task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
-
-        il2cpp_utils::il2cpp_aware_thread([this, levelId, task, cancellationToken](){
+        return StartTask<GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult>([this, levelId, cancellationToken](){
             _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).wait();
 
             std::optional<GlobalNamespace::IPreviewBeatmapLevel*> getPreviewBeatmapLevelResult;
@@ -123,23 +121,16 @@ namespace MultiplayerCore::Objects {
                 getPreviewBeatmapLevelResult = beatmapLevelsModel->GetLevelPreviewForLevelId(levelId);
                 DEBUG("Got level {}", fmt::ptr(getPreviewBeatmapLevelResult.value()));
             });
+
             while(!getPreviewBeatmapLevelResult.has_value()) std::this_thread::yield();
             _gameplaySetupData->get_beatmapLevel()->beatmapLevel = getPreviewBeatmapLevelResult.value();
 
-            std::optional<System::Threading::Tasks::Task_1<GlobalNamespace::BeatmapLevelsModel::GetBeatmapLevelResult>*> getTask;
-            Lapiz::Utilities::MainThreadScheduler::Schedule([&getTask, beatmapLevelsModel = _beatmapLevelsModel.unsafePtr(), levelId, cancellationToken](){
-                getTask = beatmapLevelsModel->GetBeatmapLevelAsync(levelId, cancellationToken);
-                DEBUG("Got task {}", fmt::ptr(getTask.value()));
-            });
-            while(!getTask.has_value() || !getTask.value()->get_IsCompleted()) std::this_thread::yield();
-            auto result = getTask.value()->get_Result();
+            auto getTask = _beatmapLevelsModel->GetBeatmapLevelAsync(levelId, cancellationToken);
+            while(!getTask->get_IsCompleted()) std::this_thread::yield();
+            auto result = getTask->get_Result();
 
-            DEBUG("GetBeatmapLevelAsync result isError: {}", result.isError);
-            task->TrySetResult(result);
-            task->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
-        }).detach();
-
-        return task;
+            return result;
+        }, cancellationToken);
     }
 
     void MpLevelLoader::Report(double progress) {
