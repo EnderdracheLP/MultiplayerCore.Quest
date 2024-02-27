@@ -24,9 +24,6 @@ DECLARE_CLASS_CUSTOM(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Abstraction
         const std::unordered_map<uint8_t, std::list<std::string>>& get_requirements() { return _packet->requirements; };
         const std::unordered_map<uint8_t, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors>& get_mapColors() { return _packet->mapColors; };
         const std::vector<const MultiplayerCore::Utils::ExtraSongData::Contributor>& get_contributors() { return _packet->contributors; };
-    private:
-        void OnGetBeatmapComplete(std::__ndk1::optional<BeatSaver::Beatmap> beatmapOpt);
-        void OnGetCoverImageComplete(std::vector<uint8_t> bytes);
 )
 
 #undef SONGDOWNLOADER_INCLUDED

@@ -46,4 +46,7 @@ namespace MultiplayerCore::Beatmaps {
 	float LocalBeatmapLevel::get_beatsPerMinute() { return _preview->get_beatsPerMinute();}
 	float LocalBeatmapLevel::get_songDuration() { return _preview->get_songDuration();}
 	::System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::PreviewDifficultyBeatmapSet*>* LocalBeatmapLevel::get_previewDifficultyBeatmapSets()	{ return _preview->get_previewDifficultyBeatmapSets();}
+    ::System::Threading::Tasks::Task_1<::UnityEngine::Sprite*>* LocalBeatmapLevel::GetCoverImageAsync(::System::Threading::CancellationToken cancellationToken) {
+        return reinterpret_cast<::System::Threading::Tasks::Task_1<::UnityEngine::Sprite*>*>(_preview->GetCoverImageAsync(cancellationToken));
+    }
 }
