@@ -5,7 +5,7 @@ Param (
 [Parameter(Mandatory=$false, HelpMessage="To create a github actions build, assumes specific Environment variables are set")][Alias("github-build")][Switch]$actions,
 [Parameter(Mandatory=$false, HelpMessage="To create a debug build (Does not strip other libs)")][Alias("debug-build")][Switch]$debugbuild
 )
-$NDKPath = Get-Content $PSScriptRoot/ndkpath.txt
+
 $QPMpackage = "./qpm.json"
 $qpmjson = Get-Content $QPMpackage -Raw | ConvertFrom-Json
 $ModID = $qpmjson.info.id

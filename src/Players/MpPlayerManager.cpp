@@ -1,7 +1,7 @@
 #include "Players/MpPlayerManager.hpp"
 #include "bsml/shared/Helpers/delegates.hpp"
 
-#include "GlobalNamespace/SharedCoroutineStarter.hpp"
+#include "BSML/shared/BSML/SharedCoroutineStarter.hpp"
 #include "System/Threading/Tasks/Task_1.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Players, MpPlayerManager);
@@ -10,13 +10,13 @@ namespace MultiplayerCore::Players {
     void MpPlayerManager::ctor(MultiplayerCore::Networking::MpPacketSerializer* packetSerializer, GlobalNamespace::IPlatformUserModel* platformUserModel, GlobalNamespace::IMultiplayerSessionManager* sessionManager) {
         INVOKE_CTOR();
 
-        _playerData = std::remove_pointer_t<decltype(_playerData)>::New_ctor();
+        _playerData = ConcurrentPlayerDataDictionary::New_ctor();
 
         _packetSerializer = packetSerializer;
         _platformUserModel = platformUserModel;
         _sessionManager = sessionManager;
 
-        GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(AwaitUser()));
+        BSML::SharedCoroutineStarter::StartCoroutine(custom_types::Helpers::CoroutineHelper::New(AwaitUser()));
     }
 
     void MpPlayerManager::Initialize() {
@@ -34,7 +34,7 @@ namespace MultiplayerCore::Players {
     }
 
     custom_types::Helpers::Coroutine MpPlayerManager::AwaitUser() {
-        auto t = _platformUserModel->GetUserInfo();
+        auto t = _platformUserModel->GetUserInfo(::System::Threading::CancellationToken::get_None());
         while (!t->get_IsCompleted())
             co_yield nullptr;
 

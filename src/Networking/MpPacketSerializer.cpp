@@ -1,25 +1,26 @@
 #include "Networking/MpPacketSerializer.hpp"
 #include "logging.hpp"
 
+#include "System/Type.hpp"
 DEFINE_TYPE(MultiplayerCore::Networking, MpPacketSerializer);
 
 namespace MultiplayerCore::Networking {
     void MpPacketSerializer::ctor(GlobalNamespace::IMultiplayerSessionManager* sessionManager) {
         INVOKE_CTOR();
-        _sessionManager = il2cpp_utils::try_cast<std::remove_pointer_t<decltype(_sessionManager)>>(sessionManager).value_or(nullptr);
+        _sessionManager = il2cpp_utils::try_cast<GlobalNamespace::MultiplayerSessionManager>(sessionManager).value_or(nullptr);
     }
 
     void MpPacketSerializer::Initialize() {
-        _sessionManager->RegisterSerializer(GlobalNamespace::MultiplayerSessionManager_MessageType(ID), this->i_INetworkPacketSubSerializer_1_IConnectedPlayer());
+        _sessionManager->RegisterSerializer(GlobalNamespace::MultiplayerSessionManager::MessageType(ID), this->i_INetworkPacketSubSerializer_1_IConnectedPlayer());
     }
 
     void MpPacketSerializer::Dispose() {
-        _sessionManager->UnregisterSerializer(GlobalNamespace::MultiplayerSessionManager_MessageType(ID), this->i_INetworkPacketSubSerializer_1_IConnectedPlayer());
+        _sessionManager->UnregisterSerializer(GlobalNamespace::MultiplayerSessionManager::MessageType(ID), this->i_INetworkPacketSubSerializer_1_IConnectedPlayer());
     }
 
     void MpPacketSerializer::Serialize(LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet) {
-        auto packetType = reinterpret_cast<Il2CppObject*>(packet)->GetType();
-        writer->Put(packetType->get_Name());
+        auto packetType = reinterpret_cast<System::Object*>(packet)->GetType();
+        writer->Put(packetType->NameOrDefault);
         packet->Serialize(writer);
     }
 

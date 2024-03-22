@@ -6,8 +6,8 @@ namespace MultiplayerCore::NodePoseSyncState {
     void MpNodePoseSyncStateManager::ctor() {
         INVOKE_CTOR();
         INVOKE_BASE_CTOR(classof(GlobalNamespace::NodePoseSyncStateManager*));
-        deltaUpdateFrequency = 0.01f;
-        fullStateUpdateFrequency = 0.1f;
+        deltaUpdateFrequencyMs = 10;
+        fullStateUpdateFrequencyMs = 100;
     }
 
     void MpNodePoseSyncStateManager::Inject(Networking::MpPacketSerializer* packetSerializer) {
@@ -26,11 +26,11 @@ namespace MultiplayerCore::NodePoseSyncState {
 
     void MpNodePoseSyncStateManager::HandleNodePoseSyncUpdateReceived(MpNodePoseSyncStatePacket* data, GlobalNamespace::IConnectedPlayer* player) {
         if (player->get_isConnectionOwner()) {
-            deltaUpdateFrequency = data->deltaUpdateFrequency;
-            fullStateUpdateFrequency= data->fullStateUpdateFrequency;
+            deltaUpdateFrequencyMs = data->deltaUpdateFrequencyMs;
+            fullStateUpdateFrequencyMs= data->fullStateUpdateFrequencyMs;
         }
     }
 
-    float MpNodePoseSyncStateManager::get_deltaUpdateFrequency() { return deltaUpdateFrequency; }
-    float MpNodePoseSyncStateManager::get_fullStateUpdateFrequency() { return fullStateUpdateFrequency; }
+    long MpNodePoseSyncStateManager::get_deltaUpdateFrequencyMs() { return deltaUpdateFrequencyMs; }
+    long MpNodePoseSyncStateManager::get_fullStateUpdateFrequencyMs() { return fullStateUpdateFrequencyMs; }
 }

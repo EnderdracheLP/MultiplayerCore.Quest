@@ -1,8 +1,10 @@
 #pragma once
+
+#include "./_config.h"
 #include "ServerConfig.hpp"
 
 namespace MultiplayerCore {
-    struct API {
+    struct MPCORE_EXPORT API {
         /// @brief revert back to the official server, but since there's no auth on quest might be useless
         static void UseOfficialServer();
 

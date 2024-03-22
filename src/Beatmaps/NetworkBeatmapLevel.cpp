@@ -1,8 +1,11 @@
 #include "Beatmaps/NetworkBeatmapLevel.hpp"
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include "bsml/shared/Helpers/utilities.hpp"
+#include "logging.hpp"
+#include "tasks.hpp"
 
 #include "songdownloader/shared/BeatSaverAPI.hpp"
+#include <thread>
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel);
 
@@ -20,27 +23,24 @@ namespace MultiplayerCore::Beatmaps {
 
 	System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* NetworkBeatmapLevel::GetCoverImageAsync(System::Threading::CancellationToken cancellationToken) {
         if (!coverImageTask) {
-			coverImageTask = System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));
-            coverImageTask->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_STARTED;
+            coverImageTask = StartTask<UnityEngine::Sprite*>([this](){
+                auto beatmapOpt = BeatSaver::API::GetBeatmapByHash(get_levelHash());
+                if (beatmapOpt.has_value()) {
+                    auto cover = BeatSaver::API::GetCoverImage(beatmapOpt.value());
 
-            BeatSaver::API::GetBeatmapByHashAsync(get_levelHash(), std::bind(&NetworkBeatmapLevel::OnGetBeatmapComplete, this, std::placeholders::_1));
+                    auto coverBytes = il2cpp_utils::vectorToArray(cover);
+                    std::optional<UnityEngine::Sprite*> result;
+                    Lapiz::Utilities::MainThreadScheduler::Schedule([coverBytes, &result](){
+                        result = BSML::Utilities::LoadSpriteRaw(coverBytes);
+                    });
+
+                    while(!result.has_value()) std::this_thread::yield();
+                    return result.value();
+                }
+                return (UnityEngine::Sprite*)nullptr;
+            }, cancellationToken);
         }
         return coverImageTask;
-    }
-
-    void NetworkBeatmapLevel::OnGetBeatmapComplete(std::__ndk1::optional<BeatSaver::Beatmap> beatmapOpt) {
-        if (beatmapOpt.has_value()) {
-            BeatSaver::API::GetCoverImageAsync(beatmapOpt.value(), std::bind(&NetworkBeatmapLevel::OnGetCoverImageComplete, this, std::placeholders::_1));
-        } else {
-            coverImageTask->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
-        }
-    }
-
-    void NetworkBeatmapLevel::OnGetCoverImageComplete(std::vector<uint8_t> bytes) {
-        Lapiz::Utilities::MainThreadScheduler::Schedule([this, bytes = il2cpp_utils::vectorToArray(bytes)] {
-            coverImageTask->TrySetResult(BSML::Utilities::LoadSpriteRaw(bytes));
-            coverImageTask->m_stateFlags = System::Threading::Tasks::Task::TASK_STATE_RAN_TO_COMPLETION;
-        });
     }
 
     StringW NetworkBeatmapLevel::get_songName() { return _packet->songName; }

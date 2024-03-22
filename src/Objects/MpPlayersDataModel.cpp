@@ -5,6 +5,7 @@
 
 #include "System/Collections/Generic/Dictionary_2.hpp"
 #include "GlobalNamespace/BeatmapCharacteristicCollectionSO.hpp"
+#include "GlobalNamespace/BeatmapCharacteristicCollection.hpp"
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 #include "GlobalNamespace/LobbyPlayerData.hpp"
 
@@ -37,14 +38,14 @@ namespace MultiplayerCore::Objects {
 
     void MpPlayersDataModel::HandleMpexBeatmapPacket(MpBeatmapPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
         DEBUG("'{}' selected song '{}'", player->get_userId(), packet->levelHash);
-        auto ch = beatmapCharacteristicCollection->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
+        auto ch = _beatmapCharacteristicCollection->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
         auto preview = _beatmapLevelProvider->GetBeatmapFromPacket(packet);
         SetPlayerBeatmapLevel(player->get_userId(), GlobalNamespace::PreviewDifficultyBeatmap::New_ctor(preview, ch, packet->difficulty));
     }
 
     void MpPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap_override(StringW userId) {
         GlobalNamespace::LobbyPlayerData* localPlayerData = nullptr;
-        if (!playersData->TryGetValue(userId, byref(localPlayerData))) return; // if we can't get the player, just return
+        if (!_playersData->TryGetValue(userId, byref(localPlayerData))) return; // if we can't get the player, just return
 
         auto previewBeatmap = localPlayerData ? localPlayerData->get_beatmapLevel() : nullptr;
         auto level = previewBeatmap ? previewBeatmap->get_beatmapLevel() : nullptr;

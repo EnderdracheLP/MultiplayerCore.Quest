@@ -8,7 +8,7 @@
 #include "../Packets/MpBeatmapPacket.hpp"
 #include <future>
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvider, Il2CppObject,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvider, System::Object,
     std::future<GlobalNamespace::IPreviewBeatmapLevel*> GetBeatmapAsync(const std::string& levelHash);
     std::future<GlobalNamespace::IPreviewBeatmapLevel*> GetBeatmapFromBeatSaverAsync(const std::string& levelHash);
 

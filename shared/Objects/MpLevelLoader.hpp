@@ -20,7 +20,7 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelLoader, GlobalNamespace::
     DECLARE_INSTANCE_FIELD_PRIVATE(MpEntitlementChecker*, _entitlementChecker);
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::IMenuRpcManager*, _rpcManager);
 
-    DECLARE_INSTANCE_METHOD(void, LoadLevel_override, GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, float initialStartTime);
+    DECLARE_INSTANCE_METHOD(void, LoadLevel_override, GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, long initialStartTime);
     DECLARE_INSTANCE_METHOD(void, Tick_override);
     DECLARE_CTOR(ctor, GlobalNamespace::IMultiplayerSessionManager* sessionManager, MpLevelDownloader* levelDownloader, GlobalNamespace::NetworkPlayerEntitlementChecker* entitlementChecker, GlobalNamespace::IMenuRpcManager* rpcManager);
 

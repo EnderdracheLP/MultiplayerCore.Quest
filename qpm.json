@@ -1,79 +1,80 @@
 {
+  "version": "0.1.0",
   "sharedDir": "shared",
   "dependenciesDir": "extern",
   "info": {
     "name": "MultiplayerCore",
     "id": "multiplayer-core",
-    "version": "1.4.0",
+    "version": "1.6.0",
     "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
     "additionalData": {
       "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.4.0/libMultiplayerCore.so",
       "debugSoLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.4.0/debug_libMultiplayerCore.so",
       "overrideSoName": "libMultiplayerCore.so",
       "modLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.4.0/MultiplayerCore_1.4.0.qmod",
-      "branchName": "version-1.4.0"
+      "branchName": "version-1.6.0",
+      "cmake": true
     }
+  },
+  "workspace": {
+    "scripts": {}
   },
   "dependencies": [
     {
       "id": "libil2cpp",
-      "versionRange": "^0.2.3",
+      "versionRange": "^0.3.0",
       "additionalData": {}
     },
     {
       "id": "beatsaber-hook",
-      "versionRange": "^3.14.0",
-      "additionalData": {
-        "extraFiles": [
-          "src/inline-hook"
-        ]
-      }
+      "versionRange": "^5.0.0",
+      "additionalData": {}
     },
     {
-      "id": "codegen",
-      "versionRange": "^0.33.0",
+      "id": "bs-cordl",
+      "versionRange": "3402.*",
       "additionalData": {}
     },
     {
       "id": "custom-types",
-      "versionRange": "^0.15.23",
+      "versionRange": "^0.16.0",
       "additionalData": {}
     },
     {
       "id": "songloader",
-      "versionRange": "^0.10.15",
+      "versionRange": "^0.11.0",
       "additionalData": {}
     },
     {
       "id": "songdownloader",
-      "versionRange": "^0.5.6",
+      "versionRange": "^0.7.0",
       "additionalData": {}
     },
     {
-      "id": "modloader",
-      "versionRange": "^1.2.3",
+      "id": "scotland2",
+      "versionRange": "^0.1.4",
       "additionalData": {}
     },
     {
       "id": "pinkcore",
-      "versionRange": "^1.8.9",
+      "versionRange": "^1.9.0",
       "additionalData": {
         "private": true
       }
     },
     {
       "id": "paper",
-      "versionRange": "^1.2.9",
+      "versionRange": "^3.0.0",
       "additionalData": {}
     },
     {
       "id": "lapiz",
-      "versionRange": "^0.1.11",
+      "versionRange": "^0.2.0",
       "additionalData": {}
     },
     {
       "id": "bsml",
-      "versionRange": "^0.3.2",
+      "versionRange": "^0.4.0",
       "additionalData": {
         "private": true
       }
@@ -84,7 +85,16 @@
       "additionalData": {
         "private": true
       }
+    },
+    {
+      "id": "capstone",
+      "versionRange": "^0.1.0",
+      "additionalData": {}
+    },
+    {
+      "id": "kaleb",
+      "versionRange": "^0.1.7",
+      "additionalData": {}
     }
-  ],
-  "workspace": null
+  ]
 }

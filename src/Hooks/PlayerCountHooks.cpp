@@ -16,6 +16,7 @@
 #include "GlobalNamespace/GameplayServerConfiguration.hpp"
 #include "System/Action_2.hpp"
 #include "UnityEngine/Transform.hpp"
+#include "UnityEngine/Vector3.hpp"
 #include "UnityEngine/GameObject.hpp"
 
 using namespace MultiplayerCore::Patchers;
@@ -32,30 +33,30 @@ MAKE_AUTO_HOOK_MATCH(CreateServerFormController_Setup, &::GlobalNamespace::Creat
     ArrayW<float> values = ArrayW<float>(il2cpp_array_size_t(count));
     for (int i = min; auto& v : values) v = i++;
 
-    self->maxPlayersList->set_values(values);
+    self->_maxPlayersList->set_values(values);
     CreateServerFormController_Setup(self, selectedNumberOfPlayers, netDiscoverable);
 }
 
 MAKE_AUTO_HOOK_MATCH(CreateServerFormController_get_formData, &::GlobalNamespace::CreateServerFormController::get_formData, GlobalNamespace::CreateServerFormData, GlobalNamespace::CreateServerFormController* self) {
     auto res = CreateServerFormController_get_formData(self);
-    res.maxPlayers = self->maxPlayersList->get_value();
+    res.maxPlayers = self->_maxPlayersList->get_value();
     return res;
 }
 
 MAKE_AUTO_HOOK_MATCH(MultiplayerLobbyController_ActivateMultiplayerLobby, &::GlobalNamespace::MultiplayerLobbyController::ActivateMultiplayerLobby, void, GlobalNamespace::MultiplayerLobbyController* self) {
     // fix circle for bigger player counts
-    self->innerCircleRadius = 1.0f;
-    self->minOuterCircleRadius = 4.4f;
+    self->_innerCircleRadius = 1.0f;
+    self->_minOuterCircleRadius = 4.4f;
     MultiplayerLobbyController_ActivateMultiplayerLobby(self);
 
 
-    auto placeManager = self->multiplayerLobbyCenterStageManager;
-    auto stageManager = self->multiplayerLobbyAvatarPlaceManager;
-    auto lobbyStateDataModel = placeManager->lobbyStateDataModel;
+    auto placeManager = self->_multiplayerLobbyCenterStageManager;
+    auto stageManager = self->_multiplayerLobbyAvatarPlaceManager;
+    auto lobbyStateDataModel = placeManager->_lobbyStateDataModel;
 
     auto maxPlayerCount = lobbyStateDataModel->get_configuration().maxPlayerCount;
     auto angleBetweenPlayersWithEvenAdjustment = GlobalNamespace::MultiplayerPlayerPlacement::GetAngleBetweenPlayersWithEvenAdjustment(maxPlayerCount, GlobalNamespace::MultiplayerPlayerLayout::Circle);
-    auto outerCircleRadius = std::max(GlobalNamespace::MultiplayerPlayerPlacement::GetOuterCircleRadius(angleBetweenPlayersWithEvenAdjustment, self->innerCircleRadius), self->innerCircleRadius);
+    auto outerCircleRadius = std::max(GlobalNamespace::MultiplayerPlayerPlacement::GetOuterCircleRadius(angleBetweenPlayersWithEvenAdjustment, self->_innerCircleRadius), self->_innerCircleRadius);
 
     static auto SetActiveForTransformInObjectTransform = +[](GlobalNamespace::MenuEnvironmentManager* envManager, StringW name, bool active){
         auto t = envManager->get_transform()->Find(name);
@@ -64,10 +65,10 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerLobbyController_ActivateMultiplayerLobby, &::Glo
     };
 
     bool buildingsEnabled = maxPlayerCount <= 18;
-    SetActiveForTransformInObjectTransform(self->menuEnvironmentManager, "MultiplayerLobbyEnvironment/ConstructionL", buildingsEnabled);
-    SetActiveForTransformInObjectTransform(self->menuEnvironmentManager, "MultiplayerLobbyEnvironment/ConstructionR", buildingsEnabled);
+    SetActiveForTransformInObjectTransform(self->_menuEnvironmentManager, "MultiplayerLobbyEnvironment/ConstructionL", buildingsEnabled);
+    SetActiveForTransformInObjectTransform(self->_menuEnvironmentManager, "MultiplayerLobbyEnvironment/ConstructionR", buildingsEnabled);
 
-    float centerScreenScale = outerCircleRadius / self->minOuterCircleRadius;
+    float centerScreenScale = outerCircleRadius / self->_minOuterCircleRadius;
     stageManager->get_transform()->set_localScale({ centerScreenScale, centerScreenScale, centerScreenScale });
 }
 

@@ -2,8 +2,7 @@
 
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 
-#include "GlobalNamespace/MultiplayerStatusData_UserMessage.hpp"
-#include "GlobalNamespace/MultiplayerStatusData_UserMessage_LocalizedMessage.hpp"
+#include "GlobalNamespace/MultiplayerStatusData.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Models, MpStatusData);
 
@@ -11,7 +10,7 @@ DEFINE_TYPE(MultiplayerCore::Models, MpStatusData);
 #define GET_T(identifier, t) \
     auto identifier##Itr = doc.FindMember(#identifier); \
     if (identifier##Itr != docEnd && identifier##Itr->value.Is##t()) { \
-        identifier = static_cast<decltype(identifier)>(identifier##Itr->value.Get##t()); \
+        identifier = std::decay_t<decltype(identifier)>(identifier##Itr->value.Get##t()); \
     }
 
 namespace MultiplayerCore::Models {
@@ -44,7 +43,8 @@ namespace MultiplayerCore::Models {
                                         std::string(
                                             versionItr->value.GetString(),
                                             versionItr->value.GetStringLength()
-                                        )
+                                        ),
+                                        0
                                     }
                                 );
                             }
@@ -82,7 +82,8 @@ namespace MultiplayerCore::Models {
 
                     userMessage = GlobalNamespace::MultiplayerStatusData::UserMessage::New_ctor();
                     using LocalizedMessage = GlobalNamespace::MultiplayerStatusData::UserMessage::LocalizedMessage;
-                    auto localizations = userMessage->localizations = ArrayW<LocalizedMessage*>(localizedMessages.Size());
+                    auto localizations = ArrayW<LocalizedMessage*>(localizedMessages.Size());
+                    userMessage->localizations = localizations;
                     for (std::size_t i= -1; const auto& localizedMessage : localizedMessages) {
                         i++;
                         localizations[i] = LocalizedMessage::New_ctor();

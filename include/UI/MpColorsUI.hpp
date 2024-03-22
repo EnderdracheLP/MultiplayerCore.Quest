@@ -10,7 +10,7 @@
 #include "bsml/shared/BSML/Components/ModalView.hpp"
 #include "UnityEngine/RectTransform.hpp"
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, MpColorsUI, Il2CppObject,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, MpColorsUI, System::Object,
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::LobbySetupViewController*, _lobbySetupViewController);
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::ColorSchemeView*, _colorSchemeView);
 

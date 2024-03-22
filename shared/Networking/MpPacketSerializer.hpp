@@ -13,6 +13,7 @@
 #include "GlobalNamespace/IPoolablePacket.hpp"
 
 #include "System/IDisposable.hpp"
+#include "System/Type.hpp"
 #include "Zenject/IInitializable.hpp"
 
 #include "GlobalNamespace/MultiplayerSessionManager.hpp"
@@ -39,7 +40,7 @@ using PacketHandler = std::function<void (LiteNetLib::Utils::NetDataReader*, int
 
 template<>
 struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<void (GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::*)(LiteNetLib::Utils::NetDataWriter*, LiteNetLib::Utils::INetSerializable*)>(&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::Serialize)> {
-    static const MethodInfo* get() {
+    static const MethodInfo* methodInfo() {
         static auto klass = classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>*);
         static auto* writer = &classof(LiteNetLib::Utils::NetDataWriter*)->byval_arg;
         static auto* packet = &classof(LiteNetLib::Utils::INetSerializable*)->byval_arg;
@@ -49,7 +50,7 @@ struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<void (Globa
 
 template<>
 struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<void (GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::*)(LiteNetLib::Utils::NetDataReader*, int, GlobalNamespace::IConnectedPlayer*)>(&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::Deserialize)> {
-    static const MethodInfo* get() {
+    static const MethodInfo* methodInfo() {
         static auto klass = classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>*);
         static auto* reader = &classof(LiteNetLib::Utils::NetDataReader*)->byval_arg;
         static auto* length = &classof(int)->byval_arg;
@@ -61,7 +62,7 @@ struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<void (Globa
 
 template<>
 struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<bool (GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::*)(System::Type*)>(&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>::HandlesType)> {
-    static const MethodInfo* get() {
+    static const MethodInfo* methodInfo() {
         static auto klass = classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer *>*);
         static auto* type = &classof(System::Type*)->byval_arg;
 
@@ -69,14 +70,14 @@ struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<static_cast<bool (Globa
     }
 };
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, Il2CppObject,
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer, System::Object,
     std::vector<Il2CppClass*>({classof(GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>*), classof(::Zenject::IInitializable*), classof(System::IDisposable*)}),
 
-    DECLARE_OVERRIDE_METHOD(void, Initialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::Zenject::IInitializable::Initialize>::get());
-    DECLARE_OVERRIDE_METHOD(void, Dispose, il2cpp_utils::il2cpp_type_check::MetadataGetter<&::System::IDisposable::Dispose>::get());
-    DECLARE_OVERRIDE_METHOD(void, Serialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::Serialize>::get(), LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet);
-    DECLARE_OVERRIDE_METHOD(void, Deserialize, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::Deserialize>::get(), LiteNetLib::Utils::NetDataReader* reader, int length, GlobalNamespace::IConnectedPlayer* data);
-    DECLARE_OVERRIDE_METHOD(bool, HandlesType, il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::HandlesType>::get(), Il2CppReflectionType* type);
+    DECLARE_OVERRIDE_METHOD_MATCH(void, Initialize, &::Zenject::IInitializable::Initialize);
+    DECLARE_OVERRIDE_METHOD_MATCH(void, Dispose, &::System::IDisposable::Dispose);
+    DECLARE_OVERRIDE_METHOD_MATCH(void, Serialize, &GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::Serialize, LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet);
+    DECLARE_OVERRIDE_METHOD_MATCH(void, Deserialize, &GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::Deserialize, LiteNetLib::Utils::NetDataReader* reader, int length, GlobalNamespace::IConnectedPlayer* data);
+    DECLARE_OVERRIDE_METHOD_MATCH(bool, HandlesType, &GlobalNamespace::INetworkPacketSubSerializer_1<GlobalNamespace::IConnectedPlayer*>::HandlesType, Il2CppReflectionType* type);
 
     static const uint8_t ID = 100u;
 
@@ -118,9 +119,9 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
         template<::MultiplayerCore::INetSerializable TPacket>
         requires(std::is_pointer_v<TPacket>)
         void RegisterCallback(std::function<void(TPacket, GlobalNamespace::IConnectedPlayer*)> callback) {
-            Il2CppReflectionType* packetType = csTypeOf(TPacket);
-            registeredTypes.emplace_back(packetType);
-            std::string packetId(packetType->get_Name());
+            System::Type* packetType = csTypeOf(TPacket);
+            registeredTypes.emplace_back(reinterpret_cast<Il2CppReflectionType*>(packetType));
+            std::string packetId(packetType->NameOrDefault);
 
             packetHandlers[packetId] = [callback](LiteNetLib::Utils::NetDataReader* reader, int size, GlobalNamespace::IConnectedPlayer* player){
                 callback(DeserializePacket<TPacket>(reader, size), player);
@@ -135,7 +136,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
         requires(std::is_pointer_v<TPacket>)
         void RegisterCallback(const std::string& packetId, std::function<void(TPacket, GlobalNamespace::IConnectedPlayer*)> callback) {
             Il2CppReflectionType* packetType = csTypeOf(TPacket);
-            registeredTypes.emplace_back(packetType);
+            registeredTypes.emplace_back(reinterpret_cast<Il2CppReflectionType*>(packetType));
 
             packetHandlers[packetId] = [callback](LiteNetLib::Utils::NetDataReader* reader, int size, GlobalNamespace::IConnectedPlayer* player){
                 callback(DeserializePacket<TPacket>(reader, size), player);
@@ -145,10 +146,10 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
         template<::MultiplayerCore::INetSerializable TPacket>
         requires(std::is_pointer_v<TPacket>)
         void UnregisterCallback() {
-            auto packetType = csTypeOf(TPacket);
-            std::string packetId(packetType->get_Name());
+            System::Type* packetType = csTypeOf(TPacket);
+            std::string packetId(packetType->NameOrDefault);
 
-            std::erase(registeredTypes, packetType);
+            std::erase(registeredTypes, reinterpret_cast<Il2CppReflectionType*>(packetType));
             packetHandlers.erase(packetId);
         }
 

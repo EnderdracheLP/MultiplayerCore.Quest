@@ -1,10 +1,11 @@
 #pragma once
 
+#include "../../_config.h"
 #include "../../Utils/ExtraSongData.hpp"
 
 namespace MultiplayerCore::Beatmaps::Abstractions {
     using ColorOpt = std::optional<MultiplayerCore::Utils::ExtraSongData::MapColor>;
-    struct DifficultyColors {
+    struct MPCORE_EXPORT DifficultyColors {
         ColorOpt colorLeft;
         ColorOpt colorRight;
         ColorOpt envColorLeft;

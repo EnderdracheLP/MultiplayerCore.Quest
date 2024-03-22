@@ -52,7 +52,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
         writer->Put(songDuration);
 
         writer->Put(characteristic);
-        writer->Put((uint32_t)difficulty);
+        writer->Put((uint32_t)difficulty.value__);
 
         writer->Put((uint8_t)requirements.size());
         for (const auto& [key, value] : requirements) {

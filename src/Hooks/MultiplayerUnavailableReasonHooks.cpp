@@ -8,17 +8,28 @@
 #include "GlobalNamespace/MultiplayerStatusData.hpp"
 #include "UnityEngine/Application.hpp"
 
-#include "modloader/shared/modloader.hpp"
+#include "scotland2/shared/loader.hpp"
 #include "cpp-semver/shared/cpp-semver.hpp"
+#include <memory>
 
 static std::string requiredMod;
 static std::string requiredVersion;
 static std::string maximumBsVersion;
 
+static CModResult* find_mod(std::string_view id) {
+    auto mods = modloader_get_all();
+    auto mods_end = mods.array + mods.size;
+    for (auto itr = mods.array; itr != mods_end; itr++) {
+        auto& modInfo = itr->info;
+        if (id == modInfo.id) return itr;
+    }
+    return nullptr;
+};
+
 MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason, &::GlobalNamespace::MultiplayerUnavailableReasonMethods::TryGetMultiplayerUnavailableReason, bool, GlobalNamespace::MultiplayerStatusData *data, ByRef<GlobalNamespace::MultiplayerUnavailableReason> reason) {
     reason.heldRef = GlobalNamespace::MultiplayerUnavailableReason(0);
     auto mpData = il2cpp_utils::try_cast<MultiplayerCore::Models::MpStatusData>(data).value_or(nullptr);
-    if (!mpData) 
+    if (!mpData)
     {
         if (!data) {
             reason.heldRef = GlobalNamespace::MultiplayerUnavailableReason::NetworkUnreachable;
@@ -28,12 +39,10 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
     }
 
     if (!mpData->requiredMods.empty()) {
-        auto mods = Modloader::getMods();
         for (const auto& req : mpData->requiredMods) {
-            // TODO: check if this is how to find it
-            auto installedMod = mods.find(req.id);
-            if (installedMod == mods.end()) continue;
-            auto& installedModInfo = installedMod->second.info;
+            auto installedMod = find_mod(req.id);
+            if (!installedMod) continue;
+            auto& installedModInfo = installedMod->info;
 
             auto& requiredVersion = req.version;
             auto& installedVersion = installedModInfo.version;
@@ -60,11 +69,10 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
 }
 
 MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_LocalizedKey, &::GlobalNamespace::MultiplayerUnavailableReasonMethods::LocalizedKey, StringW, GlobalNamespace::MultiplayerUnavailableReason multiplayerUnavailableReason) {
-    switch(multiplayerUnavailableReason.value) {
+    switch(multiplayerUnavailableReason.value__) {
         case 5: { // a mod too old
-            auto mods = Modloader::getMods();
-            auto installedMod = mods.find(requiredMod);
-            return fmt::format("Multiplayer Unavailable\nMod {} is out of date.\nPlease update to version {} or newer", installedMod->second.name, requiredVersion);
+            auto installedMod = find_mod(requiredMod);
+            return fmt::format("Multiplayer Unavailable\nMod {} is out of date.\nPlease update to version {} or newer", installedMod->info.version, requiredVersion);
         } break;
         case 6: { // game too old
             return fmt::format("Multiplayer Unavailable\nBeat Saber version is too new\nMaximum version: {}\nCurrent version: {}", maximumBsVersion, UnityEngine::Application::get_version());
