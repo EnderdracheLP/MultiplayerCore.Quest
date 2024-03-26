@@ -123,4 +123,58 @@ namespace MultiplayerCore::Utils {
             }
         }
     }
+
+    ExtraSongData::ExtraSongData(const SongCore::CustomJSONData::CustomLevelInfoSaveData::BasicCustomLevelDetails& levelDetails) {
+        for (const auto& contributor : levelDetails.contributors) {
+            contributors.emplace_back(
+                contributor.name,
+                contributor.role,
+                contributor.iconPath
+            );
+        }
+
+        for (const auto& [characteristic, difficultyBeatmaps] : levelDetails.characteristicNameToBeatmapDetailsSet) {
+            for (const auto& [difficulty, difficultyBeatmap] : difficultyBeatmaps.difficultyToDifficultyBeatmapDetails) {
+
+                auto colorLeft = MapColor();
+                auto colorRight = MapColor();
+                auto envColorLeft = MapColor();
+                auto envColorRight = MapColor();
+                auto envColorLeftBoost = MapColor();
+                auto envColorRightBoost = MapColor();
+                auto obstacleColor = MapColor();
+
+                if (difficultyBeatmap.customColors.has_value()) {
+                    auto& customColors = difficultyBeatmap.customColors.value();
+
+                    if (customColors.colorLeft.has_value()) colorLeft = customColors.colorLeft.value();
+                    if (customColors.colorRight.has_value()) colorRight = customColors.colorRight.value();
+                    if (customColors.envColorLeft.has_value()) envColorLeft = customColors.envColorLeft.value();
+                    if (customColors.envColorRight.has_value()) envColorRight = customColors.envColorRight.value();
+                    if (customColors.envColorLeftBoost.has_value()) envColorLeftBoost = customColors.envColorLeftBoost.value();
+                    if (customColors.envColorRightBoost.has_value()) envColorRightBoost = customColors.envColorRightBoost.value();
+                    if (customColors.obstacleColor.has_value()) obstacleColor = customColors.obstacleColor.value();
+                }
+
+                this->difficulties.emplace_back(
+                    characteristic,
+                    GlobalNamespace::BeatmapDifficulty((int)difficulty),
+                    difficultyBeatmap.customDiffLabel,
+                    RequirementData{
+                        difficultyBeatmap.requirements,
+                        difficultyBeatmap.suggestions,
+                        difficultyBeatmap.warnings,
+                        difficultyBeatmap.information
+                    },
+                    colorLeft,
+                    colorRight,
+                    envColorLeft,
+                    envColorRight,
+                    envColorLeftBoost,
+                    envColorRightBoost,
+                    obstacleColor
+                );
+            }
+        }
+    }
 }

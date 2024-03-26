@@ -1,8 +1,8 @@
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
-#include "Utilities.hpp"
 
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
+#include "songcore/shared/SongLoader/RuntimeSongLoader.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket);
 
@@ -12,32 +12,31 @@ namespace MultiplayerCore::Beatmaps::Packets {
         INVOKE_BASE_CTOR(classof(MultiplayerCore::Networking::Abstractions::MpPacket*));
     }
 
-    MpBeatmapPacket* MpBeatmapPacket::New_1(GlobalNamespace::PreviewDifficultyBeatmap* beatmap) {
+    MpBeatmapPacket* MpBeatmapPacket::New_1(GlobalNamespace::BeatmapLevel* beatmapLevel, GlobalNamespace::BeatmapKey beatmapKey) {
         auto packet = MpBeatmapPacket::New_ctor();
 
-        auto beatmapLevel = beatmap->get_beatmapLevel();
-        packet->levelHash = Utilities::HashForLevelId(beatmapLevel->get_levelID());
-        packet->songName = beatmapLevel->get_songName();
-        packet->songSubName = beatmapLevel->get_songSubName();
-        packet->songAuthorName = beatmapLevel->get_songAuthorName();
-        packet->levelAuthorName = beatmapLevel->get_levelAuthorName();
-        packet->beatsPerMinute = beatmapLevel->get_beatsPerMinute();
-        packet->songDuration = beatmapLevel->get_songDuration();
+        packet->levelHash = SongCore::SongLoader::RuntimeSongLoader::GetHashFromLevelID(static_cast<std::string>(beatmapLevel->levelID));
+        packet->songName = beatmapLevel->songName;
+        packet->songSubName = beatmapLevel->songSubName;
+        packet->songAuthorName = beatmapLevel->songAuthorName;
+        packet->levelAuthorName = beatmapLevel->allMappers.front().value_or("");
+        packet->beatsPerMinute = beatmapLevel->beatsPerMinute;
+        packet->songDuration = beatmapLevel->songDuration;
 
-        auto ch = beatmap->get_beatmapCharacteristic();
-        packet->characteristic = ch->get_serializedName();
-        packet->difficulty = beatmap->get_beatmapDifficulty();
+        packet->characteristic = beatmapKey.beatmapCharacteristic->serializedName;
+        packet->difficulty = beatmapKey.difficulty;
 
-        auto mpBeatmapLevel = il2cpp_utils::try_cast<Abstractions::MpBeatmapLevel>(beatmapLevel).value_or(nullptr);
-        if (mpBeatmapLevel) {
-            auto req = mpBeatmapLevel->requirements.find(ch->get_name());
-            if (req != mpBeatmapLevel->requirements.end()) packet->requirements = req->second;
-            req = mpBeatmapLevel->requirements.find(ch->get_serializedName());
-            if (req != mpBeatmapLevel->requirements.end()) packet->requirements = req->second;
-            packet->contributors.clear();
-            packet->contributors.reserve(mpBeatmapLevel->contributors.size());
-            for (const auto& c : mpBeatmapLevel->contributors) packet->contributors.emplace_back(c);
-        }
+        // TODO: set values here
+        // auto mpBeatmapLevel = il2cpp_utils::try_cast<Abstractions::MpBeatmapLevel>(beatmapLevel).value_or(nullptr);
+        // if (mpBeatmapLevel) {
+        //     auto req = mpBeatmapLevel->requirements.find(ch->get_name());
+        //     if (req != mpBeatmapLevel->requirements.end()) packet->requirements = req->second;
+        //     req = mpBeatmapLevel->requirements.find(ch->get_serializedName());
+        //     if (req != mpBeatmapLevel->requirements.end()) packet->requirements = req->second;
+        //     packet->contributors.clear();
+        //     packet->contributors.reserve(mpBeatmapLevel->contributors.size());
+        //     for (const auto& c : mpBeatmapLevel->contributors) packet->contributors.emplace_back(c);
+        // }
 
         return packet;
     }

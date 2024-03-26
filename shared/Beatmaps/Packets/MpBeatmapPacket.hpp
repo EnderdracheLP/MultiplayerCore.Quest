@@ -5,7 +5,8 @@
 #include "../../Utils/ExtraSongData.hpp"
 #include "../Abstractions/DifficultyColors.hpp"
 
-#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
+#include "GlobalNamespace/BeatmapLevel.hpp"
+#include "GlobalNamespace/BeatmapKey.hpp"
 #include <list>
 
 DECLARE_CLASS_CUSTOM(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, MultiplayerCore::Networking::Abstractions::MpPacket,
@@ -25,7 +26,7 @@ DECLARE_CLASS_CUSTOM(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, Multip
 
     DECLARE_CTOR(New);
     public:
-        static MpBeatmapPacket* New_1(GlobalNamespace::PreviewDifficultyBeatmap* beatmap);
+        static MpBeatmapPacket* New_1(GlobalNamespace::BeatmapLevel* beatmap, GlobalNamespace::BeatmapKey beatmapKey);
         std::unordered_map<uint8_t, std::list<std::string>> requirements;
         std::unordered_map<uint8_t, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors> mapColors;
         std::vector<const MultiplayerCore::Utils::ExtraSongData::Contributor> contributors;

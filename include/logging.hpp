@@ -13,7 +13,6 @@ template <> struct fmt::formatter<::StringW> : formatter<string_view> {
     }
 };
 
-Logger& getLogger();
 #define INFO(str, ...) Paper::Logger::fmtLogTag<Paper::LogLevel::INF>(str, "MultiplayerCore" __VA_OPT__(, __VA_ARGS__))
 #define ERROR(str, ...) Paper::Logger::fmtLogTag<Paper::LogLevel::ERR>(str, "MultiplayerCore" __VA_OPT__(, __VA_ARGS__))
 #define CRITICAL(str, ...) Paper::Logger::fmtLogTag<Paper::LogLevel::ERR>(str, "MultiplayerCore" __VA_OPT__(, __VA_ARGS__))

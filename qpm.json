@@ -5,7 +5,7 @@
   "info": {
     "name": "MultiplayerCore",
     "id": "multiplayer-core",
-    "version": "1.6.0",
+    "version": "1.6.0-Dev",
     "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
     "additionalData": {
       "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.4.0/libMultiplayerCore.so",
@@ -27,27 +27,27 @@
     },
     {
       "id": "beatsaber-hook",
-      "versionRange": "^5.0.0",
+      "versionRange": "^5.1.6",
       "additionalData": {}
     },
     {
       "id": "bs-cordl",
-      "versionRange": "3402.*",
+      "versionRange": "^3500.0.0",
       "additionalData": {}
     },
     {
       "id": "custom-types",
-      "versionRange": "^0.16.0",
+      "versionRange": "^0.17.6",
       "additionalData": {}
     },
     {
-      "id": "songloader",
-      "versionRange": "^0.11.0",
+      "id": "songcore",
+      "versionRange": "^1.0.0",
       "additionalData": {}
     },
     {
       "id": "songdownloader",
-      "versionRange": "^0.7.0",
+      "versionRange": "^0.7.2",
       "additionalData": {}
     },
     {
@@ -56,25 +56,18 @@
       "additionalData": {}
     },
     {
-      "id": "pinkcore",
-      "versionRange": "^1.9.0",
-      "additionalData": {
-        "private": true
-      }
-    },
-    {
       "id": "paper",
       "versionRange": "^3.0.0",
       "additionalData": {}
     },
     {
       "id": "lapiz",
-      "versionRange": "^0.2.0",
+      "versionRange": "^0.2.6",
       "additionalData": {}
     },
     {
       "id": "bsml",
-      "versionRange": "^0.4.0",
+      "versionRange": "^0.4.17",
       "additionalData": {
         "private": true
       }

@@ -5,7 +5,7 @@
 #include "Beatmaps/BeatSaverBeatmapLevel.hpp"
 
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
-#include "songloader/shared/API.hpp"
+#include "songcore/shared/SongCore.hpp"
 #include "songdownloader/shared/BeatSaverAPI.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvider);
@@ -18,31 +18,31 @@ std::future<T> finished_future(T& value) {
 }
 
 namespace MultiplayerCore::Beatmaps::Providers {
-    std::future<GlobalNamespace::IPreviewBeatmapLevel*> MpBeatmapLevelProvider::GetBeatmapAsync(const std::string& levelHash) {
+    std::future<GlobalNamespace::BeatmapLevel*> MpBeatmapLevelProvider::GetBeatmapAsync(const std::string& levelHash) {
         auto map = GetBeatmapFromLocalBeatmaps(levelHash);
         if (map) return finished_future(map);
         return GetBeatmapFromBeatSaverAsync(levelHash);
     }
 
-    std::future<GlobalNamespace::IPreviewBeatmapLevel*> MpBeatmapLevelProvider::GetBeatmapFromBeatSaverAsync(const std::string& levelHash) {
+    std::future<GlobalNamespace::BeatmapLevel*> MpBeatmapLevelProvider::GetBeatmapFromBeatSaverAsync(const std::string& levelHash) {
         return il2cpp_utils::il2cpp_async(std::launch::async, std::bind(&MpBeatmapLevelProvider::GetBeatmapFromBeatSaver, this, levelHash));
     }
 
-    GlobalNamespace::IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromBeatSaver(std::string levelHash) {
+    GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromBeatSaver(std::string levelHash) {
         auto beatmap = BeatSaver::API::GetBeatmapByHash(static_cast<std::string>(levelHash));
         if (beatmap.has_value()) {
-            return BeatSaverBeatmapLevel::Make(levelHash, beatmap.value())->i_IPreviewBeatmapLevel();
+            return BeatSaverBeatmapLevel::Make(levelHash, beatmap.value());
         }
         return nullptr;
     }
 
-    GlobalNamespace::IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromLocalBeatmaps(const std::string& levelHash) {
-        GlobalNamespace::CustomPreviewBeatmapLevel* preview = RuntimeSongLoader::API::GetLevelByHash(levelHash).value_or(nullptr);
-        if (!preview) return nullptr;
-        return *LocalBeatmapLevel::New_ctor(levelHash, *preview);
+    GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromLocalBeatmaps(const std::string& levelHash) {
+        auto customLevel = SongCore::API::Loading::GetLevelByHash(levelHash);
+        if (!customLevel) return nullptr;
+        return LocalBeatmapLevel::New_ctor(levelHash, static_cast<GlobalNamespace::BeatmapLevel*>(customLevel));
     }
 
-    GlobalNamespace::IPreviewBeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet) {
-        return NetworkBeatmapLevel::New_ctor(packet)->i_IPreviewBeatmapLevel();
+    GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet) {
+        return NetworkBeatmapLevel::New_ctor(packet);
     }
 }

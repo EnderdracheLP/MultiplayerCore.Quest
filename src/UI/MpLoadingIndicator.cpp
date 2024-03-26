@@ -10,8 +10,6 @@
 #include "System/Collections/Generic/IReadOnlyCollection_1.hpp"
 #include "System/Collections/Generic/IEnumerable_1.hpp"
 #include "System/Collections/Generic/IEnumerator_1.hpp"
-#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
-#include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
 #include "GlobalNamespace/ILobbyPlayerData.hpp"
 #include "GlobalNamespace/ILobbyPlayersDataModel.hpp"
 #include "UnityEngine/GameObject.hpp"
@@ -81,7 +79,8 @@ namespace MultiplayerCore::UI {
     int MpLoadingIndicator::OkPlayerCountNoRequest() {
         using namespace System::Collections;
         using namespace System::Collections::Generic;
-        auto levelId = _levelLoader->_gameplaySetupData->beatmapLevel->beatmapLevel->levelID;
+        auto key = _levelLoader->_gameplaySetupData->beatmapKey;
+        auto levelId = key.levelId;
 
         auto& dict = *_playersDataModel;
         auto enumerable = static_cast<IEnumerable_1<KeyValuePair_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>>*>(dict);
@@ -90,7 +89,6 @@ namespace MultiplayerCore::UI {
 
         // Starts at 1 because the local player is already checked at this point
         int okCount = 1;
-        auto loggerContext = getLogger().WithContext("OkPlayerCountNoRequest");
         while (enumerator->MoveNext()) {
             auto cur = enumerator_1->Current;
             auto tocheck = cur.key;

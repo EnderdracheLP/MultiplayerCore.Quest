@@ -7,14 +7,34 @@ using namespace MultiplayerCore::Utils;
 
 namespace MultiplayerCore::Beatmaps {
 
-    void LocalBeatmapLevel::ctor_2(StringW hash, GlobalNamespace::IPreviewBeatmapLevel* preview) {
+    void LocalBeatmapLevel::ctor_2(StringW hash, GlobalNamespace::BeatmapLevel* localLevel) {
         INVOKE_CTOR();
         INVOKE_BASE_CTOR(classof(Abstractions::MpBeatmapLevel*));
 
-        set_levelHash(hash);
-        _preview = preview;
+        // invoke beatmaplevel ctor
+        _ctor(
+            localLevel->hasPrecalculatedData,
+            localLevel->levelID,
+            localLevel->songName,
+            localLevel->songSubName,
+            localLevel->songAuthorName,
+            localLevel->allMappers,
+            localLevel->allLighters,
+            localLevel->beatsPerMinute,
+            localLevel->integratedLufs,
+            localLevel->songTimeOffset,
+            localLevel->previewStartTime,
+            localLevel->previewDuration,
+            localLevel->songDuration,
+            localLevel->contentRating,
+            localLevel->previewMediaData,
+            localLevel->beatmapBasicData
+        );
 
-        auto extraSongData = ExtraSongData::FromPreviewBeatmapLevel(preview);
+        _localLevel = localLevel;
+        set_levelHash(static_cast<std::string>(hash));
+
+        auto extraSongData = ExtraSongData::FromBeatmapLevel(localLevel);
         if (extraSongData.has_value()) {
             auto& difficulties = extraSongData->difficulties;
             for (const auto& difficulty : difficulties) {
@@ -36,17 +56,5 @@ namespace MultiplayerCore::Beatmaps {
             for (const auto& contributor : extraSongData->contributors)
                 contributors.emplace_back(contributor);
         }
-    }
-
-	StringW LocalBeatmapLevel::get_levelID() { return _preview->get_levelID();}
-	StringW LocalBeatmapLevel::get_songName() { return _preview->get_songName();}
-	StringW LocalBeatmapLevel::get_songSubName() { return _preview->get_songSubName();}
-	StringW LocalBeatmapLevel::get_songAuthorName() { return _preview->get_songAuthorName();}
-	StringW LocalBeatmapLevel::get_levelAuthorName() { return _preview->get_levelAuthorName();}
-	float LocalBeatmapLevel::get_beatsPerMinute() { return _preview->get_beatsPerMinute();}
-	float LocalBeatmapLevel::get_songDuration() { return _preview->get_songDuration();}
-	::System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::PreviewDifficultyBeatmapSet*>* LocalBeatmapLevel::get_previewDifficultyBeatmapSets()	{ return _preview->get_previewDifficultyBeatmapSets();}
-    ::System::Threading::Tasks::Task_1<::UnityEngine::Sprite*>* LocalBeatmapLevel::GetCoverImageAsync(::System::Threading::CancellationToken cancellationToken) {
-        return reinterpret_cast<::System::Threading::Tasks::Task_1<::UnityEngine::Sprite*>*>(_preview->GetCoverImageAsync(cancellationToken));
     }
 }

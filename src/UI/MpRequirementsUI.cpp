@@ -13,15 +13,9 @@
 #include "GlobalNamespace/LevelBar.hpp"
 #include "GlobalNamespace/ILobbyPlayerData.hpp"
 #include "GlobalNamespace/ILevelGameplaySetupData.hpp"
-#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 
 DEFINE_TYPE(MultiplayerCore::UI, MpRequirementsUI);
-
-// Accessing "private" method from pinkcore
-namespace RequirementUtils {
-    bool GetRequirementInstalled(std::string requirement);
-}
 
 static constexpr inline UnityEngine::Vector3 operator*(UnityEngine::Vector3 vec, float val) {
     return {
@@ -33,12 +27,15 @@ static constexpr inline UnityEngine::Vector3 operator*(UnityEngine::Vector3 vec,
 
 namespace MultiplayerCore::UI {
     void MpRequirementsUI::ctor(
+            SongCore::SongLoader::RuntimeSongLoader* runtimeSongLoader,
+            SongCore::Capabilities* capabilities,
             GlobalNamespace::LobbySetupViewController* lobbySetupViewController,
             GlobalNamespace::ILobbyPlayersDataModel* playersDataModel,
             MpColorsUI* colorsUI
     ) {
         INVOKE_CTOR();
-
+        _runtimeSongLoader = runtimeSongLoader;
+        _capabilities = capabilities;
         _lobbySetupViewController = lobbySetupViewController;
         _playersDataModel = playersDataModel;
         _colorsUI = colorsUI;
@@ -72,40 +69,42 @@ namespace MultiplayerCore::UI {
         auto localUserId = _playersDataModel->localUserId;
         auto playerDict = static_cast<IReadOnlyDictionary_2<StringW, GlobalNamespace::ILobbyPlayerData*>*>(*_playersDataModel);
         auto playerData = playerDict->Item[localUserId];
-        auto beatmapLevel = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*playerData)->beatmapLevel;
-        auto mpLevel = beatmapLevel ? il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr) : nullptr;
-        if (mpLevel) {
-            bool buttonShouldBeActive = false;
-            std::string chName(beatmapLevel->get_beatmapCharacteristic()->get_name());
-            std::string chSerName(beatmapLevel->get_beatmapCharacteristic()->get_serializedName());
+        auto key = playerData->i___GlobalNamespace__ILevelGameplaySetupData()->beatmapKey;
 
-            auto& diffColors = mpLevel->difficultyColors;
-            auto colorMapItr = diffColors.find(chName);
-            if (colorMapItr == diffColors.end()) colorMapItr = diffColors.find(chSerName);
 
-            if (colorMapItr != diffColors.end()) {
-                auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
-                if (colorItr != colorMapItr->second.end()) {
-                    buttonShouldBeActive = colorItr->second.AnyAreNotNull();
-                }
-            }
+        // auto mpLevel = beatmapLevel ? il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr) : nullptr;
+        // if (mpLevel) {
+        //     bool buttonShouldBeActive = false;
+        //     std::string chName(beatmapLevel->get_beatmapCharacteristic()->get_name());
+        //     std::string chSerName(beatmapLevel->get_beatmapCharacteristic()->get_serializedName());
 
-            auto reqMapItr = mpLevel->requirements.find(chName);
-            if (reqMapItr == mpLevel->requirements.end()) reqMapItr = mpLevel->requirements.find(chSerName);
+        //     auto& diffColors = mpLevel->difficultyColors;
+        //     auto colorMapItr = diffColors.find(chName);
+        //     if (colorMapItr == diffColors.end()) colorMapItr = diffColors.find(chSerName);
 
-            if (reqMapItr != mpLevel->requirements.end()) {
-                auto reqItr = reqMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
-                if (reqItr != reqMapItr->second.end()) {
-                    buttonShouldBeActive = buttonShouldBeActive || !reqItr->second.empty();
-                }
-            }
+        //     if (colorMapItr != diffColors.end()) {
+        //         auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
+        //         if (colorItr != colorMapItr->second.end()) {
+        //             buttonShouldBeActive = colorItr->second.AnyAreNotNull();
+        //         }
+        //     }
 
-            buttonShouldBeActive = buttonShouldBeActive || !mpLevel->contributors.empty();
+        //     auto reqMapItr = mpLevel->requirements.find(chName);
+        //     if (reqMapItr == mpLevel->requirements.end()) reqMapItr = mpLevel->requirements.find(chSerName);
 
-            set_buttonInteractable(buttonShouldBeActive);
-        } else {
-            set_buttonInteractable(false);
-        }
+        //     if (reqMapItr != mpLevel->requirements.end()) {
+        //         auto reqItr = reqMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
+        //         if (reqItr != reqMapItr->second.end()) {
+        //             buttonShouldBeActive = buttonShouldBeActive || !reqItr->second.empty();
+        //         }
+        //     }
+
+        //     buttonShouldBeActive = buttonShouldBeActive || !mpLevel->contributors.empty();
+
+        //     set_buttonInteractable(buttonShouldBeActive);
+        // } else {
+        //     set_buttonInteractable(false);
+        // }
     }
 
     template<typename T, typename U>
@@ -131,79 +130,79 @@ namespace MultiplayerCore::UI {
             ERROR("Could not get local player info");
             return;
         }
-        auto level = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*localPlayerDataModel)->beatmapLevel;
-        auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(level->get_beatmapLevel()).value_or(nullptr);
+        // auto level = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*localPlayerDataModel)->beatmapLevel;
+        // auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(level->get_beatmapLevel()).value_or(nullptr);
 
-        if (mpLevel) {
-            auto diffColorsMap = mpLevel->difficultyColors;
-            auto reqsMap = mpLevel->requirements;
-            auto diff = level->get_beatmapDifficulty();
+        // if (mpLevel) {
+        //     auto diffColorsMap = mpLevel->difficultyColors;
+        //     auto reqsMap = mpLevel->requirements;
+        //     auto diff = level->get_beatmapDifficulty();
 
-            StringW chname;
-            auto _chname = level->get_beatmapCharacteristic()->get_name();
-            auto _schname = level->get_beatmapCharacteristic()->get_serializedName();
+        //     StringW chname;
+        //     auto _chname = level->get_beatmapCharacteristic()->get_name();
+        //     auto _schname = level->get_beatmapCharacteristic()->get_serializedName();
 
-            if (contains(diffColorsMap, _chname) || contains(reqsMap, _chname)) chname = _chname;
-            else if (contains(diffColorsMap, _schname) || contains(reqsMap, _schname)) chname = _schname;
+        //     if (contains(diffColorsMap, _chname) || contains(reqsMap, _chname)) chname = _chname;
+        //     else if (contains(diffColorsMap, _schname) || contains(reqsMap, _schname)) chname = _schname;
 
-            if (!chname) return;
+        //     if (!chname) return;
 
-            // requirements
-            auto reqItr = reqsMap.find(chname);
-            if (reqItr != reqsMap.end()) {
-                auto reqsItr = reqItr->second.find(diff.value__);
-                if (reqsItr != reqItr->second.end()) {
-                    for (const auto& req : reqsItr->second) {
-                        auto installed = RequirementUtils::GetRequirementInstalled(req);
-                        auto cell = BSML::CustomCellInfo::construct(
-                            fmt::format("<size=75%>{}", req),
-                            installed ? "Requirement" : "Missing Requirement",
-                            installed ? get_HaveReqIcon() : get_MissingReqIcon()
-                        );
-                        data->Add(cell);
-                    }
-                } else {
-                    ERROR("Issue finding diff {} to get requirements", diff.value__);
-                }
-            } else {
-                ERROR("Issue finding characteristic {} to get requirements", chname);
-            }
+        //     // requirements
+        //     auto reqItr = reqsMap.find(chname);
+        //     if (reqItr != reqsMap.end()) {
+        //         auto reqsItr = reqItr->second.find(diff.value__);
+        //         if (reqsItr != reqItr->second.end()) {
+        //             for (const auto& req : reqsItr->second) {
+        //                 auto installed = capabilities->IsCapabilityRegistered(req);
+        //                 auto cell = BSML::CustomCellInfo::construct(
+        //                     fmt::format("<size=75%>{}", req),
+        //                     installed ? "Requirement" : "Missing Requirement",
+        //                     installed ? get_HaveReqIcon() : get_MissingReqIcon()
+        //                 );
+        //                 data->Add(cell);
+        //             }
+        //         } else {
+        //             ERROR("Issue finding diff {} to get requirements", diff.value__);
+        //         }
+        //     } else {
+        //         ERROR("Issue finding characteristic {} to get requirements", chname);
+        //     }
 
-            // contributors
-            if (!mpLevel->contributors.empty()) {
-                DEBUG("Adding contributors");
-                for (const auto& contributor : mpLevel->contributors) {
-                    // TODO: actually load the proper sprites, but skipping for now
-                    data->Add(BSML::CustomCellInfo::construct(contributor.name, contributor.role, get_InfoIcon()));
-                }
-            } else {
-                DEBUG("No Contributors found");
-            }
+        //     // contributors
+        //     if (!mpLevel->contributors.empty()) {
+        //         DEBUG("Adding contributors");
+        //         for (const auto& contributor : mpLevel->contributors) {
+        //             // TODO: actually load the proper sprites, but skipping for now
+        //             data->Add(BSML::CustomCellInfo::construct(contributor.name, contributor.role, get_InfoIcon()));
+        //         }
+        //     } else {
+        //         DEBUG("No Contributors found");
+        //     }
 
-            // colors
-            auto colorMapItr = diffColorsMap.find(chname);
-            BSML::CustomCellInfo* colorCell = nullptr;
-            if (colorMapItr != diffColorsMap.end()) {
-                auto colorsItr = colorMapItr->second.find(diff.value__);
-                if (colorsItr != colorMapItr->second.end()) {
-                    if (colorsItr->second.AnyAreNotNull())
-                        colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors Available", "Click here to preview it.", get_ColorsIcon());
-                } else {
-                    ERROR("Issue finding diff {} to get colors", diff.value__);
-                }
-            } else {
-                ERROR("Issue finding characteristic {} to get colors", chname);
-            }
+        //     // colors
+        //     auto colorMapItr = diffColorsMap.find(chname);
+        //     BSML::CustomCellInfo* colorCell = nullptr;
+        //     if (colorMapItr != diffColorsMap.end()) {
+        //         auto colorsItr = colorMapItr->second.find(diff.value__);
+        //         if (colorsItr != colorMapItr->second.end()) {
+        //             if (colorsItr->second.AnyAreNotNull())
+        //                 colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors Available", "Click here to preview it.", get_ColorsIcon());
+        //         } else {
+        //             ERROR("Issue finding diff {} to get colors", diff.value__);
+        //         }
+        //     } else {
+        //         ERROR("Issue finding characteristic {} to get colors", chname);
+        //     }
 
-            if (!colorCell && il2cpp_utils::try_cast<Beatmaps::BeatSaverBeatmapLevel>(mpLevel).has_value())
-                colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors", "Click here to preview it.", get_ColorsIcon());
+        //     if (!colorCell && il2cpp_utils::try_cast<Beatmaps::BeatSaverBeatmapLevel>(mpLevel).has_value())
+        //         colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors", "Click here to preview it.", get_ColorsIcon());
 
-            if (colorCell) data->Add(colorCell);
+        //     if (colorCell) data->Add(colorCell);
 
-            DEBUG("There should be {} cells", data->get_Count());
-            list->tableView->ReloadData();
-            list->tableView->ScrollToCellWithIdx(0, HMUI::TableView::ScrollPositionType::Beginning, false);
-        }
+        //     DEBUG("There should be {} cells", data->get_Count());
+        //     list->tableView->ReloadData();
+        //     list->tableView->ScrollToCellWithIdx(0, HMUI::TableView::ScrollPositionType::Beginning, false);
+        // }
     }
 
     void MpRequirementsUI::Select(HMUI::TableView* tableView, int index) {
@@ -211,26 +210,26 @@ namespace MultiplayerCore::UI {
         auto localUserId = _playersDataModel->get_localUserId();
         auto playerDict = static_cast<IReadOnlyDictionary_2<StringW, GlobalNamespace::ILobbyPlayerData*>*>(*_playersDataModel);
 
-        auto localUserData = playerDict->Item[localUserId];
-        auto beatmapLevel = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*localUserData)->beatmapLevel;
-        auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr);
-        if (mpLevel) {
-            auto diffColors = mpLevel->difficultyColors;
+        // auto localUserData = playerDict->Item[localUserId];
+        // auto beatmapLevel = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*localUserData)->beatmapLevel;
+        // auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr);
+        // if (mpLevel) {
+        //     auto diffColors = mpLevel->difficultyColors;
 
-            auto colorMapItr = diffColors.find(beatmapLevel->get_beatmapCharacteristic()->get_name());
-            if (colorMapItr == diffColors.end()) colorMapItr = diffColors.find(beatmapLevel->get_beatmapCharacteristic()->get_serializedName());
+        //     auto colorMapItr = diffColors.find(beatmapLevel->get_beatmapCharacteristic()->get_name());
+        //     if (colorMapItr == diffColors.end()) colorMapItr = diffColors.find(beatmapLevel->get_beatmapCharacteristic()->get_serializedName());
 
-            list->tableView->ClearSelection();
-            if (colorMapItr != diffColors.end()) {
-                if (list->data[index]->icon == get_ColorsIcon()) {
-                    auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
-                    if (colorItr != colorMapItr->second.end()) {
-                        modal->Hide();
-                        _colorsUI->ShowColors(colorItr->second);
-                    }
-                }
-            }
-        }
+        //     list->tableView->ClearSelection();
+        //     if (colorMapItr != diffColors.end()) {
+        //         if (list->data[index]->icon == get_ColorsIcon()) {
+        //             auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
+        //             if (colorItr != colorMapItr->second.end()) {
+        //                 modal->Hide();
+        //                 _colorsUI->ShowColors(colorItr->second);
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     void MpRequirementsUI::ColorsDismissed() { ShowRequirements(); }

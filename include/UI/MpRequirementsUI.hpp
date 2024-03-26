@@ -13,12 +13,15 @@
 #include "System/Action_1.hpp"
 #include "Zenject/IInitializable.hpp"
 
+#include "songcore/shared/Capabilities.hpp"
+#include "songcore/shared/SongLoader/RuntimeSongLoader.hpp"
 #include "bsml/shared/BSML/Components/CustomListTableData.hpp"
 #include "bsml/shared/BSML/Components/ModalView.hpp"
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, System::Object,
-    std::vector<Il2CppClass*>({classof(::System::IDisposable*), classof(::Zenject::IInitializable*)}),
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, System::Object, std::vector<Il2CppClass*>({classof(::System::IDisposable*), classof(::Zenject::IInitializable*)}),
 
+    DECLARE_INSTANCE_FIELD_PRIVATE(SongCore::SongLoader::RuntimeSongLoader*, _runtimeSongLoader);
+    DECLARE_INSTANCE_FIELD_PRIVATE(SongCore::Capabilities*, _capabilities);
     DECLARE_INSTANCE_FIELD_PRIVATE(System::Action_1<StringW>*, beatmapSelectedAction);
 
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::Sprite*, _HaveReqIcon);
@@ -60,6 +63,8 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, System::
     DECLARE_OVERRIDE_METHOD_MATCH(void, Initialize, &::Zenject::IInitializable::Initialize);
 
     DECLARE_CTOR(ctor,
+            SongCore::SongLoader::RuntimeSongLoader* runtimeSongLoader,
+            SongCore::Capabilities* capabilities,
             GlobalNamespace::LobbySetupViewController* lobbySetupViewController,
             GlobalNamespace::ILobbyPlayersDataModel* playersDataModel,
             MpColorsUI* colorsUI

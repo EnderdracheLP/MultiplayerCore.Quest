@@ -3,8 +3,6 @@
 #include "InvokingLock.hpp"
 
 #include "Objects/MpPlayersDataModel.hpp"
-#include "GlobalNamespace/BeatmapIdentifierNetSerializable.hpp"
-#include "GlobalNamespace/PreviewDifficultyBeatmap.hpp"
 // This file exists to override methods on LobbyPlayersDataModel for the MultiplayerCore.Objects.MpPlayersDataModel, since on quest methods are not transformed into virtual calls
 
 using namespace MultiplayerCore::Objects;
@@ -48,28 +46,28 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommend
     }
 }
 // override HandleMenuRpcManagerRecommendBeatmap
-MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap, &::GlobalNamespace::LobbyPlayersDataModel::HandleMenuRpcManagerRecommendBeatmap, void, GlobalNamespace::LobbyPlayersDataModel* self, StringW userId, GlobalNamespace::BeatmapIdentifierNetSerializable* beatmapId) {
+MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap, &::GlobalNamespace::LobbyPlayersDataModel::HandleMenuRpcManagerRecommendBeatmap, void, GlobalNamespace::LobbyPlayersDataModel* self, StringW userId, GlobalNamespace::BeatmapKeyNetSerializable* beatmapKey) {
     INVOKE_LOCK(LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap);
     if (!lock) {
-        LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap(self, userId, beatmapId);
+        LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap(self, userId, beatmapKey);
     } else {
         static auto customKlass = classof(MpPlayersDataModel*);
         if (self->klass == customKlass)
-            reinterpret_cast<MpPlayersDataModel*>(self)->HandleMenuRpcManagerRecommendBeatmap_override(userId, beatmapId);
+            reinterpret_cast<MpPlayersDataModel*>(self)->HandleMenuRpcManagerRecommendBeatmap_override(userId, beatmapKey);
         else
-            LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap(self, userId, beatmapId);
+            LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap(self, userId, beatmapKey);
     }
 }
 // override SetLocalPlayerBeatmapLevel
-MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &::GlobalNamespace::LobbyPlayersDataModel::SetLocalPlayerBeatmapLevel, void, GlobalNamespace::LobbyPlayersDataModel* self, GlobalNamespace::PreviewDifficultyBeatmap* beatmapLevel) {
+MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &::GlobalNamespace::LobbyPlayersDataModel::SetLocalPlayerBeatmapLevel, void, GlobalNamespace::LobbyPlayersDataModel* self, ByRef<GlobalNamespace::BeatmapKey> key) {
     INVOKE_LOCK(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel);
     if (!lock) {
-        LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, beatmapLevel);
+        LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, key);
     } else {
         static auto customKlass = classof(MpPlayersDataModel*);
         if (self->klass == customKlass)
-            reinterpret_cast<MpPlayersDataModel*>(self)->SetLocalPlayerBeatmapLevel_override(beatmapLevel);
+            reinterpret_cast<MpPlayersDataModel*>(self)->SetLocalPlayerBeatmapLevel_override(key.heldRef);
         else
-            LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, beatmapLevel);
+            LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, key);
     }
 }

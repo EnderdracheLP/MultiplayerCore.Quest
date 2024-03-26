@@ -17,11 +17,9 @@ static std::string requiredVersion;
 static std::string maximumBsVersion;
 
 static CModResult* find_mod(std::string_view id) {
-    auto mods = modloader_get_all();
-    auto mods_end = mods.array + mods.size;
-    for (auto itr = mods.array; itr != mods_end; itr++) {
-        auto& modInfo = itr->info;
-        if (id == modInfo.id) return itr;
+    auto mods = modloader_get_loaded();
+    for (auto& modResult : std::span{mods.array, mods.size}) {
+        if (modResult.info.id == id) return &modResult;
     }
     return nullptr;
 };

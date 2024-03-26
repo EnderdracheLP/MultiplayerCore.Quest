@@ -1,6 +1,7 @@
 #include "hooking.hpp"
 #include "logging.hpp"
 
+#include "GlobalNamespace/MultiplayerStatusData.hpp"
 #include "Models/MpStatusData.hpp"
 #include "Newtonsoft/Json/JsonConvert.hpp"
 

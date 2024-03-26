@@ -45,7 +45,7 @@ bool set_ins(uint32_t* pos, uint32_t instruction) {
 }
 
 // FIXME: check these patches for correctness on newer game versions!
-void Patch_MultiplayerPlayersManager_SpawnPlayers(Logger& logger) {
+void Patch_MultiplayerPlayersManager_SpawnPlayers() {
     static auto il2cpp_base = baseAddr("libil2cpp.so");
 
     // patch MultiplayerPlayersManager_SpawnPlayers check to always ignore an extra player to get uneven count
@@ -69,7 +69,7 @@ void Patch_MultiplayerPlayersManager_SpawnPlayers(Logger& logger) {
 }
 AUTO_INSTALL_PATCH(MultiplayerPlayersManager_SpawnPlayers);
 
-void Patch_MultiplayerLobbyCenterStageManager_RecalculateCenterPosition(Logger& logger) {
+void Patch_MultiplayerLobbyCenterStageManager_RecalculateCenterPosition() {
     static auto il2cpp_base = baseAddr("libil2cpp.so");
 
     // patch MultiplayerLobbyCenterStageManager_RecalculateCenterPosition check to always ignore an extra player to get uneven count
@@ -93,7 +93,7 @@ void Patch_MultiplayerLobbyCenterStageManager_RecalculateCenterPosition(Logger& 
 }
 AUTO_INSTALL_PATCH(MultiplayerLobbyCenterStageManager_RecalculateCenterPosition);
 
-void Patch_MultiplayerLobbyAvatarPlaceManager_SpawnAllPlaces(Logger& logger) {
+void Patch_MultiplayerLobbyAvatarPlaceManager_SpawnAllPlaces() {
     static auto il2cpp_base = baseAddr("libil2cpp.so");
 
     // patch MultiplayerLobbyAvatarPlaceManager_SpawnAllPlaces check to always ignore an extra player to get uneven count
@@ -117,7 +117,7 @@ void Patch_MultiplayerLobbyAvatarPlaceManager_SpawnAllPlaces(Logger& logger) {
 }
 AUTO_INSTALL_PATCH(MultiplayerLobbyAvatarPlaceManager_SpawnAllPlaces);
 
-void Patch_MultiplayerLobbyAvatarManager_AddPlayer(Logger& logger) {
+void Patch_MultiplayerLobbyAvatarManager_AddPlayer() {
     static auto il2cpp_base = baseAddr("libil2cpp.so");
 
     // patch MultiplayerLobbyAvatarManager_AddPlayer check to always ignore an extra player to get uneven count

@@ -1,4 +1,5 @@
 #include "Beatmaps/BeatSaverBeatmapLevel.hpp"
+#include "Beatmaps/BeatSaverPreviewMediaData.hpp"
 #include "Utils/ExtraSongData.hpp"
 #include "tasks.hpp"
 
@@ -16,40 +17,32 @@ namespace MultiplayerCore::Beatmaps {
         INVOKE_CTOR();
         INVOKE_BASE_CTOR(classof(Abstractions:: MpBeatmapLevel*));
 
-        set_levelHash(hash);
+        set_levelHash(static_cast<std::string>(hash));
     }
 
     BeatSaverBeatmapLevel* BeatSaverBeatmapLevel::Make(const std::string& hash, const BeatSaver::Beatmap& beatmap) {
         auto level = BeatSaverBeatmapLevel::New_ctor(hash);
         level->beatmap = beatmap;
+
+        level->_ctor(
+            false,
+            fmt::format("custom_level_{}", hash),
+            beatmap.GetMetadata().GetSongName(),
+            beatmap.GetMetadata().GetSongSubName(),
+            beatmap.GetMetadata().GetSongAuthorName(),
+            ArrayW<StringW>({ StringW(beatmap.GetMetadata().GetLevelAuthorName()) }),
+            ArrayW<StringW>::Empty(),
+            beatmap.GetMetadata().GetBPM(),
+            -6.0f,
+            0,
+            0,
+            0,
+            beatmap.GetMetadata().GetDuration(),
+            GlobalNamespace::PlayerSensitivityFlag::Unknown,
+            BeatSaverPreviewMediaData::New_ctor(hash)->i_IPreviewMediaData(),
+            nullptr
+        );
+
         return level;
-    }
-
-	StringW BeatSaverBeatmapLevel::get_songName() { return beatmap.GetMetadata().GetSongName(); }
-	StringW BeatSaverBeatmapLevel::get_songSubName() { return beatmap.GetMetadata().GetSongSubName(); }
-	StringW BeatSaverBeatmapLevel::get_songAuthorName() { return beatmap.GetMetadata().GetSongAuthorName(); }
-	StringW BeatSaverBeatmapLevel::get_levelAuthorName() { return beatmap.GetMetadata().GetLevelAuthorName(); }
-	float BeatSaverBeatmapLevel::get_beatsPerMinute() { return beatmap.GetMetadata().GetBPM(); }
-	float BeatSaverBeatmapLevel::get_songDuration() { return beatmap.GetMetadata().GetDuration(); }
-    ::System::Threading::Tasks::Task_1<::UnityEngine::Sprite*>* BeatSaverBeatmapLevel::GetCoverImageAsync(::System::Threading::CancellationToken cancellationToken) {
-        if (!_coverImageTask) {
-            _coverImageTask = StartTask<UnityEngine::Sprite*>([this](){
-                auto beatmapOpt = BeatSaver::API::GetBeatmapByHash(get_levelHash());
-                if (beatmapOpt.has_value()) {
-                    auto cover = BeatSaver::API::GetCoverImage(beatmapOpt.value());
-
-                    auto coverBytes = il2cpp_utils::vectorToArray(cover);
-                    std::optional<UnityEngine::Sprite*> result;
-                    Lapiz::Utilities::MainThreadScheduler::Schedule([coverBytes, &result](){
-                        result = BSML::Utilities::LoadSpriteRaw(coverBytes);
-                    });
-
-                    while(!result.has_value()) std::this_thread::yield();
-                    return result.value();
-                }
-                return (UnityEngine::Sprite*)nullptr;
-            }, cancellationToken);
-        }
-        return _coverImageTask;
     }
 }

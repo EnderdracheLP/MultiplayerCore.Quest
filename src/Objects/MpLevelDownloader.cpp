@@ -1,6 +1,7 @@
 #include "Objects/MpLevelDownloader.hpp"
 #include "songdownloader/shared/BeatSaverAPI.hpp"
-#include "Utilities.hpp"
+#include "songcore/shared/SongLoader/RuntimeSongLoader.hpp"
+#include "songcore/shared/SongCore.hpp"
 #include "logging.hpp"
 
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
@@ -34,44 +35,18 @@ namespace MultiplayerCore::Objects {
     }
 
     bool MpLevelDownloader::TryDownloadLevelInternal(std::string levelId, std::function<void(double)> progress) {
-        auto hash = Utilities::HashForLevelId(levelId);
+        auto hash = SongCore::SongLoader::RuntimeSongLoader::GetHashFromLevelID(levelId);
         if (hash.empty()) {
             ERROR("Could not parse hash from id {}", levelId);
             return false;
         }
 
-        auto bm = BeatSaver::API::GetBeatmapByHash(hash);
+        auto bm = BeatSaver::API::GetBeatmapByHash(std::string(hash));
         if (bm.has_value()) {
-            bool done, result;
-            auto onFinished =
-                [&done, &result](bool finished){
-                    result = !finished;
-                    done = true;
-                };
+            BeatSaver::API::DownloadBeatmap(bm.value());
+            SongCore::API::Loading::RefreshSongs(false).wait();
 
-            DEBUG("Starting beatsaver download");
-            if (progress) {
-                BeatSaver::API::DownloadBeatmapAsync(bm.value(), onFinished, [progress](auto p){ progress(p);});
-            } else {
-                BeatSaver::API::DownloadBeatmapAsync(bm.value(), onFinished);
-            }
-
-            while(!done) std::this_thread::yield();
-
-            done = false;
-            DEBUG("Scheduling song refresh");
-            Lapiz::Utilities::MainThreadScheduler::Schedule([&done](){
-                DEBUG("Invoking song refresh");
-                RuntimeSongLoader::API::RefreshSongs(false, [&done](auto&){
-                    DEBUG("Song refresh finished");
-                    done = true;
-                });
-            });
-
-            while(!done) std::this_thread::yield();
-
-            DEBUG("Song download finished, result: {}", result);
-            return result;
+            return SongCore::API::Loading::GetLevelByHash(hash);
         } else {
             ERROR("Couldn't get beatmap by hash: {}", hash);
             return false;

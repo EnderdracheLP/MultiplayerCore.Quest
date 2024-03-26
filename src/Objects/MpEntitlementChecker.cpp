@@ -1,13 +1,13 @@
 #include "Objects/MpEntitlementChecker.hpp"
 #include "Utils/ExtraSongData.hpp"
 #include "Utils/EnumUtils.hpp"
-#include "Utilities.hpp"
 #include "logging.hpp"
 #include "tasks.hpp"
 
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include "bsml/shared/Helpers/delegates.hpp"
 #include "songdownloader/shared/BeatSaverAPI.hpp"
+#include "songcore/shared/SongLoader/RuntimeSongLoader.hpp"
 
 #include "GlobalNamespace/IMenuRpcManager.hpp"
 #include "GlobalNamespace/IConnectedPlayer.hpp"
@@ -72,7 +72,7 @@ namespace MultiplayerCore::Objects {
     }
 
     EntitlementsStatusTask* MpEntitlementChecker::GetEntitlementStatus_override(StringW levelId) {
-        auto levelHash = Utilities::HashForLevelId(levelId);
+        std::string levelHash(SongCore::SongLoader::RuntimeSongLoader::GetHashFromLevelID(static_cast<std::string>(levelId)));
         // not custom
         if (levelHash.empty()) {
             DEBUG("Not a custom level, returning base call");
@@ -95,11 +95,11 @@ namespace MultiplayerCore::Objects {
     }
 
     GlobalNamespace::EntitlementsStatus MpEntitlementChecker::GetEntitlementStatus(std::string levelId) {
-        auto levelHash = Utilities::HashForLevelId(levelId);
+        auto levelHash = SongCore::SongLoader::RuntimeSongLoader::GetHashFromLevelID(levelId);
         if (levelHash.empty()) return NetworkPlayerEntitlementChecker::GetEntitlementStatus(levelId)->get_Result();
 
         // Check if this custom song exists locally
-        if (RuntimeSongLoader::API::GetLevelByHash(levelHash).has_value()) {
+        if (SongCore::API::Loading::GetLevelByHash(levelHash)) {
             auto extraSongData = Utils::ExtraSongData::FromLevelId(levelId);
             if (!extraSongData) return GlobalNamespace::EntitlementsStatus::Ok;
 
@@ -113,21 +113,22 @@ namespace MultiplayerCore::Objects {
             }
 
             for (const auto& req : requirements)
-                if (!RequirementUtils::GetRequirementInstalled(req))
+                if (!SongCore::API::Capabilities::IsCapabilityRegistered(req))
                     return GlobalNamespace::EntitlementsStatus::NotOwned;
 
             return GlobalNamespace::EntitlementsStatus::Ok;
         }
 
         // Check beatsaver for the map
-        auto beatmap = BeatSaver::API::GetBeatmapByHash(levelHash);
+        auto beatmap = BeatSaver::API::GetBeatmapByHash(std::string(levelHash));
         if (beatmap.has_value()) {
             auto& versions = beatmap->GetVersions();
             const auto& beatmapVersion = std::find_if(versions.begin(), versions.end(), [&levelHash](const auto& v){
                 auto toCheckHash = v.GetHash();
                 if (toCheckHash.size() != levelHash.size()) return false;
+
                 auto toCheckItr = toCheckHash.c_str();
-                auto levelHashItr = levelHash.c_str();
+                auto levelHashItr = levelHash.data();
                 auto toCheckEnd = toCheckItr + toCheckHash.size();
 
                 for (;toCheckItr < toCheckEnd; toCheckItr++, levelHashItr++) {
@@ -149,7 +150,7 @@ namespace MultiplayerCore::Objects {
             }
 
             for (const auto& req : requirements)
-                if (!RequirementUtils::GetRequirementInstalled(req))
+                if (!SongCore::API::Capabilities::IsCapabilityRegistered(req))
                     return GlobalNamespace::EntitlementsStatus::NotOwned;
 
             return GlobalNamespace::EntitlementsStatus::NotDownloaded;

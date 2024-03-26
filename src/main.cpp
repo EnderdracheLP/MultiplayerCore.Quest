@@ -12,11 +12,6 @@
 
 modloader::ModInfo modInfo{MOD_ID, VERSION, VERSION_LONG};
 
-Logger& getLogger() {
-    static Logger* logger = new Logger(modInfo, LoggerOptions(false, true));
-    return *logger;
-}
-
 MPCORE_EXPORT_FUNC void setup(CModInfo* info) {
     info->id = MOD_ID;
     info->version = VERSION;
@@ -24,11 +19,10 @@ MPCORE_EXPORT_FUNC void setup(CModInfo* info) {
 }
 
 MPCORE_EXPORT_FUNC void late_load() {
-    auto& logger = getLogger();
 
     il2cpp_functions::Init();
     custom_types::Register::AutoRegister();
-    Hooks::InstallHooks(logger);
+    MultiplayerCore::Hooking::InstallHooks();
     BSML::Init();
 
     auto zenjector = Lapiz::Zenject::Zenjector::Get();
