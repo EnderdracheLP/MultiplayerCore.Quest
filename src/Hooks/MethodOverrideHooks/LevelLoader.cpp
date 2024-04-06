@@ -24,7 +24,7 @@ MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerLevelLoader_LoadLevel, &GlobalNamespace::Mu
 }
 
 MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerLevelLoader_Tick, &GlobalNamespace::MultiplayerLevelLoader::Tick, void, GlobalNamespace::MultiplayerLevelLoader* self) {
-    INVOKE_LOCK(MultiplayerLevelLoader_LoadLevel);
+    INVOKE_LOCK(MultiplayerLevelLoader_Tick);
     if (!lock) {
         MultiplayerLevelLoader_Tick(self);
     } else {

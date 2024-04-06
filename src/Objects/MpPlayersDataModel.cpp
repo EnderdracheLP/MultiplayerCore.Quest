@@ -49,21 +49,17 @@ namespace MultiplayerCore::Objects {
 
     void MpPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap_override(StringW userId) {
         GlobalNamespace::LobbyPlayerData* localPlayerData = nullptr;
-        if (!_playersData->TryGetValue(userId, byref(localPlayerData)) || !localPlayerData) return; // if we can't get the player, just return
+        if (_playersData->TryGetValue(userId, byref(localPlayerData)) && localPlayerData) {
+            auto beatmapKey = localPlayerData->beatmapKey;
+            il2cpp_utils::il2cpp_aware_thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, static_cast<GlobalNamespace::BeatmapKey>(beatmapKey)).detach();
+        }
 
-        auto beatmapKey = localPlayerData->beatmapKey;
-
-        std::string levelId(beatmapKey.levelId ? beatmapKey.levelId : "");
-        if (levelId.empty()) return;
-
-        auto level = _beatmapLevelsModel->GetBeatmapLevel(levelId);
-        if (level) _packetSerializer->Send(MpBeatmapPacket::New_1(level, beatmapKey));
         Base::HandleMenuRpcManagerGetRecommendedBeatmap(userId);
     }
 
     void MpPlayersDataModel::HandleMenuRpcManagerRecommendBeatmap_override(StringW userId, GlobalNamespace::BeatmapKeyNetSerializable* beatmapKey) {
         auto hash = HashFromLevelID(beatmapKey->levelID);
-        if (!hash.empty()) return;
+        if (!hash.empty()) return; // if this is a custom level return
 
         Base::HandleMenuRpcManagerRecommendBeatmap(userId, beatmapKey);
     }

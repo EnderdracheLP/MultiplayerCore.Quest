@@ -68,16 +68,16 @@ namespace MultiplayerCore::UI {
             _gameStateController->get_levelStartInitiated() &&
             _levelLoader->_gameplaySetupData != nullptr
         ) {
-            int okCount = OkPlayerCountNoRequest();
+            auto [okCount, totalCount] = OkAndTotalPlayerCountNoRequest();
             // We subtract 1 since we don't count the server
-            int totalCount = ILobbyPlayersDataModel_Count(_playersDataModel) - 1;
+            totalCount--;
             _loadingControl->ShowLoading(fmt::format("{} of {} players ready...", okCount, totalCount));
         } else {
             _loadingControl->Hide();
         }
     }
 
-    int MpLoadingIndicator::OkPlayerCountNoRequest() {
+    std::pair<int, int> MpLoadingIndicator::OkAndTotalPlayerCountNoRequest() {
         using namespace System::Collections;
         using namespace System::Collections::Generic;
         auto key = _levelLoader->_gameplaySetupData->beatmapKey;
@@ -88,14 +88,18 @@ namespace MultiplayerCore::UI {
         auto enumerator = enumerator_1->i___System__Collections__IEnumerator();
 
         // Starts at 1 because the local player is already checked at this point
-        int okCount = 1;
+        int okCount = 0;
+        int totalCount = 0;
         while (enumerator->MoveNext()) {
-            auto [tocheck, playerData] = enumerator_1->Current;
-            if (_entitlementChecker->GetKnownEntitlement(tocheck, levelId) == GlobalNamespace::EntitlementsStatus::Ok) okCount++;
+            totalCount++;
+            auto [userId, playerData] = enumerator_1->Current;
+            auto knownEntitlement = _entitlementChecker->GetKnownEntitlement(userId, levelId);
+            DEBUG("User: {}, entitlement OK: {}", userId, knownEntitlement == GlobalNamespace::EntitlementsStatus::Ok);
+            if (knownEntitlement == GlobalNamespace::EntitlementsStatus::Ok) okCount++;
         }
 
         enumerator_1->i___System__IDisposable()->Dispose();
-        return okCount;
+        return {okCount, totalCount};
     }
 
     void MpLoadingIndicator::Report(double value) {

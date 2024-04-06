@@ -14,7 +14,6 @@
 #include "GlobalNamespace/JoinQuickPlayViewController.hpp"
 #include "GlobalNamespace/BeatmapDifficultyDropdown.hpp"
 #include "GlobalNamespace/QuickPlaySetupModel.hpp"
-#include "GlobalNamespace/BeatmapKeyNetSerializable.hpp"
 
 using namespace MultiplayerCore;
 using namespace MultiplayerCore::Hooks;

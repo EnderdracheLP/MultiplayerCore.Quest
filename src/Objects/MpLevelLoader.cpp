@@ -12,6 +12,7 @@
 #include "System/Threading/CancellationTokenSource.hpp"
 #include "System/Collections/Generic/IReadOnlyList_1.hpp"
 #include "System/Collections/Generic/IReadOnlyCollection_1.hpp"
+#include "System/Action_2.hpp"
 #include <type_traits>
 
 DEFINE_TYPE(MultiplayerCore::Objects, MpLevelLoader);
@@ -19,7 +20,7 @@ DEFINE_TYPE(MultiplayerCore::Objects, MpLevelLoader);
 namespace MultiplayerCore::Objects {
     void MpLevelLoader::ctor(SongCore::SongLoader::RuntimeSongLoader* runtimeSongLoader, SongCore::Capabilities* capabilities, GlobalNamespace::IMultiplayerSessionManager* sessionManager, MpLevelDownloader* levelDownloader, GlobalNamespace::NetworkPlayerEntitlementChecker* entitlementChecker, GlobalNamespace::IMenuRpcManager* rpcManager) {
         INVOKE_CTOR();
-        INVOKE_BASE_CTOR(classof(GlobalNamespace::MultiplayerLevelLoader*));
+        GlobalNamespace::MultiplayerLevelLoader::_ctor();
 
         _runtimeSongLoader = runtimeSongLoader;
         _capabilities = capabilities;
@@ -30,12 +31,13 @@ namespace MultiplayerCore::Objects {
     }
 
     void MpLevelLoader::LoadLevel_override(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, long initialStartTime) {
+        using Base = GlobalNamespace::MultiplayerLevelLoader;
         auto key = gameplaySetupData->beatmapKey;
         std::string levelId(key.levelId);
         std::string levelHash(!levelId.empty() ? HashFromLevelID(std::string_view(levelId)) : "");
 
         DEBUG("Loading Level '{}'", levelHash.empty() ? levelId : levelHash);
-        LoadLevel(gameplaySetupData, initialStartTime);
+        Base::LoadLevel(gameplaySetupData, initialStartTime);
         if (levelHash.empty()) {
             DEBUG("Ignoring level (not a custom level hash): {}", levelId);
             return;
@@ -52,6 +54,7 @@ namespace MultiplayerCore::Objects {
     requires(std::is_invocable_r_v<bool, U, T>)
     bool All(System::Collections::Generic::IReadOnlyList_1<T>* list, U predicate) {
         auto count = list->i___System__Collections__Generic__IReadOnlyCollection_1_T_()->Count;
+        if (count == 0) WARNING("0 items checked!");
         for (int i = 0; i < count; i++) {
             auto item = list->get_Item(i);
             if (!predicate(item)) return false;
@@ -63,24 +66,26 @@ namespace MultiplayerCore::Objects {
     void MpLevelLoader::Tick_override() {
         using MultiplayerBeatmapLoaderState = GlobalNamespace::MultiplayerLevelLoader::MultiplayerBeatmapLoaderState;
         using Base = GlobalNamespace::MultiplayerLevelLoader;
-        if (!_gameplaySetupData) {
-            Base::Tick();
-            return;
-        }
+        if (_loaderState == MultiplayerBeatmapLoaderState::NotLoading) return;
+
+        if (!_gameplaySetupData) return Base::Tick();
 
         auto beatmapKey = _gameplaySetupData->beatmapKey;
-        if (!beatmapKey.levelId || System::String::IsNullOrEmpty(beatmapKey.levelId)) {
-            Base::Tick();
-            return;
-        }
+        if (!beatmapKey.levelId || System::String::IsNullOrEmpty(beatmapKey.levelId)) return Base::Tick();
 
         auto levelId = beatmapKey.levelId;
 
         switch (_loaderState) {
             case MultiplayerBeatmapLoaderState::NotLoading: return;
             case MultiplayerBeatmapLoaderState::WaitingForCountdown: {
-                if (_startTime <= _sessionManager->syncTime) return;
-                auto allPlayersReady = All(_sessionManager->connectedPlayers, [this, levelId](auto p){ return p->HasState("in_gameplay") || _entitlementChecker->GetKnownEntitlement(p->userId, levelId) == GlobalNamespace::EntitlementsStatus::Ok; });
+                if (_startTime <= _multiplayerSessionManager->syncTime) return;
+                auto allPlayersReady = All(_multiplayerSessionManager->connectedPlayers, [this, levelId](auto p){
+                    return
+                    _entitlementChecker->GetKnownEntitlement(p->userId, levelId) == GlobalNamespace::EntitlementsStatus::Ok || // has level
+                    p->HasState("in_gameplay") || // already playing
+                    p->HasState("backgrounded") || // not actively in game
+                    !p->HasState("wants_to_play_next_level"); // doesn't want to play (spectator)
+                });
 
                 if (!allPlayersReady) return;
 

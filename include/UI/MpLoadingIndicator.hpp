@@ -46,5 +46,5 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpLoadingIndicator, System
     );
 
     public:
-        int OkPlayerCountNoRequest();
+        std::pair<int, int> OkAndTotalPlayerCountNoRequest();
 )
