@@ -15,6 +15,7 @@
 #include "System/Threading/CancellationToken.hpp"
 
 #include "Zenject/ITickable.hpp"
+#include <cstdarg>
 
 DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelLoader, GlobalNamespace::MultiplayerLevelLoader,
     DECLARE_INSTANCE_FIELD_PRIVATE(SongCore::SongLoader::RuntimeSongLoader*, _runtimeSongLoader);
@@ -32,5 +33,6 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelLoader, GlobalNamespace::
         System::Threading::Tasks::Task_1<GlobalNamespace::LoadBeatmapLevelDataResult>* StartDownloadBeatmapLevelAsyncTask(std::string levelId, System::Threading::CancellationToken cancellationToken);
         UnorderedEventCallback<double> progressUpdated;
     private:
+        void UnloadLevelIfRequirementsNotMet();
         void Report(double progress);
 )

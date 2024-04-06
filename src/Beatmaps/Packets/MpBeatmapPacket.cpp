@@ -3,6 +3,7 @@
 
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 #include "songcore/shared/SongLoader/RuntimeSongLoader.hpp"
+#include "Utilities.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket);
 
@@ -15,7 +16,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
     MpBeatmapPacket* MpBeatmapPacket::New_1(GlobalNamespace::BeatmapLevel* beatmapLevel, GlobalNamespace::BeatmapKey beatmapKey) {
         auto packet = MpBeatmapPacket::New_ctor();
 
-        packet->levelHash = SongCore::SongLoader::RuntimeSongLoader::GetHashFromLevelID(static_cast<std::string>(beatmapLevel->levelID));
+        packet->levelHash = HashFromLevelID(beatmapLevel->levelID);
         packet->songName = beatmapLevel->songName;
         packet->songSubName = beatmapLevel->songSubName;
         packet->songAuthorName = beatmapLevel->songAuthorName;

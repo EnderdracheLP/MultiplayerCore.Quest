@@ -3,6 +3,7 @@
 #include "Utils/EnumUtils.hpp"
 #include "logging.hpp"
 #include "tasks.hpp"
+#include "Utilities.hpp"
 
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include "bsml/shared/Helpers/delegates.hpp"
@@ -72,7 +73,7 @@ namespace MultiplayerCore::Objects {
     }
 
     EntitlementsStatusTask* MpEntitlementChecker::GetEntitlementStatus_override(StringW levelId) {
-        std::string levelHash(SongCore::SongLoader::RuntimeSongLoader::GetHashFromLevelID(static_cast<std::string>(levelId)));
+        std::string levelHash(HashFromLevelID(levelId));
         // not custom
         if (levelHash.empty()) {
             DEBUG("Not a custom level, returning base call");
@@ -95,13 +96,14 @@ namespace MultiplayerCore::Objects {
     }
 
     GlobalNamespace::EntitlementsStatus MpEntitlementChecker::GetEntitlementStatus(std::string levelId) {
-        auto levelHash = SongCore::SongLoader::RuntimeSongLoader::GetHashFromLevelID(levelId);
+        auto levelHash = HashFromLevelID(std::string_view(levelId));
         if (levelHash.empty()) return NetworkPlayerEntitlementChecker::GetEntitlementStatus(levelId)->get_Result();
-
+        DEBUG("Custom level levelhash: {}", levelHash);
         // Check if this custom song exists locally
-        if (SongCore::API::Loading::GetLevelByHash(levelHash)) {
-            auto extraSongData = Utils::ExtraSongData::FromLevelId(levelId);
-            if (!extraSongData) return GlobalNamespace::EntitlementsStatus::Ok;
+        auto level = SongCore::API::Loading::GetLevelByHash(levelHash);
+        if (level) {
+            auto extraSongData = Utils::ExtraSongData::FromSaveData(level->standardLevelInfoSaveData);
+            if (!extraSongData.has_value()) return GlobalNamespace::EntitlementsStatus::Ok;
 
             std::list<std::string> requirements;
             for (const auto& diff : extraSongData->difficulties) {
@@ -112,9 +114,12 @@ namespace MultiplayerCore::Objects {
                 }
             }
 
-            for (const auto& req : requirements)
-                if (!SongCore::API::Capabilities::IsCapabilityRegistered(req))
+            for (const auto& req : requirements) {
+                if (!SongCore::API::Capabilities::IsCapabilityRegistered(req)) {
+                    DEBUG("Missing requirement {}", req);
                     return GlobalNamespace::EntitlementsStatus::NotOwned;
+                }
+            }
 
             return GlobalNamespace::EntitlementsStatus::Ok;
         }
@@ -149,20 +154,23 @@ namespace MultiplayerCore::Objects {
                 if (diff.GetNE()) requirements.emplace_back("Noodle Extensions");
             }
 
-            for (const auto& req : requirements)
-                if (!SongCore::API::Capabilities::IsCapabilityRegistered(req))
+            for (const auto& req : requirements) {
+                if (!SongCore::API::Capabilities::IsCapabilityRegistered(req)) {
+                    DEBUG("Missing requirement {}", req);
                     return GlobalNamespace::EntitlementsStatus::NotOwned;
+                }
+            }
 
             return GlobalNamespace::EntitlementsStatus::NotDownloaded;
         }
 
-        WARNING("Level hash {} was not found on beatsaver", levelHash);
+        WARNING("Level hash {} was not found locally or on beatsaver", levelHash);
         // map didn't exist anywhere, must be WIP or something...
         // either way we don't have it and can't get it
         return GlobalNamespace::EntitlementsStatus::NotOwned;
     }
 
-    GlobalNamespace::EntitlementsStatus MpEntitlementChecker::GetUserEntitlementStatusWithoutRequest(StringW userId, StringW levelId) {
+    GlobalNamespace::EntitlementsStatus MpEntitlementChecker::GetKnownEntitlement(StringW userId, StringW levelId) {
         auto userDict = _entitlementsDictionary.find(userId);
         if (userDict != _entitlementsDictionary.end()) {
             auto currentEntitlement = userDict->second.find(levelId);

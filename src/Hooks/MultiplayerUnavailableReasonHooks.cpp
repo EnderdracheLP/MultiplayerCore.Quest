@@ -36,10 +36,12 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
         return MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason(data, reason);
     }
 
-    if (!mpData->requiredMods.empty()) {
-        for (const auto& req : mpData->requiredMods) {
+    if (!mpData->RequiredMods.empty()) {
+        for (const auto& req : mpData->RequiredMods) {
+            if (!req.required) continue;
             auto installedMod = find_mod(req.id);
             if (!installedMod) continue;
+
             auto& installedModInfo = installedMod->info;
 
             auto& requiredVersion = req.version;

@@ -4,11 +4,15 @@
 #include "songcore/shared/SongLoader/RuntimeSongLoader.hpp"
 #include "logging.hpp"
 #include "tasks.hpp"
+#include "Utilities.hpp"
 
 #include "GlobalNamespace/IConnectedPlayer.hpp"
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 #include "GlobalNamespace/BeatmapLevelsModel.hpp"
 #include "System/Threading/CancellationTokenSource.hpp"
+#include "System/Collections/Generic/IReadOnlyList_1.hpp"
+#include "System/Collections/Generic/IReadOnlyCollection_1.hpp"
+#include <type_traits>
 
 DEFINE_TYPE(MultiplayerCore::Objects, MpLevelLoader);
 
@@ -28,81 +32,107 @@ namespace MultiplayerCore::Objects {
     void MpLevelLoader::LoadLevel_override(GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, long initialStartTime) {
         auto key = gameplaySetupData->beatmapKey;
         std::string levelId(key.levelId);
-        std::string levelHash(!levelId.empty() ? SongCore::SongLoader::RuntimeSongLoader::GetHashFromLevelID(levelId) : "");
+        std::string levelHash(!levelId.empty() ? HashFromLevelID(std::string_view(levelId)) : "");
 
         DEBUG("Loading Level '{}'", levelHash.empty() ? levelId : levelHash);
         LoadLevel(gameplaySetupData, initialStartTime);
-        if (!levelHash.empty() && !_runtimeSongLoader->GetLevelByHash(levelHash))
+        if (levelHash.empty()) {
+            DEBUG("Ignoring level (not a custom level hash): {}", levelId);
+            return;
+        }
+
+        bool downloadNeeded = _runtimeSongLoader->GetLevelByHash(levelHash) == nullptr;
+
+        if (downloadNeeded) {
             _getBeatmapLevelResultTask = StartDownloadBeatmapLevelAsyncTask(levelId, _getBeatmapCancellationTokenSource->Token);
+        }
+    }
+
+    template<typename T, typename U>
+    requires(std::is_invocable_r_v<bool, U, T>)
+    bool All(System::Collections::Generic::IReadOnlyList_1<T>* list, U predicate) {
+        auto count = list->i___System__Collections__Generic__IReadOnlyCollection_1_T_()->Count;
+        for (int i = 0; i < count; i++) {
+            auto item = list->get_Item(i);
+            if (!predicate(item)) return false;
+        }
+
+        return true;
     }
 
     void MpLevelLoader::Tick_override() {
         using MultiplayerBeatmapLoaderState = GlobalNamespace::MultiplayerLevelLoader::MultiplayerBeatmapLoaderState;
-
-        auto levelId = _gameplaySetupData ? _gameplaySetupData->beatmapKey.levelId : nullptr;
-
-        if (!levelId || System::String::IsNullOrEmpty(levelId)) {
-            GlobalNamespace::MultiplayerLevelLoader::Tick();
+        using Base = GlobalNamespace::MultiplayerLevelLoader;
+        if (!_gameplaySetupData) {
+            Base::Tick();
             return;
         }
 
         auto beatmapKey = _gameplaySetupData->beatmapKey;
+        if (!beatmapKey.levelId || System::String::IsNullOrEmpty(beatmapKey.levelId)) {
+            Base::Tick();
+            return;
+        }
+
+        auto levelId = beatmapKey.levelId;
 
         switch (_loaderState) {
-            case MultiplayerBeatmapLoaderState::LoadingBeatmap: {
-                GlobalNamespace::MultiplayerLevelLoader::Tick();
-                if (_loaderState == MultiplayerBeatmapLoaderState::WaitingForCountdown) {
-                    _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::Ok);
-                    DEBUG("Loaded level {}", levelId);
-                    auto customLevel = SongCore::API::Loading::GetLevelByLevelID(static_cast<std::string>(levelId));
-                    if (!customLevel) break;
-
-                    auto saveData = customLevel->standardLevelInfoSaveData;
-                    if (!saveData) break;
-
-                    auto diffDetailsOpt = saveData->TryGetCharacteristicAndDifficulty(beatmapKey.beatmapCharacteristic->serializedName, beatmapKey.difficulty);
-                    if (!diffDetailsOpt.has_value()) break;
-
-                    auto& diffDetails = diffDetailsOpt->get();
-                    for (const auto& req : diffDetails.requirements) {
-                        if (!_capabilities->IsCapabilityRegistered(req)) {
-                            _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::NotOwned);
-                            break;
-                        }
-                    }
-                }
-            } break;
+            case MultiplayerBeatmapLoaderState::NotLoading: return;
             case MultiplayerBeatmapLoaderState::WaitingForCountdown: {
-                if (_sessionManager->get_syncTime() >= _startTime) {
-                    bool allFinished = true;
-                    int pCount = _sessionManager->get_connectedPlayerCount();
-                    for (std::size_t i = 0; i < pCount; i++) {
-                        auto p = _sessionManager->GetConnectedPlayer(i);
-                        bool hasEntitlement = _entitlementChecker->GetUserEntitlementStatusWithoutRequest(p->get_userId(), levelId) == GlobalNamespace::EntitlementsStatus::Ok;
-                        bool in_gameplay = p->HasState("in_gameplay");
+                if (_startTime <= _sessionManager->syncTime) return;
+                auto allPlayersReady = All(_sessionManager->connectedPlayers, [this, levelId](auto p){ return p->HasState("in_gameplay") || _entitlementChecker->GetKnownEntitlement(p->userId, levelId) == GlobalNamespace::EntitlementsStatus::Ok; });
 
-                        if (!(hasEntitlement || in_gameplay)) {
-                            allFinished = false;
-                            break;
-                        }
-                    }
+                if (!allPlayersReady) return;
 
-                    if (allFinished) {
-                        DEBUG("All players finished loading");
-                        GlobalNamespace::MultiplayerLevelLoader::Tick();
-                    }
-                }
+                DEBUG("All players finished loading");
+                Base::Tick();
+                return;
             } break;
-            default:
-                GlobalNamespace::MultiplayerLevelLoader::Tick();
-                break;
+            case MultiplayerBeatmapLoaderState::LoadingBeatmap: {
+                Base::Tick();
+                auto loadDidFinish = (_loaderState == MultiplayerBeatmapLoaderState::WaitingForCountdown);
+                if (!loadDidFinish) return;
+
+                _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::Ok);
+                UnloadLevelIfRequirementsNotMet();
+            } break;
         }
+    }
+
+    void MpLevelLoader::UnloadLevelIfRequirementsNotMet() {
+        auto beatmapKey = _gameplaySetupData->beatmapKey;
+        auto levelId = beatmapKey.levelId;
+        auto levelHash = HashFromLevelID(levelId);
+        // not a custom level
+        if (levelHash.empty()) return;
+
+        auto level = _runtimeSongLoader->GetLevelByHash(levelHash);
+        // level not loaded or savedata not loaded
+        if (!level || !level->standardLevelInfoSaveData) return;
+
+        auto diffDataOpt = level->standardLevelInfoSaveData->TryGetCharacteristicAndDifficulty(beatmapKey.beatmapCharacteristic->serializedName, beatmapKey.difficulty);
+        if (diffDataOpt.has_value()) return;
+
+        auto& diffData = diffDataOpt->get();
+        bool requirementsMet = true;
+        for (auto& requirement : diffData.requirements) {
+            if (_capabilities->IsCapabilityRegistered(requirement)) continue;
+            WARNING("Level requirements not met: {}", requirement);
+            requirementsMet = false;
+        }
+
+        if (requirementsMet) return;
+
+        DEBUG("Level will be unloaded due to unmet requirements");
+        // TODO: should this also make _rpcManager send NotOwned?
+        _beatmapLevelData = nullptr;
     }
 
     System::Threading::Tasks::Task_1<GlobalNamespace::LoadBeatmapLevelDataResult>* MpLevelLoader::StartDownloadBeatmapLevelAsyncTask(std::string levelId, System::Threading::CancellationToken cancellationToken) {
         return StartTask<GlobalNamespace::LoadBeatmapLevelDataResult>([this, levelId, cancellationToken](CancellationToken token) -> GlobalNamespace::LoadBeatmapLevelDataResult {
             static auto Error = GlobalNamespace::LoadBeatmapLevelDataResult(true, nullptr);
-            _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).wait();
+            auto success = _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).get();
+            if (!success) return Error;
             auto level = _runtimeSongLoader->GetLevelByLevelID(levelId);
             if (!level) return Error;
             if (!level->beatmapLevelData) return Error;

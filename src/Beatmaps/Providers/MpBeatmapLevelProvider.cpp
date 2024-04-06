@@ -39,7 +39,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
     GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromLocalBeatmaps(const std::string& levelHash) {
         auto customLevel = SongCore::API::Loading::GetLevelByHash(levelHash);
         if (!customLevel) return nullptr;
-        return LocalBeatmapLevel::New_ctor(levelHash, static_cast<GlobalNamespace::BeatmapLevel*>(customLevel));
+        return customLevel;
     }
 
     GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet) {

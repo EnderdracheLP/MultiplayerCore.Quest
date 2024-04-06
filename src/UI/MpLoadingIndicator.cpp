@@ -19,9 +19,10 @@ DEFINE_TYPE(MultiplayerCore::UI, MpLoadingIndicator);
 
 int ILobbyPlayersDataModel_Count(GlobalNamespace::ILobbyPlayersDataModel* model) {
     using namespace System::Collections::Generic;
-    auto dict = static_cast<IReadOnlyDictionary_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>*>(*model);
-    auto coll = static_cast<IReadOnlyCollection_1<KeyValuePair_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>>*>(*dict);
-    return coll->get_Count();
+    return model->i___System__Collections__Generic__IReadOnlyCollection_1___System__Collections__Generic__KeyValuePair_2___StringW___GlobalNamespace__ILobbyPlayerData___()->Count;
+    // auto dict = static_cast<IReadOnlyDictionary_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>*>(*model);
+    // auto coll = static_cast<IReadOnlyCollection_1<KeyValuePair_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>>*>(*dict);
+    // return coll->get_Count();
 }
 
 namespace MultiplayerCore::UI {
@@ -82,17 +83,15 @@ namespace MultiplayerCore::UI {
         auto key = _levelLoader->_gameplaySetupData->beatmapKey;
         auto levelId = key.levelId;
 
-        auto& dict = *_playersDataModel;
-        auto enumerable = static_cast<IEnumerable_1<KeyValuePair_2<::StringW, ::GlobalNamespace::ILobbyPlayerData*>>*>(dict);
+        auto enumerable = _playersDataModel->i___System__Collections__Generic__IEnumerable_1___System__Collections__Generic__KeyValuePair_2___StringW___GlobalNamespace__ILobbyPlayerData___();
         auto enumerator_1 = enumerable->GetEnumerator();
-        auto enumerator = static_cast<IEnumerator*>(*enumerator_1);
+        auto enumerator = enumerator_1->i___System__Collections__IEnumerator();
 
         // Starts at 1 because the local player is already checked at this point
         int okCount = 1;
         while (enumerator->MoveNext()) {
-            auto cur = enumerator_1->Current;
-            auto tocheck = cur.key;
-            if (_entitlementChecker->GetUserEntitlementStatusWithoutRequest(tocheck, levelId) == GlobalNamespace::EntitlementsStatus::Ok) okCount++;
+            auto [tocheck, playerData] = enumerator_1->Current;
+            if (_entitlementChecker->GetKnownEntitlement(tocheck, levelId) == GlobalNamespace::EntitlementsStatus::Ok) okCount++;
         }
 
         enumerator_1->i___System__IDisposable()->Dispose();

@@ -26,7 +26,7 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpEntitlementChecker, GlobalName
     DECLARE_INSTANCE_METHOD(EntitlementsStatusTask*, GetEntitlementStatus_override, StringW levelId);
 
     DECLARE_INSTANCE_METHOD(void, HandleSetIsEntitledToLevel, StringW userId, StringW levelId, GlobalNamespace::EntitlementsStatus entitlement);
-    DECLARE_INSTANCE_METHOD(GlobalNamespace::EntitlementsStatus, GetUserEntitlementStatusWithoutRequest, StringW userId, StringW levelId);
+    DECLARE_INSTANCE_METHOD(GlobalNamespace::EntitlementsStatus, GetKnownEntitlement, StringW userId, StringW levelId);
 
     DECLARE_CTOR(ctor);
     public:

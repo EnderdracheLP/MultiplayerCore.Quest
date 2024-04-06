@@ -3,6 +3,7 @@
 #include "songcore/shared/SongLoader/RuntimeSongLoader.hpp"
 #include "songcore/shared/SongCore.hpp"
 #include "logging.hpp"
+#include "Utilities.hpp"
 
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 
@@ -35,7 +36,7 @@ namespace MultiplayerCore::Objects {
     }
 
     bool MpLevelDownloader::TryDownloadLevelInternal(std::string levelId, std::function<void(double)> progress) {
-        auto hash = SongCore::SongLoader::RuntimeSongLoader::GetHashFromLevelID(levelId);
+        auto hash = HashFromLevelID(std::string_view(levelId));
         if (hash.empty()) {
             ERROR("Could not parse hash from id {}", levelId);
             return false;
@@ -46,7 +47,7 @@ namespace MultiplayerCore::Objects {
             BeatSaver::API::DownloadBeatmap(bm.value());
             SongCore::API::Loading::RefreshSongs(false).wait();
 
-            return SongCore::API::Loading::GetLevelByHash(hash);
+            return SongCore::API::Loading::GetLevelByHash(hash) != nullptr;
         } else {
             ERROR("Couldn't get beatmap by hash: {}", hash);
             return false;

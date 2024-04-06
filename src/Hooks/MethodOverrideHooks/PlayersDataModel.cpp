@@ -58,16 +58,16 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBea
             LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap(self, userId, beatmapKey);
     }
 }
-// override SetLocalPlayerBeatmapLevel
-MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &::GlobalNamespace::LobbyPlayersDataModel::SetLocalPlayerBeatmapLevel, void, GlobalNamespace::LobbyPlayersDataModel* self, ByRef<GlobalNamespace::BeatmapKey> key) {
-    INVOKE_LOCK(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel);
+// override SetPlayerBeatmapLevel
+MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_SetPlayerBeatmapLevel, &::GlobalNamespace::LobbyPlayersDataModel::SetPlayerBeatmapLevel, void, GlobalNamespace::LobbyPlayersDataModel* self, StringW userId, ByRef<GlobalNamespace::BeatmapKey> key) {
+    INVOKE_LOCK(LobbyPlayersDataModel_SetPlayerBeatmapLevel);
     if (!lock) {
-        LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, key);
+        LobbyPlayersDataModel_SetPlayerBeatmapLevel(self, userId, key);
     } else {
         static auto customKlass = classof(MpPlayersDataModel*);
         if (self->klass == customKlass)
-            reinterpret_cast<MpPlayersDataModel*>(self)->SetLocalPlayerBeatmapLevel_override(key.heldRef);
+            reinterpret_cast<MpPlayersDataModel*>(self)->SetPlayerBeatmapLevel_override(userId, key.heldRef);
         else
-            LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, key);
+            LobbyPlayersDataModel_SetPlayerBeatmapLevel(self, userId, key);
     }
 }
