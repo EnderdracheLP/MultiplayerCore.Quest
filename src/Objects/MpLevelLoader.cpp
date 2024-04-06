@@ -68,40 +68,33 @@ namespace MultiplayerCore::Objects {
         using Base = GlobalNamespace::MultiplayerLevelLoader;
         if (_loaderState == MultiplayerBeatmapLoaderState::NotLoading) return;
 
-        if (!_gameplaySetupData) return Base::Tick();
-
         auto beatmapKey = _gameplaySetupData->beatmapKey;
-        if (!beatmapKey.levelId || System::String::IsNullOrEmpty(beatmapKey.levelId)) return Base::Tick();
-
         auto levelId = beatmapKey.levelId;
 
-        switch (_loaderState) {
-            case MultiplayerBeatmapLoaderState::NotLoading: return;
-            case MultiplayerBeatmapLoaderState::WaitingForCountdown: {
-                if (_startTime <= _multiplayerSessionManager->syncTime) return;
-                auto allPlayersReady = All(_multiplayerSessionManager->connectedPlayers, [this, levelId](auto p){
-                    return
-                    _entitlementChecker->GetKnownEntitlement(p->userId, levelId) == GlobalNamespace::EntitlementsStatus::Ok || // has level
-                    p->HasState("in_gameplay") || // already playing
-                    p->HasState("backgrounded") || // not actively in game
-                    !p->HasState("wants_to_play_next_level"); // doesn't want to play (spectator)
-                });
+        if (_loaderState == MultiplayerBeatmapLoaderState::WaitingForCountdown) {
+            if (_startTime <= _multiplayerSessionManager->syncTime) return;
+            auto allPlayersReady = All(_multiplayerSessionManager->connectedPlayers, [this, levelId](auto p){
+                return
+                _entitlementChecker->GetKnownEntitlement(p->userId, levelId) == GlobalNamespace::EntitlementsStatus::Ok || // has level
+                p->HasState("in_gameplay") || // already playing
+                p->HasState("backgrounded") || // not actively in game
+                !p->HasState("wants_to_play_next_level"); // doesn't want to play (spectator)
+            });
 
-                if (!allPlayersReady) return;
-
-                DEBUG("All players finished loading");
-                Base::Tick();
-                return;
-            } break;
-            case MultiplayerBeatmapLoaderState::LoadingBeatmap: {
-                Base::Tick();
-                auto loadDidFinish = (_loaderState == MultiplayerBeatmapLoaderState::WaitingForCountdown);
-                if (!loadDidFinish) return;
-
-                _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::Ok);
-                UnloadLevelIfRequirementsNotMet();
-            } break;
+            if (!allPlayersReady) return;
+            DEBUG("All players finished loading");
+            Base::Tick();
+            return;
         }
+
+        Base::Tick();
+
+        auto loadDidFinish = (_loaderState == MultiplayerBeatmapLoaderState::WaitingForCountdown);
+        if (!loadDidFinish) return;
+
+        _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::Ok);
+        DEBUG("Loaded Level {}", levelId);
+        UnloadLevelIfRequirementsNotMet();
     }
 
     void MpLevelLoader::UnloadLevelIfRequirementsNotMet() {
