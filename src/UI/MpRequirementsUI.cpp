@@ -134,7 +134,7 @@ namespace MultiplayerCore::UI {
         // if we had none, return a new one
         if (_unusedCells.empty()) return BSML::CustomCellInfo::New_ctor();
         auto cell = *_unusedCells.front();
-        _unusedCells.erase_at(0);
+        _unusedCells->RemoveAt(0);
         return cell;
     }
 
