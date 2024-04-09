@@ -26,10 +26,9 @@ namespace MultiplayerCore::UI {
         modal->onHide = [this]{ this->dismissedEvent.invoke(); };
     }
 
-    void MpColorsUI::ShowColors(const Beatmaps::Abstractions::DifficultyColors& colors) {
+    void MpColorsUI::ShowColors() {
         Parse();
         modal->Show();
-        SetColors(colors);
     }
 
     void MpColorsUI::Parse() {
@@ -48,8 +47,22 @@ namespace MultiplayerCore::UI {
         modal->Hide();
     }
 
-    void MpColorsUI::SetColors(const Beatmaps::Abstractions::DifficultyColors& colors) {
+    void MpColorsUI::AcceptColors(Beatmaps::Abstractions::DifficultyColors const& colors) {
         static MultiplayerCore::Utils::ExtraSongData::MapColor voidColor = MultiplayerCore::Utils::ExtraSongData::MapColor(0.5f, 0.5f, 0.5f);
+
+        _colorSchemeView->SetColors(
+            colors.colorLeft.value_or(voidColor),
+            colors.colorRight.value_or(voidColor),
+            colors.envColorLeft.value_or(voidColor),
+            colors.envColorRight.value_or(voidColor),
+            colors.envColorLeftBoost.value_or(voidColor),
+            colors.envColorRightBoost.value_or(voidColor),
+            colors.obstacleColor.value_or(voidColor)
+        );
+    }
+
+    void MpColorsUI::AcceptColors(SongCore::CustomJSONData::CustomLevelInfoSaveData::BasicCustomDifficultyBeatmapDetails::CustomColors const& colors) {
+        static UnityEngine::Color voidColor = UnityEngine::Color(0.5f, 0.5f, 0.5f, 1.0f);
 
         _colorSchemeView->SetColors(
             colors.colorLeft.value_or(voidColor),

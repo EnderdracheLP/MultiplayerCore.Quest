@@ -1,6 +1,8 @@
 #include "UI/MpRequirementsUI.hpp"
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
 #include "Beatmaps/BeatSaverBeatmapLevel.hpp"
+#include "Objects/MpPlayersDataModel.hpp"
+#include "Utilities.hpp"
 #include "logging.hpp"
 #include "assets.hpp"
 
@@ -29,22 +31,30 @@ namespace MultiplayerCore::UI {
     void MpRequirementsUI::ctor(
             SongCore::SongLoader::RuntimeSongLoader* runtimeSongLoader,
             SongCore::Capabilities* capabilities,
+            SongCore::PlayButtonInteractable* playButtonInteractable,
+            GlobalNamespace::BeatmapLevelsModel* beatmapLevelsModel,
             GlobalNamespace::LobbySetupViewController* lobbySetupViewController,
-            GlobalNamespace::ILobbyPlayersDataModel* playersDataModel,
+            Objects::MpPlayersDataModel* playersDataModel,
             MpColorsUI* colorsUI
     ) {
         INVOKE_CTOR();
         _runtimeSongLoader = runtimeSongLoader;
         _capabilities = capabilities;
+        _playButtonInteractable = playButtonInteractable;
+        _beatmapLevelsModel = beatmapLevelsModel;
         _lobbySetupViewController = lobbySetupViewController;
         _playersDataModel = playersDataModel;
         _colorsUI = colorsUI;
-        data = ListW<BSML::CustomCellInfo*>::New();
+
+        _data = ListW<BSML::CustomCellInfo*>::New();
+        _levelInfoCells = ListW<BSML::CustomCellInfo*>::New();
+        _disablingModsCells = ListW<BSML::CustomCellInfo*>::New();
+        _unusedCells = ListW<BSML::CustomCellInfo*>::New();
     }
 
     void MpRequirementsUI::Initialize() {
-        auto bar = _lobbySetupViewController->GetComponentInChildren<GlobalNamespace::EditableBeatmapSelectionView*>()->get_transform()->Find("LevelBarSimple")->GetComponent<GlobalNamespace::LevelBar*>();
-        BSML::parse_and_construct(Assets::RequirementsButton_bsml, bar->get_transform(), this);
+        auto bar = _lobbySetupViewController->_beatmapSelectionView->_levelBar;
+        BSML::parse_and_construct(Assets::RequirementsButton_bsml, bar->transform, this);
         auto buttonT = infoButton->get_transform();
         buttonT->set_localScale(buttonT->get_localScale() * 0.7f);
         buttonT->get_gameObject()->SetActive(true);
@@ -57,54 +67,39 @@ namespace MultiplayerCore::UI {
         );
         _playersDataModel->add_didChangeEvent(beatmapSelectedAction);
         _colorsUI->dismissedEvent += {&MpRequirementsUI::ColorsDismissed, this};
+
+        _playButtonInteractable->PlayButtonDisablingModsChanged += {&MpRequirementsUI::PlayButtonDisablingModsChanged, this};
     }
 
     void MpRequirementsUI::Dispose() {
         _playersDataModel->remove_didChangeEvent(beatmapSelectedAction);
         _colorsUI->dismissedEvent -= {&MpRequirementsUI::ColorsDismissed, this};
+        _playButtonInteractable->PlayButtonDisablingModsChanged -= {&MpRequirementsUI::PlayButtonDisablingModsChanged, this};
     }
 
     void MpRequirementsUI::BeatmapSelected(StringW) {
         using namespace System::Collections::Generic;
+
         auto localUserId = _playersDataModel->localUserId;
         auto playerDict = static_cast<IReadOnlyDictionary_2<StringW, GlobalNamespace::ILobbyPlayerData*>*>(*_playersDataModel);
         auto playerData = playerDict->Item[localUserId];
         auto key = playerData->i___GlobalNamespace__ILevelGameplaySetupData()->beatmapKey;
+        auto levelId = key.levelId;
 
+        auto localLevel = _beatmapLevelsModel->GetBeatmapLevel(levelId);
+        if (localLevel) {
+            SetRequirementsFromLevel(localLevel, key);
+            return;
+        }
 
-        // auto mpLevel = beatmapLevel ? il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr) : nullptr;
-        // if (mpLevel) {
-        //     bool buttonShouldBeActive = false;
-        //     std::string chName(beatmapLevel->get_beatmapCharacteristic()->get_name());
-        //     std::string chSerName(beatmapLevel->get_beatmapCharacteristic()->get_serializedName());
+        auto levelHash = HashFromLevelID(levelId);
+        auto packet = _playersDataModel->FindLevelPacket(levelHash);
+        if (packet) {
+            SetRequirementsFromPacket(packet);
+            return;
+        }
 
-        //     auto& diffColors = mpLevel->difficultyColors;
-        //     auto colorMapItr = diffColors.find(chName);
-        //     if (colorMapItr == diffColors.end()) colorMapItr = diffColors.find(chSerName);
-
-        //     if (colorMapItr != diffColors.end()) {
-        //         auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
-        //         if (colorItr != colorMapItr->second.end()) {
-        //             buttonShouldBeActive = colorItr->second.AnyAreNotNull();
-        //         }
-        //     }
-
-        //     auto reqMapItr = mpLevel->requirements.find(chName);
-        //     if (reqMapItr == mpLevel->requirements.end()) reqMapItr = mpLevel->requirements.find(chSerName);
-
-        //     if (reqMapItr != mpLevel->requirements.end()) {
-        //         auto reqItr = reqMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
-        //         if (reqItr != reqMapItr->second.end()) {
-        //             buttonShouldBeActive = buttonShouldBeActive || !reqItr->second.empty();
-        //         }
-        //     }
-
-        //     buttonShouldBeActive = buttonShouldBeActive || !mpLevel->contributors.empty();
-
-        //     set_buttonInteractable(buttonShouldBeActive);
-        // } else {
-        //     set_buttonInteractable(false);
-        // }
+        SetNoRequirementsFound();
     }
 
     template<typename T, typename U>
@@ -121,118 +116,180 @@ namespace MultiplayerCore::UI {
 
         modal->get_transform()->set_localPosition(modalPosition);
         modal->Show();
-        data->Clear();
-
-        auto localUserId = _playersDataModel->get_localUserId();
-        GlobalNamespace::ILobbyPlayerData* localPlayerDataModel = nullptr;
-        auto playerDict = static_cast<IReadOnlyDictionary_2<StringW, GlobalNamespace::ILobbyPlayerData*>*>(*_playersDataModel);
-        if (!playerDict->TryGetValue(localUserId, byref(localPlayerDataModel))) {
-            ERROR("Could not get local player info");
-            return;
-        }
-        // auto level = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*localPlayerDataModel)->beatmapLevel;
-        // auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(level->get_beatmapLevel()).value_or(nullptr);
-
-        // if (mpLevel) {
-        //     auto diffColorsMap = mpLevel->difficultyColors;
-        //     auto reqsMap = mpLevel->requirements;
-        //     auto diff = level->get_beatmapDifficulty();
-
-        //     StringW chname;
-        //     auto _chname = level->get_beatmapCharacteristic()->get_name();
-        //     auto _schname = level->get_beatmapCharacteristic()->get_serializedName();
-
-        //     if (contains(diffColorsMap, _chname) || contains(reqsMap, _chname)) chname = _chname;
-        //     else if (contains(diffColorsMap, _schname) || contains(reqsMap, _schname)) chname = _schname;
-
-        //     if (!chname) return;
-
-        //     // requirements
-        //     auto reqItr = reqsMap.find(chname);
-        //     if (reqItr != reqsMap.end()) {
-        //         auto reqsItr = reqItr->second.find(diff.value__);
-        //         if (reqsItr != reqItr->second.end()) {
-        //             for (const auto& req : reqsItr->second) {
-        //                 auto installed = capabilities->IsCapabilityRegistered(req);
-        //                 auto cell = BSML::CustomCellInfo::construct(
-        //                     fmt::format("<size=75%>{}", req),
-        //                     installed ? "Requirement" : "Missing Requirement",
-        //                     installed ? get_HaveReqIcon() : get_MissingReqIcon()
-        //                 );
-        //                 data->Add(cell);
-        //             }
-        //         } else {
-        //             ERROR("Issue finding diff {} to get requirements", diff.value__);
-        //         }
-        //     } else {
-        //         ERROR("Issue finding characteristic {} to get requirements", chname);
-        //     }
-
-        //     // contributors
-        //     if (!mpLevel->contributors.empty()) {
-        //         DEBUG("Adding contributors");
-        //         for (const auto& contributor : mpLevel->contributors) {
-        //             // TODO: actually load the proper sprites, but skipping for now
-        //             data->Add(BSML::CustomCellInfo::construct(contributor.name, contributor.role, get_InfoIcon()));
-        //         }
-        //     } else {
-        //         DEBUG("No Contributors found");
-        //     }
-
-        //     // colors
-        //     auto colorMapItr = diffColorsMap.find(chname);
-        //     BSML::CustomCellInfo* colorCell = nullptr;
-        //     if (colorMapItr != diffColorsMap.end()) {
-        //         auto colorsItr = colorMapItr->second.find(diff.value__);
-        //         if (colorsItr != colorMapItr->second.end()) {
-        //             if (colorsItr->second.AnyAreNotNull())
-        //                 colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors Available", "Click here to preview it.", get_ColorsIcon());
-        //         } else {
-        //             ERROR("Issue finding diff {} to get colors", diff.value__);
-        //         }
-        //     } else {
-        //         ERROR("Issue finding characteristic {} to get colors", chname);
-        //     }
-
-        //     if (!colorCell && il2cpp_utils::try_cast<Beatmaps::BeatSaverBeatmapLevel>(mpLevel).has_value())
-        //         colorCell = BSML::CustomCellInfo::construct("<size=75%>Custom Colors", "Click here to preview it.", get_ColorsIcon());
-
-        //     if (colorCell) data->Add(colorCell);
-
-        //     DEBUG("There should be {} cells", data->get_Count());
-        //     list->tableView->ReloadData();
-        //     list->tableView->ScrollToCellWithIdx(0, HMUI::TableView::ScrollPositionType::Beginning, false);
-        // }
     }
 
     void MpRequirementsUI::Select(HMUI::TableView* tableView, int index) {
         using namespace System::Collections::Generic;
-        auto localUserId = _playersDataModel->get_localUserId();
-        auto playerDict = static_cast<IReadOnlyDictionary_2<StringW, GlobalNamespace::ILobbyPlayerData*>*>(*_playersDataModel);
+        auto cell = _data[index];
+        if (cell->icon == get_ColorsIcon()) { // colors icon pressed
+            _colorsUI->ShowColors();
+        }
+    }
 
-        // auto localUserData = playerDict->Item[localUserId];
-        // auto beatmapLevel = static_cast<GlobalNamespace::ILevelGameplaySetupData*>(*localUserData)->beatmapLevel;
-        // auto mpLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(beatmapLevel->get_beatmapLevel()).value_or(nullptr);
-        // if (mpLevel) {
-        //     auto diffColors = mpLevel->difficultyColors;
+    void MpRequirementsUI::UpdateRequirementButton() {
+        set_buttonInteractable(!_data.empty());
+    }
 
-        //     auto colorMapItr = diffColors.find(beatmapLevel->get_beatmapCharacteristic()->get_name());
-        //     if (colorMapItr == diffColors.end()) colorMapItr = diffColors.find(beatmapLevel->get_beatmapCharacteristic()->get_serializedName());
+    BSML::CustomCellInfo* MpRequirementsUI::GetCellInfo() {
+        // if we had none, return a new one
+        if (_unusedCells.empty()) return BSML::CustomCellInfo::New_ctor();
+        auto cell = *_unusedCells.front();
+        _unusedCells.erase_at(0);
+        return cell;
+    }
 
-        //     list->tableView->ClearSelection();
-        //     if (colorMapItr != diffColors.end()) {
-        //         if (list->data[index]->icon == get_ColorsIcon()) {
-        //             auto colorItr = colorMapItr->second.find(beatmapLevel->beatmapDifficulty.value__);
-        //             if (colorItr != colorMapItr->second.end()) {
-        //                 modal->Hide();
-        //                 _colorsUI->ShowColors(colorItr->second);
-        //             }
-        //         }
-        //     }
-        // }
+    void MpRequirementsUI::UpdateDataCells() {
+        _data.clear();
+
+        for (auto cell : _levelInfoCells) _data.push_back(cell);
+        for (auto cell : _disablingModsCells) _data.push_back(cell);
+
+        list->tableView->ReloadData();
+        list->tableView->ScrollToCellWithIdx(0, HMUI::TableView::ScrollPositionType::Beginning, false);
+
+        UpdateRequirementButton();
+    }
+
+    void MpRequirementsUI::ClearCells(ListW<BSML::CustomCellInfo*> toClear) {
+        for (auto cell : toClear) _unusedCells.push_back(cell);
+        toClear.clear();
     }
 
     void MpRequirementsUI::ColorsDismissed() { ShowRequirements(); }
+
+    void MpRequirementsUI::SetRequirementsFromLevel(GlobalNamespace::BeatmapLevel* level, GlobalNamespace::BeatmapKey& beatmapKey) {
+        ClearCells(_levelInfoCells);
+
+        auto customLevel = il2cpp_utils::try_cast<SongCore::SongLoader::CustomBeatmapLevel>(level).value_or(nullptr);
+        // hacky way of being able to just break out of an "if" via break;
+        switch ((int64_t)customLevel) {
+            // valid ptr
+            default: {
+                auto saveData = customLevel->standardLevelInfoSaveData;
+                if (!saveData) break;
+
+                auto levelDetailsOpt = saveData->TryGetBasicLevelDetails();
+                if (!levelDetailsOpt.has_value()) break;
+
+                auto& levelDetails = levelDetailsOpt->get();
+                auto difficultyDetailsOpt = levelDetails.TryGetCharacteristicAndDifficulty(beatmapKey.beatmapCharacteristic->serializedName, beatmapKey.difficulty);
+
+                if (difficultyDetailsOpt.has_value()) {
+                    auto& difficultyDetails = difficultyDetailsOpt->get();
+
+                    for (auto& req : difficultyDetails.requirements) {
+                        static ConstString RequirementFound("Requirement Found");
+                        static ConstString RequirementMissing("Requirement Missing");
+
+                        auto cell = GetCellInfo();
+                        bool installed = _capabilities->IsCapabilityRegistered(req);
+                        cell->text = fmt::format("<size=75%>{}", req);
+                        cell->subText = installed ? RequirementFound : RequirementMissing;
+                        cell->icon = installed ? get_HaveReqIcon() : get_MissingReqIcon();
+                        _levelInfoCells.push_back(cell);
+                    }
+                }
+
+                for (auto& contributor : levelDetails.contributors) {
+                    auto cell = GetCellInfo();
+                    cell->text = fmt::format("<size=75%>{}", contributor.name);
+                    cell->subText = contributor.role;
+                    cell->icon = get_InfoIcon();
+                    _levelInfoCells.push_back(cell);
+                }
+
+                if (difficultyDetailsOpt.has_value()) {
+                    auto& difficultyDetails = difficultyDetailsOpt->get();
+                    if (difficultyDetails.customColors.has_value()) {
+                        static ConstString CustomColorsText("<size=75%>Custom Colors Available");
+                        static ConstString CustomColorsSubText("Click here to preview & enable or disable it.");
+
+                        auto cell = GetCellInfo();
+                        cell->text = CustomColorsText;
+                        cell->subText = CustomColorsSubText;
+                        cell->icon = get_ColorsIcon();
+                        _levelInfoCells.push_back(cell);
+
+                        _colorsUI->AcceptColors(difficultyDetails.customColors.value());
+                    }
+                }
+            } break;
+            // nullptr, means it's a normal level
+            case 0: break;
+        }
+
+        UpdateDataCells();
+    }
+
+    void MpRequirementsUI::SetRequirementsFromPacket(Beatmaps::Packets::MpBeatmapPacket* packet) {
+        ClearCells(_levelInfoCells);
+        auto diff = (uint8_t)packet->difficulty.value__;
+        for (auto& req : packet->requirements[diff]) {
+            static ConstString RequirementFound("Requirement Found");
+            static ConstString RequirementMissing("Requirement Missing");
+
+            auto cell = GetCellInfo();
+            bool installed = _capabilities->IsCapabilityRegistered(req);
+            cell->text = fmt::format("<size=75%>{}", req);
+            cell->subText = installed ? RequirementFound : RequirementMissing;
+            cell->icon = installed ? get_HaveReqIcon() : get_MissingReqIcon();
+            _levelInfoCells.push_back(cell);
+        }
+
+        for (auto& contributor : packet->contributors) {
+            auto cell = GetCellInfo();
+            cell->text = fmt::format("<size=75%>{}", contributor.name);
+            cell->subText = contributor.role;
+            cell->icon = get_InfoIcon();
+            _levelInfoCells.push_back(cell);
+        }
+
+        auto colors = packet->mapColors.find(diff);
+        if (colors != packet->mapColors.end()) {
+            static ConstString CustomColorsText("<size=75%>Custom Colors Available");
+            static ConstString CustomColorsSubText("Click here to preview & enable or disable it.");
+
+            auto cell = GetCellInfo();
+            cell->text = CustomColorsText;
+            cell->subText = CustomColorsSubText;
+            cell->icon = get_ColorsIcon();
+            _levelInfoCells.push_back(cell);
+        }
+
+        UpdateDataCells();
+    }
+
+    void MpRequirementsUI::SetNoRequirementsFound() {
+        ClearCells(_levelInfoCells);
+        UpdateDataCells();
+    }
+
+    void MpRequirementsUI::PlayButtonDisablingModsChanged(std::span<SongCore::API::PlayButton::PlayButtonDisablingModInfo const> disablingModsInfos) {
+        SetDisablingModInfoCells(disablingModsInfos);
+
+        UpdateDataCells();
+    }
+
+    void MpRequirementsUI::SetDisablingModInfoCells(std::span<SongCore::API::PlayButton::PlayButtonDisablingModInfo const> disablingModsInfos) {
+        ClearCells(_disablingModsCells);
+
+        if (disablingModsInfos.empty()) return;
+        auto cell = GetCellInfo();
+        cell->text = fmt::format("Play button disabled");
+        cell->icon = get_WarningIcon();
+        cell->subText = "The following mods are responsible:";
+        _disablingModsCells.push_back(cell);
+
+        for (auto& modInfo : disablingModsInfos) {
+            static auto NoReason = ConstString("No reason given");
+            auto cell = GetCellInfo();
+            cell->text = modInfo.modID;
+            cell->icon = get_WarningIcon();
+            cell->subText = modInfo.reason.empty() ? NoReason : StringW(modInfo.reason);
+            _disablingModsCells.push_back(cell);
+        }
+    }
+
     bool MpRequirementsUI::get_buttonGlowColor() { return _buttonGlowColor; }
     void MpRequirementsUI::set_buttonGlowColor(bool value) {
         _buttonGlowColor = value;

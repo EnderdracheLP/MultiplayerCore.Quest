@@ -16,8 +16,5 @@ namespace MultiplayerCore::Beatmaps {
 
         _packet = packet;
 		set_levelHash(static_cast<std::string>(_packet->levelHash));
-		requirements[_packet->characteristic] = std::move(_packet->requirements);
-		difficultyColors[_packet->characteristic] = std::move(_packet->mapColors);
-		contributors = std::move(_packet->contributors);
     }
 }

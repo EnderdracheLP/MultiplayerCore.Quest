@@ -9,6 +9,7 @@
 #include "Beatmaps/Abstractions/DifficultyColors.hpp"
 #include "bsml/shared/BSML/Components/ModalView.hpp"
 #include "UnityEngine/RectTransform.hpp"
+#include "UnityEngine/Vector3.hpp"
 
 DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, MpColorsUI, System::Object,
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::LobbySetupViewController*, _lobbySetupViewController);
@@ -25,8 +26,10 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, MpColorsUI, System::Object,
     public:
         UnorderedEventCallback<> dismissedEvent;
 
-        void ShowColors(const Beatmaps::Abstractions::DifficultyColors& colors);
+        void ShowColors();
         void Parse();
         void Dismiss();
-        void SetColors(const Beatmaps::Abstractions::DifficultyColors& colors);
+
+        void AcceptColors(Beatmaps::Abstractions::DifficultyColors const& colors);
+        void AcceptColors(SongCore::CustomJSONData::CustomLevelInfoSaveData::BasicCustomDifficultyBeatmapDetails::CustomColors const& colors);
 )

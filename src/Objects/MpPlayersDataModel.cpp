@@ -24,6 +24,7 @@ namespace MultiplayerCore::Objects {
 
         _packetSerializer = packetSerializer;
         _beatmapLevelProvider = beatmapLevelProvider;
+        _lastPlayerBeatmapPackets = PacketDict::New_ctor();
     }
 
     void MpPlayersDataModel::Activate_override() {
@@ -44,6 +45,8 @@ namespace MultiplayerCore::Objects {
         DEBUG("'{}' selected song '{}'", player->get_userId(), packet->levelHash);
         auto ch = _beatmapCharacteristicCollection->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
         auto beatmapKey = GlobalNamespace::BeatmapKey(ch, packet->difficulty, fmt::format("custom_level_{}", packet->levelHash));
+
+        PlayerPacket[player->userId] = packet;
         SetPlayerBeatmapLevel(player->userId, beatmapKey);
     }
 
@@ -82,5 +85,29 @@ namespace MultiplayerCore::Objects {
 
         auto packet = MpBeatmapPacket::New_1(level, beatmapKey);
         _packetSerializer->Send(packet);
+    }
+
+    Beatmaps::Packets::MpBeatmapPacket* MpPlayersDataModel::GetPlayerPacket(StringW playerId) {
+        Beatmaps::Packets::MpBeatmapPacket* value = nullptr;
+        _lastPlayerBeatmapPackets->TryGetValue(playerId, byref(value));
+        return value;
+    }
+
+    void MpPlayersDataModel::PutPlayerPacket(StringW playerId, Beatmaps::Packets::MpBeatmapPacket* packet) {
+        _lastPlayerBeatmapPackets->set_Item(playerId, packet);
+    }
+
+    Beatmaps::Packets::MpBeatmapPacket* MpPlayersDataModel::FindLevelPacket(std::string_view levelHash) {
+        Beatmaps::Packets::MpBeatmapPacket* packet = nullptr;
+        auto enumerator = _lastPlayerBeatmapPackets->GetEnumerator();
+        while (enumerator.MoveNext()) {
+            auto [_, p] = enumerator.Current;
+            if (p->levelHash == levelHash) {
+                packet = p;
+                break;
+            }
+        }
+        enumerator.Dispose();
+        return packet;
     }
 }
