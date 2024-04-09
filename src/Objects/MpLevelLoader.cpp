@@ -72,7 +72,10 @@ namespace MultiplayerCore::Objects {
         auto levelId = beatmapKey.levelId;
 
         if (_loaderState == MultiplayerBeatmapLoaderState::WaitingForCountdown) {
-            if (_startTime <= _multiplayerSessionManager->syncTime) return;
+            // if start time is greater than sync time we're still in countdown, don't try to do anything.
+            if (_startTime > _multiplayerSessionManager->syncTime) return;
+
+            // we are past countdown, now check all players
             auto allPlayersReady = All(_multiplayerSessionManager->connectedPlayers, [this, levelId](auto p){
                 return
                 _entitlementChecker->GetKnownEntitlement(p->userId, levelId) == GlobalNamespace::EntitlementsStatus::Ok || // has level
