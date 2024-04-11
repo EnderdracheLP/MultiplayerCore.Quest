@@ -19,7 +19,6 @@ namespace MultiplayerCore::Installers {
 
         container->BindInterfacesAndSelfTo<MpColorsUI*>()->AsSingle();
         container->BindInterfacesAndSelfTo<MpRequirementsUI*>()->AsSingle();
-        container->BindInterfacesAndSelfTo<MpRequirementsUI*>()->AsSingle();
         container->BindInterfacesAndSelfTo<MpLoadingIndicator*>()->AsSingle();
         container->BindInterfacesAndSelfTo<BeatmapSelectionViewPatcher*>()->AsSingle();
     }
