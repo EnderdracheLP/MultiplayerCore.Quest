@@ -73,19 +73,31 @@ namespace MultiplayerCore::Objects {
     }
 
     EntitlementsStatusTask* MpEntitlementChecker::GetEntitlementStatus_override(StringW levelId) {
-        std::string levelHash(HashFromLevelID(levelId));
-        // not custom
-        if (levelHash.empty()) {
-            DEBUG("Not a custom level, returning base call");
-            return NetworkPlayerEntitlementChecker::GetEntitlementStatus(levelId);
-        }
-
         if (auto existingTask = _entitlementsTasks.find(levelId); existingTask != _entitlementsTasks.end()) {
             return existingTask->second.ptr();
         }
 
-        auto task = StartTask<GlobalNamespace::EntitlementsStatus>([this, levelId](){
-            auto entitlement = GetEntitlementStatus(levelId);
+        // because we cache tasks, we need to be in the sync execution to get the correct base task instead of the overridden (this method) task
+        // therefore we get the base task before we enter our own new task which will await things, and is the one that we will return
+        auto baseTask = NetworkPlayerEntitlementChecker::GetEntitlementStatus(levelId);
+
+        auto task = StartTask<GlobalNamespace::EntitlementsStatus>([this, baseTask, levelId](){
+            using namespace std::chrono_literals;
+
+            std::string levelHash(HashFromLevelID(levelId));
+            GlobalNamespace::EntitlementsStatus entitlement = GlobalNamespace::EntitlementsStatus::Unknown;
+            if (levelHash.empty()) { // not custom level
+                while (!baseTask->IsCompleted) std::this_thread::sleep_for(10ms);
+
+                if (baseTask->IsFaulted) {
+                    entitlement = GlobalNamespace::EntitlementsStatus::NotOwned;
+                } else {
+                    entitlement = baseTask->Result;
+                }
+            } else { // custom level
+                entitlement = GetEntitlementStatus(levelId);
+            }
+
             DEBUG("Entitlement found for level {}: {}", levelId, EntitlementName(entitlement));
             _entitlementsDictionary[_sessionManager->localPlayer->userId][levelId] = entitlement;
             return entitlement;
