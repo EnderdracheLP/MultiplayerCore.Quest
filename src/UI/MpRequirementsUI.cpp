@@ -125,6 +125,8 @@ namespace MultiplayerCore::UI {
         if (cell->icon == get_ColorsIcon()) { // colors icon pressed
             _colorsUI->ShowColors();
         }
+
+        tableView->ClearSelection();
     }
 
     void MpRequirementsUI::UpdateRequirementButton() {
