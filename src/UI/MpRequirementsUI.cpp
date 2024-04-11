@@ -69,6 +69,9 @@ namespace MultiplayerCore::UI {
         _colorsUI->dismissedEvent += {&MpRequirementsUI::ColorsDismissed, this};
 
         _playButtonInteractable->PlayButtonDisablingModsChanged += {&MpRequirementsUI::PlayButtonDisablingModsChanged, this};
+
+        BSML::parse_and_construct(Assets::RequirementsUI_bsml, root, this);
+        modalPosition = modal->get_transform()->get_localPosition();
     }
 
     void MpRequirementsUI::Dispose() {
@@ -83,23 +86,26 @@ namespace MultiplayerCore::UI {
         auto localUserId = _playersDataModel->localUserId;
         auto playerDict = static_cast<IReadOnlyDictionary_2<StringW, GlobalNamespace::ILobbyPlayerData*>*>(*_playersDataModel);
         auto playerData = playerDict->Item[localUserId];
-        auto key = playerData->i___GlobalNamespace__ILevelGameplaySetupData()->beatmapKey;
-        auto levelId = key.levelId;
 
+        auto key = playerData->i___GlobalNamespace__ILevelGameplaySetupData()->beatmapKey;
+        // if our key isn't valid we can't do anything
+        if (!key.IsValid()) return;
+
+        auto levelId = key.levelId;
         auto localLevel = _beatmapLevelsModel->GetBeatmapLevel(levelId);
-        if (localLevel) {
+        if (localLevel) { // we got a level to set reqs from
             SetRequirementsFromLevel(localLevel, key);
             return;
         }
 
         auto levelHash = HashFromLevelID(levelId);
         auto packet = _playersDataModel->FindLevelPacket(levelHash);
-        if (packet) {
+        if (packet) { // we have a packet to set reqs from
             SetRequirementsFromPacket(packet);
             return;
         }
 
-        SetNoRequirementsFound();
+        SetNoRequirementsFound(); // nothing found to set from
     }
 
     template<typename T, typename U>
@@ -109,11 +115,6 @@ namespace MultiplayerCore::UI {
 
     void MpRequirementsUI::ShowRequirements() {
         using namespace System::Collections::Generic;
-        if (!modal || !modal->m_CachedPtr) {
-            BSML::parse_and_construct(Assets::RequirementsUI_bsml, root, this);
-            modalPosition = modal->get_transform()->get_localPosition();
-        }
-
         modal->get_transform()->set_localPosition(modalPosition);
         modal->Show();
     }
