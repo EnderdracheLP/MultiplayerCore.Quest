@@ -5,17 +5,21 @@
 #include "System/Threading/Tasks/Task_1.hpp"
 
 #include "GlobalNamespace/BeatmapLevel.hpp"
+#include "System/Collections/Generic/Dictionary_2.hpp"
 #include "../Packets/MpBeatmapPacket.hpp"
 #include <future>
 
 DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvider, System::Object,
-    std::future<GlobalNamespace::BeatmapLevel*> GetBeatmapAsync(const std::string& levelHash);
-    std::future<GlobalNamespace::BeatmapLevel*> GetBeatmapFromBeatSaverAsync(const std::string& levelHash);
+        using HashToLevelDict = System::Collections::Generic::Dictionary_2<StringW, GlobalNamespace::BeatmapLevel*>;
+        DECLARE_INSTANCE_FIELD_PRIVATE(HashToLevelDict*, _hashToNetworkLevels);
+        DECLARE_INSTANCE_FIELD_PRIVATE(HashToLevelDict*, _hashToBeatsaverLevels);
+        DECLARE_CTOR(ctor);
 
-    GlobalNamespace::BeatmapLevel* GetBeatmapFromLocalBeatmaps(const std::string& levelHash);
-    GlobalNamespace::BeatmapLevel* GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet);
+    public:
+        std::future<GlobalNamespace::BeatmapLevel*> GetBeatmapAsync(const std::string& levelHash);
+        std::future<GlobalNamespace::BeatmapLevel*> GetBeatmapFromBeatSaverAsync(const std::string& levelHash);
 
-    DECLARE_DEFAULT_CTOR();
-    protected:
+        GlobalNamespace::BeatmapLevel* GetBeatmapFromLocalBeatmaps(const std::string& levelHash);
+        GlobalNamespace::BeatmapLevel* GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet);
         GlobalNamespace::BeatmapLevel* GetBeatmapFromBeatSaver(std::string levelHash);
 )

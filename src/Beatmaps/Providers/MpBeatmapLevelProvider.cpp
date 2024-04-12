@@ -18,6 +18,12 @@ std::future<T> finished_future(T& value) {
 }
 
 namespace MultiplayerCore::Beatmaps::Providers {
+    void MpBeatmapLevelProvider::ctor() {
+        INVOKE_CTOR();
+        _hashToNetworkLevels = HashToLevelDict::New_ctor();
+        _hashToBeatsaverLevels = HashToLevelDict::New_ctor();
+    }
+
     std::future<GlobalNamespace::BeatmapLevel*> MpBeatmapLevelProvider::GetBeatmapAsync(const std::string& levelHash) {
         auto map = GetBeatmapFromLocalBeatmaps(levelHash);
         if (map) return finished_future(map);
@@ -29,10 +35,18 @@ namespace MultiplayerCore::Beatmaps::Providers {
     }
 
     GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromBeatSaver(std::string levelHash) {
+        GlobalNamespace::BeatmapLevel* level = nullptr;
+        if (_hashToNetworkLevels->TryGetValue(levelHash, byref(level))) {
+            return level;
+        }
+
         auto beatmap = BeatSaver::API::GetBeatmapByHash(static_cast<std::string>(levelHash));
         if (beatmap.has_value()) {
-            return BeatSaverBeatmapLevel::Make(levelHash, beatmap.value());
+            level = BeatSaverBeatmapLevel::Make(levelHash, beatmap.value());
+            _hashToNetworkLevels->Add(levelHash, level);
+            return level;
         }
+
         return nullptr;
     }
 
@@ -43,6 +57,14 @@ namespace MultiplayerCore::Beatmaps::Providers {
     }
 
     GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet) {
-        return NetworkBeatmapLevel::New_ctor(packet);
+        // cache network levels
+        GlobalNamespace::BeatmapLevel* level = nullptr;
+        if (_hashToNetworkLevels->TryGetValue(packet->levelHash, byref(level))) {
+            return level;
+        }
+
+        level = NetworkBeatmapLevel::New_ctor(packet);
+        _hashToNetworkLevels->Add(packet->levelHash, level);
+        return level;
     }
 }
