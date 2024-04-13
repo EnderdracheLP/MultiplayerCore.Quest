@@ -10,10 +10,9 @@ DEFINE_TYPE(MultiplayerCore::UI, CustomBeatmapSelectionView);
 
 namespace MultiplayerCore::UI {
 
-    void CustomBeatmapSelectionView::Inject(Objects::MpPlayersDataModel* mpPlayersDataModel, Beatmaps::Providers::MpBeatmapLevelProvider* mpBeatmapLevelProvider, MpRequirementsUI* requirementsUI) {
+    void CustomBeatmapSelectionView::Inject(Objects::MpPlayersDataModel* mpPlayersDataModel, Beatmaps::Providers::MpBeatmapLevelProvider* mpBeatmapLevelProvider) {
         _mpPlayersDataModel = mpPlayersDataModel;
         _mpBeatmapLevelProvider = mpBeatmapLevelProvider;
-        _requirementsUI = requirementsUI;
     }
 
     void CustomBeatmapSelectionView::SetBeatmap(ByRef<GlobalNamespace::BeatmapKey> beatmapKey) {
