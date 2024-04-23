@@ -12,6 +12,7 @@
 #include "GlobalNamespace/LobbyPlayerData.hpp"
 #include "GlobalNamespace/IMultiplayerSessionManager.hpp"
 #include "GlobalNamespace/BeatmapLevelsModel.hpp"
+#include <cctype>
 
 DEFINE_TYPE(MultiplayerCore::Objects, MpPlayersDataModel);
 
@@ -28,11 +29,13 @@ namespace MultiplayerCore::Objects {
     }
 
     void MpPlayersDataModel::Activate_override() {
+        DEBUG("Activate");
         _packetSerializer->RegisterCallback<MpBeatmapPacket*>(std::bind(&MpPlayersDataModel::HandleMpCoreBeatmapPacket, this, std::placeholders::_1, std::placeholders::_2));
         Base::Activate();
     }
 
     void MpPlayersDataModel::Deactivate_override() {
+        DEBUG("Deactivate");
         _packetSerializer->UnregisterCallback<MpBeatmapPacket*>();
         Base::Deactivate();
     }
@@ -46,7 +49,7 @@ namespace MultiplayerCore::Objects {
         auto ch = _beatmapCharacteristicCollection->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
         auto beatmapKey = GlobalNamespace::BeatmapKey(ch, packet->difficulty, fmt::format("custom_level_{}", packet->levelHash));
 
-        PlayerPacket[player->userId] = packet;
+        PutPlayerPacket(player->userId, packet);
         SetPlayerBeatmapLevel(player->userId, beatmapKey);
     }
 
@@ -54,7 +57,7 @@ namespace MultiplayerCore::Objects {
         GlobalNamespace::LobbyPlayerData* localPlayerData = nullptr;
         if (_playersData->TryGetValue(userId, byref(localPlayerData)) && localPlayerData) {
             auto beatmapKey = localPlayerData->beatmapKey;
-            il2cpp_utils::il2cpp_aware_thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, static_cast<GlobalNamespace::BeatmapKey>(beatmapKey)).detach();
+            MpPlayersDataModel::SendMpBeatmapPacket(beatmapKey);
         }
 
         Base::HandleMenuRpcManagerGetRecommendedBeatmap(userId);
@@ -69,20 +72,29 @@ namespace MultiplayerCore::Objects {
 
     void MpPlayersDataModel::SetPlayerBeatmapLevel_override(StringW userId, GlobalNamespace::BeatmapKey& beatmapKey) {
         if (userId == _multiplayerSessionManager->localPlayer->userId) {
-            il2cpp_utils::il2cpp_aware_thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, static_cast<GlobalNamespace::BeatmapKey>(beatmapKey)).detach();
+            MpPlayersDataModel::SendMpBeatmapPacket(beatmapKey);
         }
 
         Base::SetPlayerBeatmapLevel(userId, byref(beatmapKey));
     }
 
     void MpPlayersDataModel::SendMpBeatmapPacket(GlobalNamespace::BeatmapKey beatmapKey) {
+        DEBUG("Sending mp beatmap packet for level '{}'", beatmapKey.levelId);
+
         auto levelId = beatmapKey.levelId;
         auto hash = HashFromLevelID(levelId);
-        if (hash.empty()) return;
+        if (hash.empty()) {
+            DEBUG("not a custom level, returning...");
+            return;
+        }
 
         auto level = _beatmapLevelProvider->GetBeatmapAsync(hash).get();
-        if (!level) return;
+        if (!level) {
+            DEBUG("couldn't get level, returning...");
+            return;
+        }
 
+        DEBUG("actually sending the packet");
         auto packet = MpBeatmapPacket::New_1(level, beatmapKey);
         _packetSerializer->Send(packet);
     }
@@ -102,7 +114,10 @@ namespace MultiplayerCore::Objects {
         auto enumerator = _lastPlayerBeatmapPackets->GetEnumerator();
         while (enumerator.MoveNext()) {
             auto [_, p] = enumerator.Current;
-            if (p->levelHash == levelHash) {
+            std::string packetHash(p->levelHash);
+            DEBUG("Found packetHash {}", packetHash);
+            std::transform(packetHash.begin(), packetHash.end(), packetHash.begin(), toupper);
+            if (packetHash == levelHash) {
                 packet = p;
                 break;
             }

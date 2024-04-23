@@ -8,7 +8,7 @@
 #include "Beatmaps/Providers/MpBeatmapLevelProvider.hpp"
 #include "GlobalNamespace/EditableBeatmapSelectionView.hpp"
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, CustomBeatmapSelectionView, GlobalNamespace::BeatmapSelectionView,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, CustomEditableBeatmapSelectionView, GlobalNamespace::EditableBeatmapSelectionView,
     DECLARE_INSTANCE_FIELD_PRIVATE(Objects::MpPlayersDataModel*, _mpPlayersDataModel);
     DECLARE_INSTANCE_FIELD_PRIVATE(Beatmaps::Providers::MpBeatmapLevelProvider*, _mpBeatmapLevelProvider);
 

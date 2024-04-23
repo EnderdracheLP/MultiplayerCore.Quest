@@ -15,5 +15,7 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, GameServerPlayerTableCellCustomData, 
 
         DECLARE_INSTANCE_METHOD(void, Awake);
     public:
-        void UpdateDisplayedInfo(GlobalNamespace::IConnectedPlayer* connectedPlayer, GlobalNamespace::ILobbyPlayerData* playerData);
+        void SetData(GlobalNamespace::IConnectedPlayer* connectedPlayer, GlobalNamespace::ILobbyPlayerData* playerData, bool hasKickPermissions, bool allowSelection, System::Threading::Tasks::Task_1<GlobalNamespace::EntitlementStatus>* getLevelEntitlementTask);
+    private:
+        void SetLevelFoundValues(bool displayLevelText);
 )

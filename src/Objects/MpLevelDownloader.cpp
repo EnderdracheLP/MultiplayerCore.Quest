@@ -42,7 +42,7 @@ namespace MultiplayerCore::Objects {
             return false;
         }
 
-        auto bm = BeatSaver::API::GetBeatmapByHash(std::string(hash));
+        auto bm = BeatSaver::API::GetBeatmapByHash(hash);
         if (bm.has_value()) {
             BeatSaver::API::DownloadBeatmap(bm.value());
             SongCore::API::Loading::RefreshSongs(false).wait();

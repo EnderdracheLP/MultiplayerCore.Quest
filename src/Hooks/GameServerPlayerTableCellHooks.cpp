@@ -3,10 +3,14 @@
 
 #include "GlobalNamespace/GameServerPlayerTableCell.hpp"
 #include "GlobalNamespace/GameServerPlayersTableView.hpp"
+#include "GlobalNamespace/ILevelGameplaySetupData.hpp"
+#include "GlobalNamespace/CenterStageScreenController.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UI/GameServerPlayerTableCellCustomData.hpp"
+#include "Utilities.hpp"
 
-MAKE_AUTO_HOOK_MATCH(
+// does not call orig
+MAKE_AUTO_HOOK_ORIG_MATCH(
     GameServerPlayerTableCell_SetData,
     &GlobalNamespace::GameServerPlayerTableCell::SetData,
     void,
@@ -17,20 +21,12 @@ MAKE_AUTO_HOOK_MATCH(
     bool allowSelection,
     System::Threading::Tasks::Task_1<GlobalNamespace::EntitlementStatus>* getLevelEntitlementTask
 ) {
-    // we could be getting an exception because GetBeatmapLevel might return null in this method if the selected level is not installed here
-    // maybe we should just reimplement this method here...
-    // maybe we even have to wrap this in a runmethod invoke to do a cursed catch of the exception...
-    try {
-        GameServerPlayerTableCell_SetData(self, connectedPlayer, playerData, hasKickPermissions, allowSelection, getLevelEntitlementTask);
-    } catch (std::exception const& e) {
-        // caught an exception!
-    } catch (...) {
-        // caught unknown exception
-    }
-
-    // get our custom data component and update it
     auto customData = self->GetComponent<MultiplayerCore::UI::GameServerPlayerTableCellCustomData*>();
-    if (customData) customData->UpdateDisplayedInfo(connectedPlayer, playerData);
+    if (customData) {
+        return customData->SetData(connectedPlayer, playerData, hasKickPermissions, allowSelection, getLevelEntitlementTask);
+    } else {
+        return GameServerPlayerTableCell_SetData(self, connectedPlayer, playerData, hasKickPermissions, allowSelection, getLevelEntitlementTask);
+    }
 }
 
 // add our component to the prefab if neccesary. this way we get injected when the prefab is instantiated and also we ensure any of the prefabs has our component
@@ -38,4 +34,20 @@ MAKE_AUTO_HOOK_MATCH(GameServerPlayersTableView_GetCurrentPrefab, &GlobalNamespa
     auto res = GameServerPlayersTableView_GetCurrentPrefab(self);
     if (!res->GetComponent<MultiplayerCore::UI::GameServerPlayerTableCellCustomData*>()) res->gameObject->AddComponent<MultiplayerCore::UI::GameServerPlayerTableCellCustomData*>();
     return res;
+}
+
+MAKE_AUTO_HOOK_MATCH(
+    CenterStageScreenController_SetNextGameplaySetupData,
+    &GlobalNamespace::CenterStageScreenController::SetNextGameplaySetupData,
+    void,
+    GlobalNamespace::CenterStageScreenController* self,
+    GlobalNamespace::ILevelGameplaySetupData* levelGameplaySetupData
+) {
+    auto key = levelGameplaySetupData->beatmapKey;
+    if (key.IsValid()) {
+        auto levelHash = MultiplayerCore::HashFromLevelID(key.levelId);
+        if (!levelHash.empty()) {
+        }
+    }
+    CenterStageScreenController_SetNextGameplaySetupData(self, levelGameplaySetupData);
 }

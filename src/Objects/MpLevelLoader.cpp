@@ -69,6 +69,8 @@ namespace MultiplayerCore::Objects {
         if (_loaderState == MultiplayerBeatmapLoaderState::NotLoading) return;
 
         auto beatmapKey = _gameplaySetupData->beatmapKey;
+        if (!beatmapKey.IsValid()) return;
+
         auto levelId = beatmapKey.levelId;
 
         if (_loaderState == MultiplayerBeatmapLoaderState::WaitingForCountdown) {
@@ -86,6 +88,7 @@ namespace MultiplayerCore::Objects {
 
             if (!allPlayersReady) return;
             DEBUG("All players finished loading");
+
             Base::Tick();
             return;
         }
@@ -95,7 +98,18 @@ namespace MultiplayerCore::Objects {
         auto loadDidFinish = (_loaderState == MultiplayerBeatmapLoaderState::WaitingForCountdown);
         if (!loadDidFinish) return;
 
-        _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::Ok);
+        auto hash = HashFromLevelID(levelId);
+        GlobalNamespace::EntitlementsStatus status;
+
+        if (hash.empty()) { // basegame
+            auto level = _beatmapLevelsModel->GetBeatmapLevel(levelId);
+            status = level != nullptr ? GlobalNamespace::EntitlementsStatus::Ok : GlobalNamespace::EntitlementsStatus::NotOwned;
+        } else { // custom
+            auto level = _runtimeSongLoader->GetLevelByHash(hash);
+            status = level != nullptr ? GlobalNamespace::EntitlementsStatus::Ok : GlobalNamespace::EntitlementsStatus::NotDownloaded;
+        }
+
+        _rpcManager->SetIsEntitledToLevel(levelId, status);
         DEBUG("Loaded Level {}", levelId);
         UnloadLevelIfRequirementsNotMet();
     }
@@ -132,12 +146,27 @@ namespace MultiplayerCore::Objects {
     System::Threading::Tasks::Task_1<GlobalNamespace::LoadBeatmapLevelDataResult>* MpLevelLoader::StartDownloadBeatmapLevelAsyncTask(std::string levelId, System::Threading::CancellationToken cancellationToken) {
         return StartTask<GlobalNamespace::LoadBeatmapLevelDataResult>([this, levelId, cancellationToken](CancellationToken token) -> GlobalNamespace::LoadBeatmapLevelDataResult {
             static auto Error = GlobalNamespace::LoadBeatmapLevelDataResult(true, nullptr);
-            auto success = _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).get();
-            if (!success) return Error;
-            auto level = _runtimeSongLoader->GetLevelByLevelID(levelId);
-            if (!level) return Error;
-            if (!level->beatmapLevelData) return Error;
-            return GlobalNamespace::LoadBeatmapLevelDataResult::Success(level->beatmapLevelData);
+            try {
+                auto success = _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).get();
+                if (!success) {
+                    DEBUG("Failed to download level");
+                    return Error;
+                }
+                auto level = _runtimeSongLoader->GetLevelByLevelID(levelId);
+                if (!level) {
+                    DEBUG("Couldn't get level by id");
+                    return Error;
+                }
+                if (!level->beatmapLevelData) {
+                    DEBUG("level data is null!");
+                    return Error;
+                }
+                DEBUG("Got level data for level {}: {}", levelId, fmt::ptr(level->beatmapLevelData));
+                return GlobalNamespace::LoadBeatmapLevelDataResult(false, level->beatmapLevelData);
+            } catch(std::exception const& e) {
+                ERROR("Caught error during beatmap level download: {}, what: {}", typeid(e).name(), e.what());
+            }
+            return Error;
         }, std::forward<CancellationToken>(cancellationToken));
     }
 

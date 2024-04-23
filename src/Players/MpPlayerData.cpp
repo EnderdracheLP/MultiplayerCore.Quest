@@ -7,7 +7,9 @@ namespace MultiplayerCore::Players {
     void MpPlayerData::New() {
         INVOKE_CTOR();
         INVOKE_BASE_CTOR(classof(Networking::Abstractions::MpPacket*));
-        gameVersion = UnityEngine::Application::get_version();
+        std::string version = UnityEngine::Application::get_version();
+        std::replace(version.begin(), version.end(), '_', '-');
+        gameVersion = version;
     }
 
     void MpPlayerData::Serialize(LiteNetLib::Utils::NetDataWriter* writer) {
