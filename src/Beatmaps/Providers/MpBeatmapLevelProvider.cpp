@@ -1,6 +1,5 @@
 #include "Beatmaps/Providers/MpBeatmapLevelProvider.hpp"
 #include "Beatmaps/NetworkBeatmapLevel.hpp"
-#include "Beatmaps/NoInfoBeatmapLevel.hpp"
 #include "Beatmaps/LocalBeatmapLevel.hpp"
 #include "Beatmaps/BeatSaverBeatmapLevel.hpp"
 

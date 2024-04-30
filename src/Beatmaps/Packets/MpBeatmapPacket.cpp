@@ -20,7 +20,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
         packet->songName = beatmapLevel->songName;
         packet->songSubName = beatmapLevel->songSubName;
         packet->songAuthorName = beatmapLevel->songAuthorName;
-        packet->levelAuthorName = beatmapLevel->allMappers.front().value_or("");
+        packet->levelAuthorName = beatmapLevel->allMappers ? beatmapLevel->allMappers.front().value_or("") : "";
         packet->beatsPerMinute = beatmapLevel->beatsPerMinute;
         packet->songDuration = beatmapLevel->songDuration;
 

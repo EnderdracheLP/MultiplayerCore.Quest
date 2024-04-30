@@ -71,9 +71,11 @@ namespace MultiplayerCore::UI {
             _gameServerPlayerTableCell->_emptySuggestedModifiersText->gameObject->SetActive(count == 0);
             if (count > 0) {
                 auto cb = BSML::MakeDelegate<HMUI::UIItemsList_1<UnityW<GlobalNamespace::GameplayModifierInfoListItem>>::DataCallback*>(
-                    [&modifiersList](int id, UnityW<GlobalNamespace::GameplayModifierInfoListItem> item){
-                        item->SetModifier(modifiersList->get_Item(id), false);
-                    }
+                    std::function<void(int, UnityW<GlobalNamespace::GameplayModifierInfoListItem>)>(
+                        [&modifiersList](int id, UnityW<GlobalNamespace::GameplayModifierInfoListItem> item){
+                            item->SetModifier(modifiersList->get_Item(id), false);
+                        }
+                    )
                 );
                 _gameServerPlayerTableCell->_suggestedModifiersList->SetData(count, cb);
             }

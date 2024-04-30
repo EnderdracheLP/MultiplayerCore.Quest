@@ -1,6 +1,5 @@
 #include "Objects/MpPlayersDataModel.hpp"
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
-#include "Beatmaps/NoInfoBeatmapLevel.hpp"
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "logging.hpp"
 #include "Utilities.hpp"
@@ -46,6 +45,7 @@ namespace MultiplayerCore::Objects {
 
     void MpPlayersDataModel::HandleMpCoreBeatmapPacket(MpBeatmapPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
         DEBUG("'{}' selected song '{}'", player->get_userId(), packet->levelHash);
+        DEBUG("Looking for characteristic {} on {}", packet->characteristic, fmt::ptr(_beatmapCharacteristicCollection));
         auto ch = _beatmapCharacteristicCollection->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
         auto beatmapKey = GlobalNamespace::BeatmapKey(ch, packet->difficulty, fmt::format("custom_level_{}", packet->levelHash));
 
@@ -56,8 +56,7 @@ namespace MultiplayerCore::Objects {
     void MpPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap_override(StringW userId) {
         GlobalNamespace::LobbyPlayerData* localPlayerData = nullptr;
         if (_playersData->TryGetValue(userId, byref(localPlayerData)) && localPlayerData) {
-            auto beatmapKey = localPlayerData->beatmapKey;
-            MpPlayersDataModel::SendMpBeatmapPacket(beatmapKey);
+            std::thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, localPlayerData->beatmapKey).detach();
         }
 
         Base::HandleMenuRpcManagerGetRecommendedBeatmap(userId);
@@ -72,7 +71,7 @@ namespace MultiplayerCore::Objects {
 
     void MpPlayersDataModel::SetPlayerBeatmapLevel_override(StringW userId, GlobalNamespace::BeatmapKey& beatmapKey) {
         if (userId == _multiplayerSessionManager->localPlayer->userId) {
-            MpPlayersDataModel::SendMpBeatmapPacket(beatmapKey);
+            std::thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, static_cast<GlobalNamespace::BeatmapKey>(beatmapKey)).detach();
         }
 
         Base::SetPlayerBeatmapLevel(userId, byref(beatmapKey));

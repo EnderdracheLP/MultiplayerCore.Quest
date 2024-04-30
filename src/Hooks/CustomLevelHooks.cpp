@@ -2,8 +2,6 @@
 #include "hooking.hpp"
 #include "Hooks/NetworkConfigHooks.hpp"
 
-#include "Beatmaps/NoInfoBeatmapLevel.hpp"
-
 #include "UnityEngine/UI/Button.hpp"
 #include "GlobalNamespace/CannotStartGameReason.hpp"
 #include "GlobalNamespace/MultiplayerLevelSelectionFlowCoordinator.hpp"
