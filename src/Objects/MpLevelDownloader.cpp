@@ -6,6 +6,7 @@
 #include "Utilities.hpp"
 
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
+#include <chrono>
 
 DEFINE_TYPE(MultiplayerCore::Objects, MpLevelDownloader);
 
@@ -44,10 +45,19 @@ namespace MultiplayerCore::Objects {
 
         auto bm = BeatSaver::API::GetBeatmapByHash(hash);
         if (bm.has_value()) {
-            BeatSaver::API::DownloadBeatmap(bm.value());
+            auto& versions = bm->GetVersions();
+            auto v = std::find_if(versions.begin(), versions.end(), [hash = std::string_view(hash)](auto& x){ return x.GetHash() == hash; });
+            if (v == versions.end()) return false;
+            bool downloaded = false;
+            BeatSaver::API::DownloadBeatmapAsync(bm.value(), *v, [&downloaded](bool){
+                downloaded = true;
+            });
+            while(!downloaded) std::this_thread::sleep_for(std::chrono::milliseconds(50));
             SongCore::API::Loading::RefreshSongs(false).wait();
 
-            return SongCore::API::Loading::GetLevelByHash(hash) != nullptr;
+            auto level = SongCore::API::Loading::GetLevelByHash(hash);
+            DEBUG("Got level: {}", fmt::ptr(level));
+            return level != nullptr;
         } else {
             ERROR("Couldn't get beatmap by hash: {}", hash);
             return false;
