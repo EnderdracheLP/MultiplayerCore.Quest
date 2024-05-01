@@ -227,16 +227,20 @@ namespace MultiplayerCore::UI {
     void MpRequirementsUI::SetRequirementsFromPacket(Beatmaps::Packets::MpBeatmapPacket* packet) {
         ClearCells(_levelInfoCells);
         auto diff = (uint8_t)packet->difficulty.value__;
-        for (auto& req : packet->requirements[diff]) {
-            static ConstString RequirementFound("Requirement Found");
-            static ConstString RequirementMissing("Requirement Missing");
+        auto diffReqsItr = packet->requirements.find(diff);
 
-            auto cell = GetCellInfo();
-            bool installed = _capabilities->IsCapabilityRegistered(req);
-            cell->text = fmt::format("<size=75%>{}", req);
-            cell->subText = installed ? RequirementFound : RequirementMissing;
-            cell->icon = installed ? get_HaveReqIcon() : get_MissingReqIcon();
-            _levelInfoCells.push_back(cell);
+        if (diffReqsItr != packet->requirements.end()) {
+            for (auto& req : diffReqsItr->second) {
+                static ConstString RequirementFound("Requirement Found");
+                static ConstString RequirementMissing("Requirement Missing");
+
+                auto cell = GetCellInfo();
+                bool installed = _capabilities->IsCapabilityRegistered(req);
+                cell->text = fmt::format("<size=75%>{}", req);
+                cell->subText = installed ? RequirementFound : RequirementMissing;
+                cell->icon = installed ? get_HaveReqIcon() : get_MissingReqIcon();
+                _levelInfoCells.push_back(cell);
+            }
         }
 
         for (auto& contributor : packet->contributors) {
