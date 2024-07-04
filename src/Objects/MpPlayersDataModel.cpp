@@ -69,12 +69,11 @@ namespace MultiplayerCore::Objects {
         Base::HandleMenuRpcManagerRecommendBeatmap(userId, beatmapKey);
     }
 
-    void MpPlayersDataModel::SetPlayerBeatmapLevel_override(StringW userId, GlobalNamespace::BeatmapKey& beatmapKey) {
-        if (userId == _multiplayerSessionManager->localPlayer->userId) {
-            std::thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, static_cast<GlobalNamespace::BeatmapKey>(beatmapKey)).detach();
-        }
+    void MpPlayersDataModel::SetLocalPlayerBeatmapLevel_override(GlobalNamespace::BeatmapKey& beatmapKey) {
+        DEBUG("Setting local player beatmap level id '{}'\r\nCheck difficulty '{}'\r\nCheck characteristic '{}'\r\nCheck BeatmapKey Valid '{}'", beatmapKey.levelId, (int)beatmapKey.difficulty, beatmapKey.beatmapCharacteristic ? beatmapKey.beatmapCharacteristic->serializedName : "null", beatmapKey.IsValid());
+        std::thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, static_cast<GlobalNamespace::BeatmapKey>(beatmapKey)).detach();
 
-        Base::SetPlayerBeatmapLevel(userId, byref(beatmapKey));
+        Base::SetLocalPlayerBeatmapLevel(byref(beatmapKey));
     }
 
     void MpPlayersDataModel::SendMpBeatmapPacket(GlobalNamespace::BeatmapKey beatmapKey) {

@@ -5,6 +5,9 @@
 #include "Objects/MpPlayersDataModel.hpp"
 // This file exists to override methods on LobbyPlayersDataModel for the MultiplayerCore.Objects.MpPlayersDataModel, since on quest methods are not transformed into virtual calls
 
+#include "GlobalNamespace/NetworkUtility.hpp"
+#include "GlobalNamespace/AuthenticationToken.hpp"
+
 using namespace MultiplayerCore::Objects;
 // override Activate
 MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_Activate, &::GlobalNamespace::LobbyPlayersDataModel::Activate, void, GlobalNamespace::LobbyPlayersDataModel* self) {
@@ -58,16 +61,40 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBea
             LobbyPlayersDataModel_HandleMenuRpcManagerRecommendBeatmap(self, userId, beatmapKey);
     }
 }
-// override SetPlayerBeatmapLevel
-MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_SetPlayerBeatmapLevel, &::GlobalNamespace::LobbyPlayersDataModel::SetPlayerBeatmapLevel, void, GlobalNamespace::LobbyPlayersDataModel* self, StringW userId, ByRef<GlobalNamespace::BeatmapKey> key) {
-    INVOKE_LOCK(LobbyPlayersDataModel_SetPlayerBeatmapLevel);
+// override SetLocalPlayerBeatmapLevel
+MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &::GlobalNamespace::LobbyPlayersDataModel::SetLocalPlayerBeatmapLevel, void, GlobalNamespace::LobbyPlayersDataModel* self, ByRef<GlobalNamespace::BeatmapKey> key) {
+    INVOKE_LOCK(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel);
     if (!lock) {
-        LobbyPlayersDataModel_SetPlayerBeatmapLevel(self, userId, key);
+        DEBUG("LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel not locked, calling original");
+        LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, key);
     } else {
         static auto customKlass = classof(MpPlayersDataModel*);
         if (self->klass == customKlass)
-            reinterpret_cast<MpPlayersDataModel*>(self)->SetPlayerBeatmapLevel_override(userId, key.heldRef);
+        {
+            DEBUG("LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel locked customKlass, calling override");
+            reinterpret_cast<MpPlayersDataModel*>(self)->SetLocalPlayerBeatmapLevel_override(key.heldRef);
+        }
         else
-            LobbyPlayersDataModel_SetPlayerBeatmapLevel(self, userId, key);
+        {
+            LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel(self, key);
+        }
     }
+}
+
+MAKE_AUTO_HOOK_ORIG_MATCH(NetworkUtility_GetHashedUserId, &::GlobalNamespace::NetworkUtility::GetHashedUserId, StringW, StringW userId, ::GlobalNamespace::AuthenticationToken::Platform platform) {
+    StringW hashedUserId;
+    // StringW prefix;
+    // if (getConfig().config.FindMember("UserIdPrefix") != getConfig().config.MemberEnd() && getConfig().config["UserIdPrefix"].IsString())
+    //     prefix = StringW(getConfig().config["UserIdPrefix"].GetString());
+
+    if (platform == ::GlobalNamespace::AuthenticationToken::Platform::OculusQuest || platform == ::GlobalNamespace::AuthenticationToken::Platform::Oculus) {
+        DEBUG("User is on Quest, using custom prefix");
+        DEBUG("Setting userId to hash {}", /*StringW(prefix + */StringW("OculusQuest#" + userId));
+        hashedUserId = ::GlobalNamespace::NetworkUtility::GetHashBase64(/*prefix + */StringW("OculusQuest#" + userId));
+        DEBUG("Hashed userId is %s", static_cast<std::string>(hashedUserId).c_str());
+    }
+    else {
+        return NetworkUtility_GetHashedUserId(/*prefix ? prefix + userId : */userId, platform);
+    }
+    return hashedUserId;
 }
