@@ -18,23 +18,23 @@ namespace MultiplayerCore::UI {
         _mpBeatmapLevelProvider = mpBeatmapLevelProvider;
     }
 
-    void CustomBeatmapSelectionView::SetBeatmap(ByRef<GlobalNamespace::BeatmapKey> beatmapKey) {
+    void CustomBeatmapSelectionView::SetBeatmap(GlobalNamespace::BeatmapKey beatmapKey) {
         static auto method = il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::BeatmapSelectionView::SetBeatmap>::methodInfo();
-        static auto base = [](GlobalNamespace::BeatmapSelectionView* self, ByRef<GlobalNamespace::BeatmapKey> beatmapKey){ return il2cpp_utils::RunMethodRethrow<void, false>(self, method, beatmapKey); };
-        if (!beatmapKey->IsValid()) {
-            DEBUG("beatmapkey was invalid");
+        static auto base = [](GlobalNamespace::BeatmapSelectionView* self, GlobalNamespace::BeatmapKey beatmapKey){ return il2cpp_utils::RunMethodRethrow<void, false>(self, method, beatmapKey); };
+        if (!beatmapKey.IsValid()) {
+            DEBUG("beatmapkey was invalid, {} {} {}", beatmapKey.levelId, (int)beatmapKey.difficulty, beatmapKey.beatmapCharacteristic ? beatmapKey.beatmapCharacteristic->get_serializedName() : "null");
             return base(this, beatmapKey);
         }
 
-        auto levelHash = HashFromLevelID(beatmapKey->levelId);
+        auto levelHash = HashFromLevelID(beatmapKey.levelId);
         if (levelHash.empty()) { // level wasn't custom
-            DEBUG("Level {} wasn't custom", beatmapKey->levelId);
+            DEBUG("Level {} wasn't custom", beatmapKey.levelId);
             return base(this, beatmapKey);
         }
 
         auto packet = _mpPlayersDataModel->FindLevelPacket(levelHash);
         if (!packet) { // level was probably selected by the local player from their installed maps, since no other player had it selected
-            DEBUG("Could not find packet for levelhash {}", levelHash);
+            DEBUG("Could not find packet for levelhash {}, possibly local selection", levelHash);
             return base(this, beatmapKey);
         }
 
@@ -43,21 +43,21 @@ namespace MultiplayerCore::UI {
         _levelBar->hide = false;
 
         // create a beatmap level for display
-        auto level = _mpBeatmapLevelProvider->GetBeatmapFromPacket(packet);
+        auto mpLevel = _mpBeatmapLevelProvider->GetBeatmapFromPacket(packet);
         auto dict = System::Collections::Generic::Dictionary_2<System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>, GlobalNamespace::BeatmapBasicData*>::New_ctor();
         dict->Add(
             System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>(
-                beatmapKey->beatmapCharacteristic,
-                beatmapKey->difficulty
+                beatmapKey.beatmapCharacteristic,
+                beatmapKey.difficulty
             ),
             GlobalNamespace::BeatmapBasicData::New_ctor(
                 0, 0, GlobalNamespace::EnvironmentName::getStaticF_Empty(),
                 nullptr, 0, 0, 0,
-                level->allMappers, level->allLighters
+                {packet->levelAuthorName}, ArrayW<StringW>::Empty()
             )
         );
 
-        level->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
-        _levelBar->Setup(level, beatmapKey->beatmapCharacteristic, beatmapKey->difficulty);
+        mpLevel->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
+        _levelBar->Setup(mpLevel, beatmapKey.beatmapCharacteristic, beatmapKey.difficulty);
     }
 }
