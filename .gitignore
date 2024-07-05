@@ -50,7 +50,6 @@ out/
 *.zip
 extern/
 Android.mk.backup
-qpm.shared.json
 
 log_timestamp
 
