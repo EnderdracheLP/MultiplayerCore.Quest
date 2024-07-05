@@ -28,8 +28,6 @@ namespace MultiplayerCore::UI {
     }
 
     void GameServerPlayerTableCellCustomData::SetData(GlobalNamespace::IConnectedPlayer* connectedPlayer, GlobalNamespace::ILobbyPlayerData* playerData, bool hasKickPermissions, bool allowSelection, System::Threading::Tasks::Task_1<GlobalNamespace::EntitlementStatus>* getLevelEntitlementTask) {
-        bool tempBool = false; // Temporary value for _gameServerPlayerTableCell->_useBeatmapButtonHoverHint->enabled
-        
         if (!_gameServerPlayerTableCell) return;
         _gameServerPlayerTableCell->_playerNameText->text = connectedPlayer->userName;
         if (!playerData->isReady && playerData->isActive && !playerData->isPartyOwner) {
@@ -55,11 +53,6 @@ namespace MultiplayerCore::UI {
                 auto packet = _mpPlayersDataModel->FindLevelPacket(levelHash);
                 _gameServerPlayerTableCell->_suggestedLevelText->text = packet ? packet->songName : nullptr;
                 displayLevelText = packet != nullptr;
-                // TODO: Figure out crash with levels not found locally, for now we disable selection
-                static ConstString buglabel("Currently disabled for non-local levels due to a crash bug");
-                _gameServerPlayerTableCell->_useBeatmapButtonHoverHint->text = buglabel;
-                getLevelEntitlementTask = nullptr;
-                tempBool = true;
             }
 
             _gameServerPlayerTableCell->_suggestedCharacteristicIcon->sprite = key.beatmapCharacteristic->icon;
@@ -99,7 +92,7 @@ namespace MultiplayerCore::UI {
         }
 
         _gameServerPlayerTableCell->_useBeatmapButton->interactable = false;
-        _gameServerPlayerTableCell->_useBeatmapButtonHoverHint->enabled = tempBool; // by default false
+        _gameServerPlayerTableCell->_useBeatmapButtonHoverHint->enabled = false;
     }
 
     void GameServerPlayerTableCellCustomData::SetLevelFoundValues(bool displayLevelText) {
