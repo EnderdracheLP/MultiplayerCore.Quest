@@ -7,6 +7,8 @@
 
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include <chrono>
+#include <cctype>      // std::tolower
+#include <algorithm>   // std::equal
 
 DEFINE_TYPE(MultiplayerCore::Objects, MpLevelDownloader);
 
@@ -37,6 +39,7 @@ namespace MultiplayerCore::Objects {
     }
 
     bool MpLevelDownloader::TryDownloadLevelInternal(std::string levelId, std::function<void(double)> progress) {
+        DEBUG("Called TryDownloadLevelInternal: {}", levelId);
         auto hash = HashFromLevelID(std::string_view(levelId));
         if (hash.empty()) {
             ERROR("Could not parse hash from id {}", levelId);
@@ -46,12 +49,24 @@ namespace MultiplayerCore::Objects {
         auto bm = BeatSaver::API::GetBeatmapByHash(hash);
         if (bm.has_value()) {
             auto& versions = bm->GetVersions();
-            auto v = std::find_if(versions.begin(), versions.end(), [hash = std::string_view(hash)](auto& x){ return x.GetHash() == hash; });
-            if (v == versions.end()) return false;
+            auto v = std::find_if(versions.begin(), versions.end(), 
+                [hash = std::string_view(hash)](auto& x){ return std::ranges::equal(x.GetHash(), hash, 
+                    [](char a, char b){
+                        return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); 
+                    });
+                }
+            );
+            if (v == versions.end()) {
+                ERROR("Could not find version for hash {}", hash);
+                return false;
+            }
             bool downloaded = false;
-            BeatSaver::API::DownloadBeatmapAsync(bm.value(), *v, [&downloaded](bool){
+            DEBUG("Starting download of beatmap: {}", hash);
+            BeatSaver::API::DownloadBeatmapAsync(bm.value(), *v, [&downloaded](bool test){
+                DEBUG("Download finished callback, success: {}", test);
                 downloaded = true;
-            });
+            }, progress);
+            
             while(!downloaded) std::this_thread::sleep_for(std::chrono::milliseconds(50));
             SongCore::API::Loading::RefreshSongs(false).wait();
 
