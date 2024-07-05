@@ -63,54 +63,57 @@ echo "Creating QMod $qmodName"
         exit $LASTEXITCODE
     }
 
-    qpm qmod manifest
+    # qpm qmod manifest
 }
 
 echo "Creating qmod from mod.json"
 
 $mod = "./mod.json"
-$modJson = Get-Content $mod -Raw | ConvertFrom-Json
+# $modJson = Get-Content $mod -Raw | ConvertFrom-Json
 
-$filelist = @($mod)
+# $filelist = @($mod)
 
-$cover = "./" + $modJson.coverImage
-if ((-not ($cover -eq "./")) -and (Test-Path $cover))
-{ 
-    $filelist += ,$cover
-} else {
-    echo "No cover Image found"
-}
+# $cover = "./" + $modJson.coverImage
+# if ((-not ($cover -eq "./")) -and (Test-Path $cover))
+# { 
+#     $filelist += ,$cover
+# } else {
+#     echo "No cover Image found"
+# }
 
-foreach ($mod in $modJson.modFiles)
-{
-    $path = "./build/" + $mod
-    if (-not (Test-Path $path))
-    {
-        $path = "./extern/libs/" + $mod
-    }
-    $filelist += $path
-}
+# foreach ($mod in $modJson.modFiles)
+# {
+#     $path = "./build/" + $mod
+#     if (-not (Test-Path $path))
+#     {
+#         $path = "./extern/libs/" + $mod
+#     }
+#     $filelist += $path
+# }
 
-foreach ($lib in $modJson.libraryFiles)
-{
-    $path = "./extern/libs/" + $lib
-    if (-not (Test-Path $path))
-    {
-        $path = "./build/" + $lib
-    }
-    $filelist += $path
-}
+# foreach ($lib in $modJson.libraryFiles)
+# {
+#     $path = "./extern/libs/" + $lib
+#     if (-not (Test-Path $path))
+#     {
+#         $path = "./build/" + $lib
+#     }
+#     $filelist += $path
+# }
 
-$zip = $qmodName + ".zip"
+# $zip = $qmodName + ".zip"
 $qmod = $qmodName + ".qmod"
 
-if ((-not ($clean.IsPresent)) -and (Test-Path $qmod))
-{
-    echo "Making Clean Qmod"
-    Move-Item $qmod $zip -Force
-}
+# if ((-not ($clean.IsPresent)) -and (Test-Path $qmod))
+# {
+#     echo "Making Clean Qmod"
+#     Move-Item $qmod $zip -Force
+# }
 
-Compress-Archive -Path $filelist -DestinationPath $zip -Update
-Move-Item $zip $qmod -Force
+# Compress-Archive -Path $filelist -DestinationPath $zip -Update
+# Move-Item $zip $qmod -Force
+
+qpm qmod zip -i ./build/
+Move-Item multiplayer-core.qmod $qmod -Force
 
 echo "Task Completed"
