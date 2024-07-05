@@ -139,34 +139,36 @@ namespace MultiplayerCore::Objects {
         if (requirementsMet) return;
 
         DEBUG("Level will be unloaded due to unmet requirements");
-        // TODO: should this also make _rpcManager send NotOwned?
+        _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::NotOwned);
         _beatmapLevelData = nullptr;
     }
 
     System::Threading::Tasks::Task_1<GlobalNamespace::LoadBeatmapLevelDataResult>* MpLevelLoader::StartDownloadBeatmapLevelAsyncTask(std::string levelId, System::Threading::CancellationToken cancellationToken) {
         return StartTask<GlobalNamespace::LoadBeatmapLevelDataResult>([this, levelId](CancellationToken token) -> GlobalNamespace::LoadBeatmapLevelDataResult {
-            static auto Error = GlobalNamespace::LoadBeatmapLevelDataResult(true, nullptr);
             try {
                 auto success = _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).get();
                 if (!success) {
                     DEBUG("Failed to download level");
-                    return Error;
+                    // Somehow returning error here doesn't work, the game will just crash if we fail to download a level
+                    _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::NotOwned);
+                    ClearLoading();
+                    return ::GlobalNamespace::LoadBeatmapLevelDataResult::getStaticF_Error();
                 }
                 auto level = _runtimeSongLoader->GetLevelByLevelID(levelId);
                 if (!level) {
                     DEBUG("Couldn't get level by id");
-                    return Error;
+                    return ::GlobalNamespace::LoadBeatmapLevelDataResult::getStaticF_Error();
                 }
                 if (!level->beatmapLevelData) {
                     DEBUG("level data is null!");
-                    return Error;
+                    return ::GlobalNamespace::LoadBeatmapLevelDataResult::getStaticF_Error();
                 }
                 DEBUG("Got level data for level {}: {}", levelId, fmt::ptr(level->beatmapLevelData));
                 return GlobalNamespace::LoadBeatmapLevelDataResult(false, level->beatmapLevelData);
             } catch(std::exception const& e) {
                 ERROR("Caught error during beatmap level download: {}, what: {}", typeid(e).name(), e.what());
             }
-            return Error;
+            return ::GlobalNamespace::LoadBeatmapLevelDataResult::getStaticF_Error();
         }, std::forward<CancellationToken>(cancellationToken));
     }
 
