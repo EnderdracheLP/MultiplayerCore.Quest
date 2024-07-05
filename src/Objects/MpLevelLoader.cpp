@@ -123,9 +123,10 @@ namespace MultiplayerCore::Objects {
 
         auto level = _runtimeSongLoader->GetLevelByHash(levelHash);
         // level not loaded or savedata not loaded
-        if (!level || !level->standardLevelInfoSaveData) return;
+        if (!level || !level->standardLevelInfoSaveDataV2 || !level->standardLevelInfoSaveDataV2.value()->CustomSaveDataInfo) return;
 
-        auto diffDataOpt = level->standardLevelInfoSaveData->TryGetCharacteristicAndDifficulty(beatmapKey.beatmapCharacteristic->serializedName, beatmapKey.difficulty);
+        // SongCore::CustomJSONData::CustomSaveDataInfo::BasicCustomLevelDetails
+        auto diffDataOpt = level->standardLevelInfoSaveDataV2.value()->CustomSaveDataInfo->get().TryGetCharacteristicAndDifficulty(beatmapKey.beatmapCharacteristic->serializedName, beatmapKey.difficulty);
         if (diffDataOpt.has_value()) return;
 
         auto& diffData = diffDataOpt->get();

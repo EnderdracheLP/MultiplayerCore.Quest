@@ -14,6 +14,7 @@ namespace MultiplayerCore::Beatmaps {
 
         // invoke beatmaplevel ctor
         _ctor(
+            localLevel->version,
             localLevel->hasPrecalculatedData,
             localLevel->levelID,
             localLevel->songName,

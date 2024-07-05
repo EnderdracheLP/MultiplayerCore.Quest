@@ -32,7 +32,7 @@ namespace MultiplayerCore::UI {
     }
 
     void MpColorsUI::Parse() {
-        if (!modal || !modal->m_CachedPtr) {
+        if (!modal || modal->m_CachedPtr.IsNull()) {
             BSML::parse_and_construct(
                 Assets::ColorsUI_bsml,
                 _lobbySetupViewController->GetComponentInChildren<GlobalNamespace::LevelBar*>(true)->get_transform(),
@@ -62,7 +62,7 @@ namespace MultiplayerCore::UI {
         );
     }
 
-    void MpColorsUI::AcceptColors(SongCore::CustomJSONData::CustomLevelInfoSaveData::BasicCustomDifficultyBeatmapDetails::CustomColors const& colors) {
+    void MpColorsUI::AcceptColors(SongCore::CustomJSONData::CustomSaveDataInfo::BasicCustomDifficultyBeatmapDetails::CustomColors const& colors) {
         static UnityEngine::Color voidColor = UnityEngine::Color(0.5f, 0.5f, 0.5f, 1.0f);
         Parse();
 

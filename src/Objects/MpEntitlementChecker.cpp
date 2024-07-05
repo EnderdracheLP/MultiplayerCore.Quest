@@ -114,7 +114,7 @@ namespace MultiplayerCore::Objects {
         // Check if this custom song exists locally
         auto level = SongCore::API::Loading::GetLevelByHash(levelHash);
         if (level) {
-            auto extraSongData = Utils::ExtraSongData::FromSaveData(level->standardLevelInfoSaveData);
+            auto extraSongData = Utils::ExtraSongData::FromSaveData(level->standardLevelInfoSaveDataV2.value_or(nullptr));
             if (!extraSongData.has_value()) return GlobalNamespace::EntitlementsStatus::Ok;
 
             std::list<std::string> requirements;

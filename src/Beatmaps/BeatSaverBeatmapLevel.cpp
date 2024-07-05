@@ -36,6 +36,7 @@ namespace MultiplayerCore::Beatmaps {
         level->beatmap = beatmap;
 
         level->_ctor(
+            -1,
             false,
             fmt::format("custom_level_{}", hash),
             beatmap.GetMetadata().GetSongName(),

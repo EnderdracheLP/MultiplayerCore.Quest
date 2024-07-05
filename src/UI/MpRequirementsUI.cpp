@@ -168,10 +168,11 @@ namespace MultiplayerCore::UI {
         switch ((int64_t)customLevel) {
             // valid ptr
             default: {
-                auto saveData = customLevel->standardLevelInfoSaveData;
-                if (!saveData) break;
+                auto saveData = customLevel->standardLevelInfoSaveDataV2;
+                if (!saveData.has_value()) break;
 
-                auto levelDetailsOpt = saveData->TryGetBasicLevelDetails();
+                // SongCore::CustomJSONData::CustomSaveDataInfo::
+                auto levelDetailsOpt = saveData.value()->CustomSaveDataInfo->get().TryGetBasicLevelDetails();
                 if (!levelDetailsOpt.has_value()) break;
 
                 auto& levelDetails = levelDetailsOpt->get();
@@ -311,7 +312,7 @@ namespace MultiplayerCore::UI {
 
 #define DEFINE_ICON(icon) \
     UnityEngine::Sprite* MpRequirementsUI::get_##icon##Icon() { \
-        if (!_##icon##Icon || !_##icon##Icon->m_CachedPtr) { \
+        if (!_##icon##Icon || _##icon##Icon->m_CachedPtr.IsNull()) { \
             auto& data = Assets::icon##_png;\
             _##icon##Icon = BSML::Utilities::LoadSpriteRaw(data);\
         }\

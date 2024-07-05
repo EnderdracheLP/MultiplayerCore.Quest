@@ -16,6 +16,7 @@ namespace MultiplayerCore::Beatmaps {
         INVOKE_BASE_CTOR(classof(Abstractions::MpBeatmapLevel*));
 
         _ctor(
+            -1,
             false,
             fmt::format("custom_level_{}", packet->levelHash),
             packet->songName,

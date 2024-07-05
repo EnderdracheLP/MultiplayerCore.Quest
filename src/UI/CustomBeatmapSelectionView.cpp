@@ -22,7 +22,7 @@ namespace MultiplayerCore::UI {
         static auto method = il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::BeatmapSelectionView::SetBeatmap>::methodInfo();
         static auto base = [](GlobalNamespace::BeatmapSelectionView* self, GlobalNamespace::BeatmapKey beatmapKey){ return il2cpp_utils::RunMethodRethrow<void, false>(self, method, beatmapKey); };
         if (!beatmapKey.IsValid()) {
-            DEBUG("beatmapkey was invalid, {} {} {}", beatmapKey.levelId, (int)beatmapKey.difficulty, beatmapKey.beatmapCharacteristic ? beatmapKey.beatmapCharacteristic->get_serializedName() : "null");
+            WARNING("beatmapkey was invalid, {} {} {}", beatmapKey.levelId, (int)beatmapKey.difficulty, beatmapKey.beatmapCharacteristic ? beatmapKey.beatmapCharacteristic->get_serializedName() : "null");
             return base(this, beatmapKey);
         }
 
@@ -58,6 +58,6 @@ namespace MultiplayerCore::UI {
         );
 
         mpLevel->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
-        _levelBar->Setup(mpLevel, beatmapKey.beatmapCharacteristic, beatmapKey.difficulty);
+        _levelBar->SetupData(mpLevel, beatmapKey.difficulty, beatmapKey.beatmapCharacteristic);
     }
 }

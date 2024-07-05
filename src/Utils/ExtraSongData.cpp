@@ -124,7 +124,7 @@ namespace MultiplayerCore::Utils {
         }
     }
 
-    ExtraSongData::ExtraSongData(const SongCore::CustomJSONData::CustomLevelInfoSaveData::BasicCustomLevelDetails& levelDetails) {
+    ExtraSongData::ExtraSongData(const SongCore::CustomJSONData::CustomSaveDataInfo::BasicCustomLevelDetails&levelDetails) {
         for (const auto& contributor : levelDetails.contributors) {
             contributors.emplace_back(
                 contributor.name,

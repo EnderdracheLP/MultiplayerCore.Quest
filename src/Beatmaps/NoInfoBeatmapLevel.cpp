@@ -14,6 +14,7 @@ namespace MultiplayerCore::Beatmaps {
         static ConstString Empty("");
 
         _ctor(
+            -1,
             false,
             fmt::format("custom_level_{}", hash),
             Empty,

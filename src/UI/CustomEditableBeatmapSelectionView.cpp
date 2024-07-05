@@ -22,7 +22,7 @@ namespace MultiplayerCore::UI {
         static auto method = il2cpp_utils::il2cpp_type_check::MetadataGetter<&GlobalNamespace::EditableBeatmapSelectionView::SetBeatmap>::methodInfo();
         static auto base = [](GlobalNamespace::EditableBeatmapSelectionView* self, GlobalNamespace::BeatmapKey beatmapKey){ return il2cpp_utils::RunMethodRethrow<void, false>(self, method, beatmapKey); };
         if (!beatmapKey.IsValid()) {
-            DEBUG("beatmapkey was invalid");
+            WARNING("beatmapkey was invalid");
             return base(this, beatmapKey);
         }
 
@@ -59,6 +59,6 @@ namespace MultiplayerCore::UI {
         );
 
         mpLevel->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
-        _levelBar->Setup(mpLevel, beatmapKey.beatmapCharacteristic, beatmapKey.difficulty);
+        _levelBar->SetupData(mpLevel, beatmapKey.difficulty, beatmapKey.beatmapCharacteristic);
     }
 }

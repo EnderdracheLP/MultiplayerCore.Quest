@@ -31,5 +31,5 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, MpColorsUI, System::Object,
         void Dismiss();
 
         void AcceptColors(Beatmaps::Abstractions::DifficultyColors const& colors);
-        void AcceptColors(SongCore::CustomJSONData::CustomLevelInfoSaveData::BasicCustomDifficultyBeatmapDetails::CustomColors const& colors);
+        void AcceptColors(SongCore::CustomJSONData::CustomSaveDataInfo::BasicCustomDifficultyBeatmapDetails::CustomColors const& colors);
 )

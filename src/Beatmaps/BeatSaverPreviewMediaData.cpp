@@ -22,7 +22,7 @@ namespace MultiplayerCore::Beatmaps {
     }
 
     Task_1<UnityEngine::Sprite*>* BeatSaverPreviewMediaData::GetCoverSpriteAsync(CancellationToken cancellationToken) {
-        if (_cachedCoverImage && _cachedCoverImage->m_CachedPtr) {
+        if (_cachedCoverImage && !_cachedCoverImage->m_CachedPtr.IsNull()) {
             return Task_1<UnityEngine::Sprite*>::FromResult(_cachedCoverImage);
         } else {
             _cachedCoverImage = nullptr;
@@ -49,7 +49,7 @@ namespace MultiplayerCore::Beatmaps {
     }
 
     Task_1<UnityEngine::AudioClip*>* BeatSaverPreviewMediaData::GetPreviewAudioClip(CancellationToken cancellationToken) {
-        if (_cachedAudioClip && _cachedAudioClip->m_CachedPtr) {
+        if (_cachedAudioClip && !_cachedAudioClip->m_CachedPtr.IsNull()) {
             return Task_1<UnityEngine::AudioClip*>::New_ctor(_cachedAudioClip);
         } else {
             _cachedAudioClip = nullptr;
@@ -86,7 +86,7 @@ namespace MultiplayerCore::Beatmaps {
     }
 
     void BeatSaverPreviewMediaData::UnloadPreviewAudioClip() {
-        if (_cachedAudioClip && _cachedAudioClip->m_CachedPtr) {
+        if (_cachedAudioClip && !_cachedAudioClip->m_CachedPtr.IsNull()) {
             UnityEngine::Object::Destroy(_cachedAudioClip);
         }
         _cachedAudioClip = nullptr;

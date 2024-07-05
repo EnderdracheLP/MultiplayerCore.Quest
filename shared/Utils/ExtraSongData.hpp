@@ -118,19 +118,19 @@ namespace MultiplayerCore::Utils {
         static inline std::optional<ExtraSongData> FromLevelHash(const std::string& levelId) {
             auto customLevel = SongCore::API::Loading::GetLevelByHash(levelId);
             if (!customLevel) return std::nullopt;
-            return FromSaveData(customLevel->standardLevelInfoSaveData);
+            return FromSaveData(customLevel->standardLevelInfoSaveDataV2.value_or(nullptr));
         }
 
         static inline std::optional<ExtraSongData> FromLevelId(const std::string& levelId) {
             auto customLevel = SongCore::API::Loading::GetLevelByLevelID(levelId);
             if (!customLevel) return std::nullopt;
-            return FromSaveData(customLevel->standardLevelInfoSaveData);
+            return FromSaveData(customLevel->standardLevelInfoSaveDataV2.value_or(nullptr));
         }
 
         static inline std::optional<ExtraSongData> FromBeatmapLevel(GlobalNamespace::BeatmapLevel* level) {
             auto customLevel = il2cpp_utils::try_cast<SongCore::SongLoader::CustomBeatmapLevel>(level).value_or(nullptr);
             if (!customLevel) return std::nullopt;
-            return FromSaveData(customLevel->standardLevelInfoSaveData);
+            return FromSaveData(customLevel->standardLevelInfoSaveDataV2.value_or(nullptr));
         }
 
         static inline std::optional<ExtraSongData> FromMapPath(const std::string& path) {
@@ -153,15 +153,15 @@ namespace MultiplayerCore::Utils {
             return ExtraSongData(doc);
         }
 
-        static std::optional<ExtraSongData> FromSaveData(SongCore::CustomJSONData::CustomLevelInfoSaveData* saveData) {
-            if (!saveData) return std::nullopt;
-            auto levelDetailsOpt = saveData->TryGetBasicLevelDetails();
+        static std::optional<ExtraSongData> FromSaveData(SongCore::CustomJSONData::CustomLevelInfoSaveDataV2* saveData) {
+            if (!saveData || !saveData->CustomSaveDataInfo.has_value()) return std::nullopt;
+            auto levelDetailsOpt = saveData->CustomSaveDataInfo->get().TryGetBasicLevelDetails();
             if (!levelDetailsOpt.has_value()) return std::nullopt;
             return ExtraSongData(levelDetailsOpt.value());
         }
 
         ExtraSongData(const rapidjson::Document& doc);
-        ExtraSongData(const SongCore::CustomJSONData::CustomLevelInfoSaveData::BasicCustomLevelDetails& levelDetails);
+        ExtraSongData(const SongCore::CustomJSONData::CustomSaveDataInfo::BasicCustomLevelDetails& levelDetails);
     };
 }
 DEFINE_IL2CPP_ARG_TYPE(::MultiplayerCore::Utils::ExtraSongData::MapColor, "UnityEngine", "Color");

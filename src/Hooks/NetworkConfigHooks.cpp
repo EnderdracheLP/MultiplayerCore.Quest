@@ -64,8 +64,8 @@ namespace MultiplayerCore::Hooks {
 
 using namespace MultiplayerCore::Hooks;
 
-MAKE_AUTO_HOOK_MATCH(MainSystemInit_Init, &::GlobalNamespace::MainSystemInit::Init, void, GlobalNamespace::MainSystemInit* self) {
-    MainSystemInit_Init(self);
+MAKE_AUTO_HOOK_MATCH(MainSystemInit_Init, &::GlobalNamespace::MainSystemInit::Init, void, GlobalNamespace::MainSystemInit* self, ::GlobalNamespace::SettingsApplicatorSO* settingsApplicator) {
+    MainSystemInit_Init(self, settingsApplicator);
     // construct original config from base game values
     auto& officialConfig = NetworkConfigHooks::officialServerConfig;
     officialConfig.graphUrl  = static_cast<std::string>(self->_networkConfig->_graphUrl);
