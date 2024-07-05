@@ -17,6 +17,7 @@ using namespace MultiplayerCore;
 using namespace MultiplayerCore::Hooks;
 
 MAKE_AUTO_HOOK_MATCH(LobbySetupViewController_SetPlayersMissingLevelText, &::GlobalNamespace::LobbySetupViewController::SetPlayersMissingLevelText, void, GlobalNamespace::LobbySetupViewController* self, StringW playersMissingLevelText) {
+    DEBUG("LobbySetupViewController_SetPlayersMissingLevelText: {}", playersMissingLevelText);
     if (!System::String::IsNullOrEmpty(playersMissingLevelText) && self->_startGameReadyButton->get_interactable()) {
         self->SetStartGameEnabled(GlobalNamespace::CannotStartGameReason::DoNotOwnSong);
     }

@@ -17,8 +17,8 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Abstractions, MpBeatmapLevel, G
 
     DECLARE_CTOR(ctor);
     public:
-        std::unordered_map<std::string, std::unordered_map<uint8_t, std::list<std::string>>> requirements;
-        std::unordered_map<std::string, std::unordered_map<uint8_t, DifficultyColors>> difficultyColors;
+        std::unordered_map<std::string, std::unordered_map<uint32_t, std::list<std::string>>> requirements;
+        std::unordered_map<std::string, std::unordered_map<uint32_t, DifficultyColors>> difficultyColors;
         std::vector<const MultiplayerCore::Utils::ExtraSongData::Contributor> contributors;
     protected:
         std::string _levelHash;

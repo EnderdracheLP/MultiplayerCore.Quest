@@ -1,5 +1,6 @@
 #include "Beatmaps/LocalBeatmapLevel.hpp"
 #include "Utils/ExtraSongData.hpp"
+#include "logging.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, LocalBeatmapLevel);
 
@@ -36,6 +37,7 @@ namespace MultiplayerCore::Beatmaps {
 
         auto extraSongData = ExtraSongData::FromBeatmapLevel(localLevel);
         if (extraSongData.has_value()) {
+            DEBUG("Got extra song data for level {}", hash);
             auto& difficulties = extraSongData->difficulties;
             for (const auto& difficulty : difficulties) {
                 if (difficulty.additionalDifficultyData) {
@@ -55,6 +57,9 @@ namespace MultiplayerCore::Beatmaps {
 
             for (const auto& contributor : extraSongData->contributors)
                 contributors.emplace_back(contributor);
+        }
+        else {
+            DEBUG("Failed to get extra song data for level {}", hash);
         }
     }
 }

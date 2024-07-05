@@ -1,4 +1,5 @@
 #include "NodePoseSyncState/MpNodePoseSyncStatePacket.hpp"
+#include "GlobalNamespace/VarIntExtensions.hpp"
 
 DEFINE_TYPE(MultiplayerCore::NodePoseSyncState, MpNodePoseSyncStatePacket);
 
@@ -8,12 +9,12 @@ namespace MultiplayerCore::NodePoseSyncState {
     }
 
     void MpNodePoseSyncStatePacket::Serialize(LiteNetLib::Utils::NetDataWriter* writer) {
-        writer->Put(deltaUpdateFrequencyMs);
-        writer->Put(fullStateUpdateFrequencyMs);
+        GlobalNamespace::VarIntExtensions::PutVarLong(writer, deltaUpdateFrequencyMs);
+        GlobalNamespace::VarIntExtensions::PutVarLong(writer, fullStateUpdateFrequencyMs);
     }
 
     void MpNodePoseSyncStatePacket::Deserialize(LiteNetLib::Utils::NetDataReader* reader) {
-        deltaUpdateFrequencyMs = reader->GetLong();
-        fullStateUpdateFrequencyMs = reader->GetLong();
+        deltaUpdateFrequencyMs = GlobalNamespace::VarIntExtensions::GetVarLong(reader);
+        fullStateUpdateFrequencyMs = GlobalNamespace::VarIntExtensions::GetVarLong(reader);
     }
 }

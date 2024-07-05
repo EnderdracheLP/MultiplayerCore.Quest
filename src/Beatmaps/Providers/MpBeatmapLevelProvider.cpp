@@ -42,7 +42,9 @@ namespace MultiplayerCore::Beatmaps::Providers {
         auto beatmap = BeatSaver::API::GetBeatmapByHash(static_cast<std::string>(levelHash));
         if (beatmap.has_value()) {
             level = BeatSaverBeatmapLevel::Make(levelHash, beatmap.value());
-            _hashToNetworkLevels->Add(levelHash, level);
+            // Somehow it can happen that the level is already in the cache at this point, despiste us checking before
+            // TODO: Check if that can still happen
+            if (!_hashToNetworkLevels->ContainsKey(levelHash)) _hashToNetworkLevels->Add(levelHash, level);
             return level;
         }
 
@@ -52,7 +54,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
     GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromLocalBeatmaps(const std::string& levelHash) {
         auto customLevel = SongCore::API::Loading::GetLevelByHash(levelHash);
         if (!customLevel) return nullptr;
-        return customLevel;
+        return Beatmaps::LocalBeatmapLevel::New_ctor(levelHash, customLevel);
     }
 
     GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet) {
