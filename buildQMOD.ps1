@@ -49,7 +49,7 @@ if (($args.Count -eq 0) -And $package -eq $false) {
 echo "Creating QMod $qmodName"
     if ($version.Length -gt 0) {
         $qmodName += "_$($version)"
-        qpm-rust package edit --version $version
+        qpm package edit --version $version
     }
     else {
         $qpm = "./qpm.json"
@@ -63,7 +63,7 @@ echo "Creating QMod $qmodName"
         exit $LASTEXITCODE
     }
 
-    qpm-rust qmod build
+    qpm qmod manifest
 }
 
 echo "Creating qmod from mod.json"
