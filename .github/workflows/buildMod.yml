@@ -25,13 +25,13 @@ jobs:
     runs-on: ubuntu-22.04
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout
       with:
         submodules: true
         lfs: true
 
-    - uses: seanmiddleditch/gha-setup-ninja@v3
+    - uses: seanmiddleditch/gha-setup-ninja@v5
 
 #    - name: Install Powershell
 #      run: sudo apt-get install -y powershell
@@ -128,7 +128,7 @@ jobs:
 
 
     - name: Upload non-debug artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.libname.outputs.NAME }}
         path: ./build/${{ steps.libname.outputs.NAME }}
@@ -136,7 +136,7 @@ jobs:
 
 
     - name: Upload debug artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: debug_${{ steps.libname.outputs.NAME }}
         path: ./build/debug/${{ steps.libname.outputs.NAME }}
@@ -144,7 +144,7 @@ jobs:
 
 
     - name: Upload QMOD
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.module_id }}-(UNZIP-for-QMOD).qmod
         path: ./${{ env.module_id }}_${{ env.version }}.qmod
