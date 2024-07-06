@@ -64,26 +64,13 @@ jobs:
           ${{ runner.os }}-${{ env.cache-name }}-
           ${{ runner.os }}-${{ env.cache-name }}
       
-    - name: Read qpm.shared.json
-      id: setQpmJson
+    - name: Get Version
       run: |
-        content=`cat ./qpm.shared.json`
-        # the following lines are only required for multi line json
-        content="${content//'%'/'%25'}"
-        content="${content//$'\n'/'%0A'}"
-        content="${content//$'\r'/'%0D'}"
-        # end of optional handling for multi line json
-        echo $content
-        echo "QPMJSON=$content" >> $GITHUB_OUTPUT
+        pwsh -Command echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('-Dev', ''))_$('$GITHUB_SHA'.Substring(0, 6))" >> $GITHUB_ENV
 
-    - name: Set Version
+    - name: QPM Set Version & Restore
       run: |
-        echo "version=${{ fromJson(steps.setQpmJson.outputs.QPMJSON).config.info.version }}_$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
         ./QPM/qpm package edit --version ${{ env.version }}
-
-
-    - name: QPM Restore
-      run: |
         ./QPM/qpm restore
 
     - name: Check dependency Folders
