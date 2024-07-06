@@ -136,8 +136,13 @@ namespace MultiplayerCore::UI {
     BSML::CustomCellInfo* MpRequirementsUI::GetCellInfo() {
         // if we had none, return a new one
         if (_unusedCells.empty()) return BSML::CustomCellInfo::New_ctor();
-        auto cell = *_unusedCells.front();
-        _unusedCells->RemoveAt(0);
+        auto lastIdx = _unusedCells.size() - 1;
+        auto cell = _unusedCells[lastIdx];
+        _unusedCells->Remove(cell);
+        if (!cell) {
+            DEBUG("Cell was nullptr, returning new one");
+            return BSML::CustomCellInfo::New_ctor();
+        }
         return cell;
     }
 
@@ -168,19 +173,21 @@ namespace MultiplayerCore::UI {
         switch ((int64_t)customLevel) {
             // valid ptr
             default: {
-                auto saveData = customLevel->standardLevelInfoSaveDataV2;
-                if (!saveData.has_value()) break;
+                // DEBUG("Setting requirements from custom level, level ptr: {}", fmt::ptr(customLevel));
+                // auto saveData = customLevel->standardLevelInfoSaveDataV2;
+                // if (!saveData.has_value() || !saveData.value()->CustomSaveDataInfo.has_value()) break;
 
-                // SongCore::CustomJSONData::CustomSaveDataInfo::
-                auto levelDetailsOpt = saveData.value()->CustomSaveDataInfo->get().TryGetBasicLevelDetails();
+                auto levelDetailsOpt = customLevel->CustomSaveDataInfo->get().TryGetBasicLevelDetails();
                 if (!levelDetailsOpt.has_value()) break;
 
+                // DEBUG("Setting requirements from custom level, level details ptr: {}", fmt::ptr(&levelDetailsOpt.value()));
                 auto& levelDetails = levelDetailsOpt->get();
                 auto difficultyDetailsOpt = levelDetails.TryGetCharacteristicAndDifficulty(beatmapKey.beatmapCharacteristic->serializedName, beatmapKey.difficulty);
 
                 if (difficultyDetailsOpt.has_value()) {
                     auto& difficultyDetails = difficultyDetailsOpt->get();
 
+                    DEBUG("Requirements available, difficultyDetails.requirements.size(): {}", difficultyDetails.requirements.size());
                     for (auto& req : difficultyDetails.requirements) {
                         static ConstString RequirementFound("Requirement Found");
                         static ConstString RequirementMissing("Requirement Missing");
@@ -192,16 +199,21 @@ namespace MultiplayerCore::UI {
                         cell->icon = installed ? get_HaveReqIcon() : get_MissingReqIcon();
                         _levelInfoCells.push_back(cell);
                     }
-                }
+                } else DEBUG("Setting requirements from custom level, difficultyDetailsOpt has no value");
 
+                DEBUG("Setting requirements from custom level, levelDetails.contributors.size(): {}", levelDetails.contributors.size());
                 for (auto& contributor : levelDetails.contributors) {
                     auto cell = GetCellInfo();
+                    DEBUG("Setting contributors ptr: {}, name ptr: {}, role ptr: {}", fmt::ptr(&contributor), fmt::ptr(&contributor.name), fmt::ptr(&contributor.role));
                     cell->text = fmt::format("<size=75%>{}", contributor.name);
                     cell->subText = contributor.role;
+                    // cell->text = fmt::format("<size=75%>{}", "Placeholder Contributor Name");
+                    // cell->subText = "";
                     cell->icon = get_InfoIcon();
                     _levelInfoCells.push_back(cell);
                 }
 
+                DEBUG("Setting requirements from custom level, difficultyDetails.customColors has value: {}", difficultyDetailsOpt.has_value());
                 if (difficultyDetailsOpt.has_value()) {
                     auto& difficultyDetails = difficultyDetailsOpt->get();
                     if (difficultyDetails.customColors.has_value()) {
@@ -214,6 +226,7 @@ namespace MultiplayerCore::UI {
                         cell->icon = get_ColorsIcon();
                         _levelInfoCells.push_back(cell);
 
+                        DEBUG("Calling AcceptColors with custom colors");
                         _colorsUI->AcceptColors(difficultyDetails.customColors.value());
                     }
                 }
