@@ -113,7 +113,7 @@ $qmod = $qmodName + ".qmod"
 # Compress-Archive -Path $filelist -DestinationPath $zip -Update
 # Move-Item $zip $qmod -Force
 
-qpm qmod zip -i ./build/
-Move-Item multiplayer-core.qmod $qmod -Force
+qpm qmod zip -i ./build/ -i ./extern/libs/ $qmod
+# Move-Item multiplayer-core.qmod $qmod -Force
 
 echo "Task Completed"
