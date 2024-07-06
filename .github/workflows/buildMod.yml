@@ -69,30 +69,30 @@ jobs:
       with:
         github_token: ${{secrets.GITHUB_TOKEN}}
         workflow: cargo-build.yml
-        name: linux-qpm-rust
+        name: linux-qpm
         path: QPM
-        repo: RedBrumbler/QuestPackageManager-Rust
+        repo: QuestPackageManager/QPM.CLI
         
     - name: QPM Collapse
       run: |
-        chmod +x ./QPM/qpm-rust
-        ./QPM/qpm-rust collapse
+        chmod +x ./QPM/qpm
+        ./QPM/qpm collapse
         
     - name: QPM Dependencies Cache
       id: cache-qpm-deps
-      uses: actions/cache@v3
+      uses: actions/cache@v2
       env:
         cache-name: cache-qpm-deps
       with:
-        path: /home/runner/.local/share/QPM-Rust/cache
-        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.json', '.github/BuildQSounds.yml') }}
+        path: /home/runner/.local/share/QPM-RS/cache
+        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.json') }}
         restore-keys: |
           ${{ runner.os }}-${{ env.cache-name }}-
           ${{ runner.os }}-${{ env.cache-name }}
       
     - name: QPM Restore
       run: |
-        ./QPM/qpm-rust restore
+        ./QPM/qpm restore
 
     - name: Check dependency Folders
       run: |
@@ -102,15 +102,15 @@ jobs:
         echo "Checking libs"
         ls -lh ${GITHUB_WORKSPACE}/extern/libs
         echo ""
-        echo "Checking QPM-Rust/cache Folder"
-        ls -lh $HOME/.local/share/QPM-Rust/cache
+        echo "Checking QPM/cache Folder"
+        ls -lh $HOME/.local/share/QPM-RS/cache
         echo ""
 
     - name: Build
       run: |
         cd ${GITHUB_WORKSPACE}
-        ./QPM/qpm-rust package edit --version ${{ env.version }}
-        ./QPM/qpm-rust qmod build
+        ./QPM/qpm package edit --version ${{ env.version }}
+        ./QPM/qpm qmod build
         pwsh -Command ./build.ps1 --actions
 
     - name: Get Library Name
@@ -120,7 +120,6 @@ jobs:
         pattern="lib${module_id}*.so"
         files=( $pattern )
         echo "NAME=${files[0]}" >> $GITHUB_OUTPUT
-      # echo ::set-output name=NAME::"${files[0]}"
 
     - name: Package QMOD
       run: |
