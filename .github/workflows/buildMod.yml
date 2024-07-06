@@ -110,7 +110,7 @@ jobs:
       run: |
         cd ${GITHUB_WORKSPACE}
         ./QPM/qpm package edit --version ${{ env.version }}
-        ./QPM/qpm qmod build
+        ./QPM/qpm qmod manifest
         pwsh -Command ./build.ps1 --actions
 
     - name: Get Library Name
