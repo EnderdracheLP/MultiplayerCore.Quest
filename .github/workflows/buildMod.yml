@@ -106,8 +106,7 @@ jobs:
     - name: Package QMOD
       run: |
         cd ${GITHUB_WORKSPACE}
-        ./qpm qmod zip -i ./build/ -i ./extern/libs/ ${module_id}_${version}.qmod
-#       pwsh -Command ./buildQMOD.ps1 -package
+        ./QPM/qpm qmod zip -i ./build/ -i ./extern/libs/ ${module_id}_${version}.qmod
 
 
     - name: Upload non-debug artifact
