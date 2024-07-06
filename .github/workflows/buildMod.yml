@@ -17,8 +17,8 @@ on:
 
 env:
      module_id: MultiplayerCore
-     version: 0.1.0-Dev.${{ github.run_number }}
-#     ndkname: android-ndk-r24
+     # Will be overwritten by the qpm.json file
+     version: 0.0.0-Dev.${{ github.run_number }}
     
 jobs:
   build:
@@ -32,32 +32,6 @@ jobs:
         lfs: true
 
     - uses: seanmiddleditch/gha-setup-ninja@v5
-
-#    - name: Install Powershell
-#      run: sudo apt-get install -y powershell
-
-#    - name: Cache Android NDK
-#      id: cache-ndk
-#      uses: actions/cache@v2
-#      env:
-#        cache-name: cache-ndk
-#      with:
-#        path: ndk
-#        key: ${{ runner.os }}-${{ env.cache-name }}-${{ env.ndkname }}
-#        restore-keys: |
-#          ${{ runner.os }}-${{ env.cache-name }}-${{ env.ndkname }}
-    
-#    - name: Install Android NDK
-#      if: steps.cache-ndk.outputs.cache-hit != 'true'
-#      run: |
-#        wget -q -O ndk.zip https://dl.google.com/android/repository/${ndkname}-linux-x86_64.zip
-#        unzip -q ndk.zip
-#        mv ${ndkname} ndk
-      
-#    - name: Create ndkpath.txt
-#      run: |
-#        cd ndk
-#        pwd > ${GITHUB_WORKSPACE}/ndkpath.txt
 
     - name: Create ndkpath.txt
       run: |
@@ -90,6 +64,21 @@ jobs:
           ${{ runner.os }}-${{ env.cache-name }}-
           ${{ runner.os }}-${{ env.cache-name }}
       
+    - name: Read qpm.shared.json
+      run: |
+        content=`cat ./qpm.shared.json`
+        # the following lines are only required for multi line json
+        content="${content//'%'/'%25'}"
+        content="${content//$'\n'/'%0A'}"
+        content="${content//$'\r'/'%0D'}"
+        # end of optional handling for multi line json
+        echo "::set-output name=qpmJson::$content"
+    - name: Set Version
+      run: |
+        echo "version=${{fromJson(steps.set_var.outputs.qpmJson).config.info.version}}_$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
+        ./QPM/qpm package edit --version ${{ env.version }}
+
+
     - name: QPM Restore
       run: |
         ./QPM/qpm restore
@@ -109,8 +98,6 @@ jobs:
     - name: Build
       run: |
         cd ${GITHUB_WORKSPACE}
-        ./QPM/qpm package edit --version ${{ env.version }}
-        ./QPM/qpm qmod manifest
         pwsh -Command ./build.ps1 --actions
 
     - name: Get Library Name
@@ -124,7 +111,8 @@ jobs:
     - name: Package QMOD
       run: |
         cd ${GITHUB_WORKSPACE}
-        pwsh -Command ./buildQMOD.ps1 -package
+        ./qpm qmod zip -i ./build/ -i ./extern/libs/ ${module_id}_${version}.qmod
+#       pwsh -Command ./buildQMOD.ps1 -package
 
 
     - name: Upload non-debug artifact
