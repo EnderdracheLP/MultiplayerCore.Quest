@@ -73,10 +73,12 @@ jobs:
         content="${content//$'\n'/'%0A'}"
         content="${content//$'\r'/'%0D'}"
         # end of optional handling for multi line json
-        echo "qpmJson=$content" >> $GITHUB_OUTPUT
+        echo $content
+        echo "QPMJSON=$content" >> $GITHUB_OUTPUT
+
     - name: Set Version
       run: |
-        echo "version=${{fromJson(steps.setQpmJson.outputs.qpmJson).config.info.version}}_$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
+        echo "version=${{ fromJson(steps.setQpmJson.outputs.QPMJSON).config.info.version }}_$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
         ./QPM/qpm package edit --version ${{ env.version }}
 
 
