@@ -33,7 +33,7 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpEntitlementChecker, GlobalName
         UnorderedEventCallback<std::string, std::string, GlobalNamespace::EntitlementsStatus> receivedEntitlementEvent;
 
     private:
-        GlobalNamespace::EntitlementsStatus GetEntitlementStatus(std::string levelId);
+        GlobalNamespace::EntitlementsStatus GetEntitlementStatus(std::string_view levelHash);
         std::unordered_map<std::string, std::unordered_map<std::string, GlobalNamespace::EntitlementsStatus>> _entitlementsDictionary;
         std::unordered_map<std::string, SafePtr<EntitlementsStatusTask>> _entitlementsTasks;
 )

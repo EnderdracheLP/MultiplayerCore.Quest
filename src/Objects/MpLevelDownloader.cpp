@@ -49,10 +49,10 @@ namespace MultiplayerCore::Objects {
         auto bm = BeatSaver::API::GetBeatmapByHash(hash);
         if (bm.has_value()) {
             auto& versions = bm->GetVersions();
-            auto v = std::find_if(versions.begin(), versions.end(), 
-                [hash = std::string_view(hash)](auto& x){ return std::ranges::equal(x.GetHash(), hash, 
+            auto v = std::find_if(versions.begin(), versions.end(),
+                [hash = std::string_view(hash)](auto& x){ return std::ranges::equal(x.GetHash(), hash,
                     [](char a, char b){
-                        return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); 
+                        return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
                     });
                 }
             );
@@ -60,14 +60,19 @@ namespace MultiplayerCore::Objects {
                 ERROR("Could not find version for hash {}", hash);
                 return false;
             }
-            bool downloaded = false;
+            std::optional<bool> downloadSuccess;
             DEBUG("Starting download of beatmap: {}", hash);
-            BeatSaver::API::DownloadBeatmapAsync(bm.value(), *v, [&downloaded](bool test){
-                DEBUG("Download finished callback, success: {}", test);
-                downloaded = true;
+            BeatSaver::API::DownloadBeatmapAsync(bm.value(), *v, [&downloadSuccess](bool success){
+                downloadSuccess = success;
             }, progress);
-            
-            while(!downloaded) std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+            while(!downloadSuccess.has_value()) std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            if (!downloadSuccess.value()) {
+                WARNING("Download failed for {}", bm->GetId());
+                return false;
+            }
+
+            DEBUG("Download finished succesfully, refreshing songs now");
             SongCore::API::Loading::RefreshSongs(false).wait();
 
             auto level = SongCore::API::Loading::GetLevelByHash(hash);

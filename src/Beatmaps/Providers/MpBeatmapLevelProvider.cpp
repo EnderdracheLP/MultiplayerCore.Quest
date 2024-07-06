@@ -2,6 +2,7 @@
 #include "Beatmaps/NetworkBeatmapLevel.hpp"
 #include "Beatmaps/LocalBeatmapLevel.hpp"
 #include "Beatmaps/BeatSaverBeatmapLevel.hpp"
+#include "Beatmaps/BeatSaverPreviewMediaData.hpp"
 
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "songcore/shared/SongCore.hpp"
@@ -35,7 +36,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
 
     GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromBeatSaver(std::string levelHash) {
         GlobalNamespace::BeatmapLevel* level = nullptr;
-        if (_hashToNetworkLevels->TryGetValue(levelHash, byref(level))) {
+        if (_hashToBeatsaverLevels->TryGetValue(levelHash, byref(level))) {
             return level;
         }
 
@@ -44,7 +45,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
             level = BeatSaverBeatmapLevel::Make(levelHash, beatmap.value());
             // Somehow it can happen that the level is already in the cache at this point, despiste us checking before
             // TODO: Check if that can still happen
-            if (!_hashToNetworkLevels->ContainsKey(levelHash)) _hashToNetworkLevels->Add(levelHash, level);
+            if (!_hashToBeatsaverLevels->ContainsKey(levelHash)) _hashToNetworkLevels->Add(levelHash, level);
             return level;
         }
 

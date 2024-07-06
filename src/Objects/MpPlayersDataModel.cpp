@@ -11,7 +11,8 @@
 #include "GlobalNamespace/LobbyPlayerData.hpp"
 #include "GlobalNamespace/IMultiplayerSessionManager.hpp"
 #include "GlobalNamespace/BeatmapLevelsModel.hpp"
-#include <cctype>
+
+#include "bsml/shared/BSML/MainThreadScheduler.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Objects, MpPlayersDataModel);
 
@@ -86,15 +87,18 @@ namespace MultiplayerCore::Objects {
             return;
         }
 
-        auto level = _beatmapLevelProvider->GetBeatmapAsync(hash).get();
-        if (!level) {
-            DEBUG("couldn't get level, returning...");
-            return;
-        }
+        std::shared_future fut = _beatmapLevelProvider->GetBeatmapAsync(hash);
+        BSML::MainThreadScheduler::AwaitFuture(fut, [fut, beatmapKey, packetSerializer = this->_packetSerializer](){
+            auto level = fut.get();
+            if (!level) {
+                DEBUG("couldn't get level, returning...");
+                return;
+            }
 
-        DEBUG("actually sending the packet");
-        auto packet = MpBeatmapPacket::New_1(level, beatmapKey);
-        _packetSerializer->Send(packet);
+            DEBUG("actually sending the packet");
+            auto packet = MpBeatmapPacket::New_1(level, beatmapKey);
+            packetSerializer->Send(packet);
+        });
     }
 
     Beatmaps::Packets::MpBeatmapPacket* MpPlayersDataModel::GetPlayerPacket(StringW playerId) {

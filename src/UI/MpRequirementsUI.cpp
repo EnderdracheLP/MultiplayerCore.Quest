@@ -169,14 +169,10 @@ namespace MultiplayerCore::UI {
         ClearCells(_levelInfoCells);
 
         auto customLevel = il2cpp_utils::try_cast<SongCore::SongLoader::CustomBeatmapLevel>(level).value_or(nullptr);
-        // hacky way of being able to just break out of an "if" via break;
-        switch ((int64_t)customLevel) {
-            // valid ptr
-            default: {
-                // DEBUG("Setting requirements from custom level, level ptr: {}", fmt::ptr(customLevel));
-                // auto saveData = customLevel->standardLevelInfoSaveDataV2;
-                // if (!saveData.has_value() || !saveData.value()->CustomSaveDataInfo.has_value()) break;
-
+        // hacky way of being able to just break out of an "if" via break rather than a goto: label
+        switch (customLevel != nullptr) {
+            // non-null ptr
+            case true: {
                 auto levelDetailsOpt = customLevel->CustomSaveDataInfo->get().TryGetBasicLevelDetails();
                 if (!levelDetailsOpt.has_value()) break;
 
@@ -207,8 +203,6 @@ namespace MultiplayerCore::UI {
                     DEBUG("Setting contributors ptr: {}, name ptr: {}, role ptr: {}", fmt::ptr(&contributor), fmt::ptr(&contributor.name), fmt::ptr(&contributor.role));
                     cell->text = fmt::format("<size=75%>{}", contributor.name);
                     cell->subText = contributor.role;
-                    // cell->text = fmt::format("<size=75%>{}", "Placeholder Contributor Name");
-                    // cell->subText = "";
                     cell->icon = get_InfoIcon();
                     _levelInfoCells.push_back(cell);
                 }
@@ -231,8 +225,8 @@ namespace MultiplayerCore::UI {
                     }
                 }
             } break;
-            // nullptr, means it's a normal level
-            case 0: break;
+            // nullptr
+            case false: break;
         }
 
         UpdateDataCells();
