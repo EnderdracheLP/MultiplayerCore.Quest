@@ -1,7 +1,7 @@
 #include "Players/MpPlayerManager.hpp"
 #include "bsml/shared/Helpers/delegates.hpp"
 
-#include "BSML/shared/BSML/SharedCoroutineStarter.hpp"
+#include "bsml/shared/BSML/SharedCoroutineStarter.hpp"
 #include "System/Threading/Tasks/Task_1.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Players, MpPlayerManager);
