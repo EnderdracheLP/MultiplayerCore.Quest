@@ -45,7 +45,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
             level = BeatSaverBeatmapLevel::Make(levelHash, beatmap.value());
             // Somehow it can happen that the level is already in the cache at this point, despiste us checking before
             // TODO: Check if that can still happen
-            if (!_hashToBeatsaverLevels->ContainsKey(levelHash)) _hashToNetworkLevels->Add(levelHash, level);
+            if (!_hashToBeatsaverLevels->ContainsKey(levelHash)) _hashToBeatsaverLevels->Add(levelHash, level);
             return level;
         }
 
