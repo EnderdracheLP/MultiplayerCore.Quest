@@ -65,7 +65,7 @@ jobs:
       
     - name: Get Version
       run: |
-        pwsh -Command echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('-Dev', ''))_$($env:GITHUB_SHA.Substring(0, 6))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        pwsh -Command `echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('-Dev', ''))_$($env:GITHUB_SHA.Substring(0, 6))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append`
 
     - name: QPM Set Version & Restore
       run: |
