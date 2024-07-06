@@ -11,17 +11,20 @@
 #include "GlobalNamespace/LobbyPlayerData.hpp"
 #include "GlobalNamespace/IMultiplayerSessionManager.hpp"
 #include "GlobalNamespace/BeatmapLevelsModel.hpp"
-#include <cctype>
+#include "bsml/shared/BSML/MainThreadScheduler.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Objects, MpPlayersDataModel);
 
 using namespace MultiplayerCore::Beatmaps::Packets;
 
 namespace MultiplayerCore::Objects {
+    MpPlayersDataModel* MpPlayersDataModel::_instance = nullptr;
+
     void MpPlayersDataModel::ctor(Networking::MpPacketSerializer* packetSerializer, Beatmaps::Providers::MpBeatmapLevelProvider* beatmapLevelProvider) {
         INVOKE_CTOR();
         Base::_ctor();
 
+        _instance = this;
         _packetSerializer = packetSerializer;
         _beatmapLevelProvider = beatmapLevelProvider;
         _lastPlayerBeatmapPackets = PacketDict::New_ctor();
@@ -29,6 +32,7 @@ namespace MultiplayerCore::Objects {
 
     void MpPlayersDataModel::Activate_override() {
         DEBUG("Activate");
+        DEBUG("characteristicCollection: {}", fmt::ptr(_beatmapCharacteristicCollection));
         _packetSerializer->RegisterCallback<MpBeatmapPacket*>(std::bind(&MpPlayersDataModel::HandleMpCoreBeatmapPacket, this, std::placeholders::_1, std::placeholders::_2));
         Base::Activate();
     }
@@ -40,13 +44,15 @@ namespace MultiplayerCore::Objects {
     }
 
     void MpPlayersDataModel::Dispose() {
+        if (_instance == this) _instance = nullptr;
         Deactivate();
     }
 
     void MpPlayersDataModel::HandleMpCoreBeatmapPacket(MpBeatmapPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
         DEBUG("'{}' selected song '{}'", player->get_userId(), packet->levelHash);
-        DEBUG("Looking for characteristic {} on {}", packet->characteristic, fmt::ptr(_beatmapCharacteristicCollection));
+        DEBUG("Looking for characteristic '{}' on characteristicCollection: {}", packet->characteristic, fmt::ptr(_beatmapCharacteristicCollection));
         auto ch = _beatmapCharacteristicCollection->GetBeatmapCharacteristicBySerializedName(packet->characteristic);
+        DEBUG("Found characteristic: {}", fmt::ptr(ch.unsafePtr()));
         auto beatmapKey = GlobalNamespace::BeatmapKey(ch, packet->difficulty, fmt::format("custom_level_{}", packet->levelHash));
 
         PutPlayerPacket(player->userId, packet);
@@ -87,15 +93,19 @@ namespace MultiplayerCore::Objects {
             return;
         }
 
-        auto level = _beatmapLevelProvider->GetBeatmapAsync(hash).get();
-        if (!level) {
-            DEBUG("couldn't get level, returning...");
-            return;
-        }
+        DEBUG("Getting level async");
+        std::shared_future fut = _beatmapLevelProvider->GetBeatmapAsync(hash);
+        BSML::MainThreadScheduler::AwaitFuture(fut, [fut, beatmapKey, packetSerializer = this->_packetSerializer]() {
+            auto level = fut.get();
+            if (!level) {
+                DEBUG("couldn't get level, returning...");
+                return;
+            }
 
-        DEBUG("actually sending the packet");
-        auto packet = MpBeatmapPacket::New_1(level, beatmapKey);
-        _packetSerializer->Send(packet);
+            DEBUG("Got level, creating packet to send");
+            auto packet = MpBeatmapPacket::New_1(level, beatmapKey);
+            packetSerializer->Send(packet);
+        });
     }
 
     Beatmaps::Packets::MpBeatmapPacket* MpPlayersDataModel::GetPlayerPacket(StringW playerId) {

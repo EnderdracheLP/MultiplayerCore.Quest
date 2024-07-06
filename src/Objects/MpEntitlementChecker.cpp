@@ -95,7 +95,7 @@ namespace MultiplayerCore::Objects {
                     entitlement = baseTask->Result;
                 }
             } else { // custom level
-                entitlement = GetEntitlementStatus(levelId);
+                entitlement = GetEntitlementStatus(levelHash);
             }
 
             DEBUG("Entitlement found for level {}: {}", levelId, EntitlementName(entitlement));
@@ -107,9 +107,7 @@ namespace MultiplayerCore::Objects {
         return task;
     }
 
-    GlobalNamespace::EntitlementsStatus MpEntitlementChecker::GetEntitlementStatus(std::string levelId) {
-        auto levelHash = HashFromLevelID(std::string_view(levelId));
-        if (levelHash.empty()) return NetworkPlayerEntitlementChecker::GetEntitlementStatus(levelId)->get_Result();
+    GlobalNamespace::EntitlementsStatus MpEntitlementChecker::GetEntitlementStatus(std::string_view levelHash) {
         DEBUG("Custom level levelhash: {}", levelHash);
         // Check if this custom song exists locally
         auto level = SongCore::API::Loading::GetLevelByHash(levelHash);

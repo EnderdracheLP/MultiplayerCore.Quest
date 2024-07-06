@@ -20,6 +20,8 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpPlayersDataModel, GlobalNamesp
     DECLARE_CTOR(ctor, Networking::MpPacketSerializer* packetSerializer, Beatmaps::Providers::MpBeatmapLevelProvider* beatmapLevelProvider);
 
     public:
+        static MpPlayersDataModel* get_instance() { return _instance; }
+
         Beatmaps::Packets::MpBeatmapPacket* GetPlayerPacket(StringW playerId);
         Beatmaps::Packets::MpBeatmapPacket* FindLevelPacket(std::string_view levelHash);
 
@@ -33,5 +35,6 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpPlayersDataModel, GlobalNamesp
         void SetPlayerBeatmapLevel_override(StringW userId, GlobalNamespace::BeatmapKey& beatmapKey);
         void SendMpBeatmapPacket(GlobalNamespace::BeatmapKey beatmapKey);
     private:
+        static MpPlayersDataModel* _instance;
         void PutPlayerPacket(StringW playerId, Beatmaps::Packets::MpBeatmapPacket* packet);
 )

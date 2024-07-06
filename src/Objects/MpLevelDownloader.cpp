@@ -47,12 +47,19 @@ namespace MultiplayerCore::Objects {
         if (bm.has_value()) {
             auto& versions = bm->GetVersions();
             auto v = std::find_if(versions.begin(), versions.end(), [hash = std::string_view(hash)](auto& x){ return x.GetHash() == hash; });
-            if (v == versions.end()) return false;
-            bool downloaded = false;
-            BeatSaver::API::DownloadBeatmapAsync(bm.value(), *v, [&downloaded](bool){
-                downloaded = true;
+            if (v == versions.end()) {
+                DEBUG("Couldn't find level with hash {} in {} beatmap versions", hash, versions.size());
+                return false;
+            }
+
+            std::optional<bool> downloadSuccess;
+            BeatSaver::API::DownloadBeatmapAsync(bm.value(), *v, [&downloadSuccess](bool success){
+                success = success;
             });
-            while(!downloaded) std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            while(!downloadSuccess.has_value()) std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            DEBUG("Download is done, success: {}", downloadSuccess.value());
+            if (!downloadSuccess.value()) return false;
+            DEBUG("Refreshing songs now");
             SongCore::API::Loading::RefreshSongs(false).wait();
 
             auto level = SongCore::API::Loading::GetLevelByHash(hash);

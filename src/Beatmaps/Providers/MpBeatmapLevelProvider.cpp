@@ -1,5 +1,5 @@
 #include "Beatmaps/Providers/MpBeatmapLevelProvider.hpp"
-#include "Beatmaps/NetworkBeatmapLevel.hpp"
+#include "Beatmaps/BeatSaverPreviewMediaData.hpp"
 #include "Beatmaps/LocalBeatmapLevel.hpp"
 #include "Beatmaps/BeatSaverBeatmapLevel.hpp"
 
@@ -17,10 +17,17 @@ std::future<T> finished_future(T& value) {
 }
 
 namespace MultiplayerCore::Beatmaps::Providers {
+    MpBeatmapLevelProvider* MpBeatmapLevelProvider::_instance;
+
     void MpBeatmapLevelProvider::ctor() {
         INVOKE_CTOR();
+        _instance = this;
         _hashToNetworkLevels = HashToLevelDict::New_ctor();
         _hashToBeatsaverLevels = HashToLevelDict::New_ctor();
+    }
+
+    void MpBeatmapLevelProvider::Dispose() {
+        if (_instance == this) _instance = nullptr;
     }
 
     std::future<GlobalNamespace::BeatmapLevel*> MpBeatmapLevelProvider::GetBeatmapAsync(const std::string& levelHash) {
@@ -35,14 +42,14 @@ namespace MultiplayerCore::Beatmaps::Providers {
 
     GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromBeatSaver(std::string levelHash) {
         GlobalNamespace::BeatmapLevel* level = nullptr;
-        if (_hashToNetworkLevels->TryGetValue(levelHash, byref(level))) {
+        if (_hashToBeatsaverLevels->TryGetValue(levelHash, byref(level))) {
             return level;
         }
 
         auto beatmap = BeatSaver::API::GetBeatmapByHash(static_cast<std::string>(levelHash));
         if (beatmap.has_value()) {
             level = BeatSaverBeatmapLevel::Make(levelHash, beatmap.value());
-            _hashToNetworkLevels->Add(levelHash, level);
+            _hashToBeatsaverLevels->Add(levelHash, level);
             return level;
         }
 
@@ -62,7 +69,25 @@ namespace MultiplayerCore::Beatmaps::Providers {
             return level;
         }
 
-        level = NetworkBeatmapLevel::New_ctor(packet);
+        level = GlobalNamespace::BeatmapLevel::New_ctor(
+            false,
+            fmt::format("custom_level_{}", packet->levelHash),
+            packet->songName,
+            packet->songSubName,
+            packet->songAuthorName,
+            { packet->levelAuthorName },
+            ArrayW<StringW>::Empty(),
+            packet->beatsPerMinute,
+            -6.0f,
+            0,
+            0,
+            0,
+            packet->songDuration,
+            ::GlobalNamespace::PlayerSensitivityFlag::Safe,
+            BeatSaverPreviewMediaData::New_ctor(packet->levelHash)->i_IPreviewMediaData(),
+            nullptr
+        );
+
         _hashToNetworkLevels->Add(packet->levelHash, level);
         return level;
     }
