@@ -17,7 +17,6 @@ on:
 
 env:
      module_id: MultiplayerCore
-     #version: 0.0.0-Dev.${{ github.run_number }}
     
 jobs:
   build:
@@ -29,11 +28,16 @@ jobs:
       with:
         submodules: true
         lfs: true
+        
+    - name: Extract branch name
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch
 
     - name: Get Version
       shell: pwsh
       run: |
-        echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('-Dev', ''))-$($env:GITHUB_SHA.Substring(0, 6))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('-Dev', ''))-${{ steps.extract_branch.outputs.branch }}.$($env:GITHUB_SHA.Substring(0, 6))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
 
     - uses: seanmiddleditch/gha-setup-ninja@v5
