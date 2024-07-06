@@ -65,6 +65,7 @@ jobs:
           ${{ runner.os }}-${{ env.cache-name }}
       
     - name: Read qpm.shared.json
+      id: setQpmJson
       run: |
         content=`cat ./qpm.shared.json`
         # the following lines are only required for multi line json
@@ -72,10 +73,10 @@ jobs:
         content="${content//$'\n'/'%0A'}"
         content="${content//$'\r'/'%0D'}"
         # end of optional handling for multi line json
-        echo "::set-output name=qpmJson::$content"
+        echo "qpmJson=$content" >> $GITHUB_OUTPUT
     - name: Set Version
       run: |
-        echo "version=${{fromJson(steps.set_var.outputs.qpmJson).config.info.version}}_$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
+        echo "version=${{fromJson(steps.setQpmJson.outputs.qpmJson).config.info.version}}_$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
         ./QPM/qpm package edit --version ${{ env.version }}
 
 
