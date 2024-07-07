@@ -9,12 +9,15 @@ Param (
 $QPMpackage = "./qpm.json"
 $qpmjson = Get-Content $QPMpackage -Raw | ConvertFrom-Json
 $ModID = $qpmjson.info.id
-if (-not $Version) {
+if ($actions) {
+    $VERSION = $env:version
+} 
+elseif (-not $Version) {
     $VERSION = $qpmjson.info.version
 } else {
     $VERSION = $Version
 }
-if ($release -ne $true -and -not $VERSION.Contains('-Dev')) {
+if ($release -ne $true -and -not $VERSION.Contains('-Dev') -and -not $actions) {
     $VERSION += "-Dev"
 }
 
