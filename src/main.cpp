@@ -16,6 +16,8 @@ MPCORE_EXPORT_FUNC void setup(CModInfo* info) {
     info->id = MOD_ID;
     info->version = VERSION;
     info->version_long = VERSION_LONG;
+
+    INFO("Mod '{}' with version '{}' version long '{}' finished setup", MOD_ID, VERSION, VERSION_LONG);
 }
 
 MPCORE_EXPORT_FUNC void late_load() {
@@ -28,4 +30,6 @@ MPCORE_EXPORT_FUNC void late_load() {
     auto zenjector = Lapiz::Zenject::Zenjector::Get();
     zenjector->Install<MultiplayerCore::Installers::MpAppInstaller*>(Lapiz::Zenject::Location::App);
     zenjector->Install<MultiplayerCore::Installers::MpMenuInstaller*>(Lapiz::Zenject::Location::Menu);
+
+    INFO("Mod '{}' with version '{}' version long {} finished late load", MOD_ID, VERSION, VERSION_LONG);
 }
