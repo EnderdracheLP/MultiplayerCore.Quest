@@ -37,7 +37,7 @@ jobs:
     - name: Get Version
       shell: pwsh
       run: |
-        echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('-Dev', ''))-$('${{ steps.extract_branch.outputs.branch }}'.Replace('_', '-').Replace('/', '+')).$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Split('-')[0])-$('${{ steps.extract_branch.outputs.branch }}'.Replace('_', '-').Replace('/', '-'))+$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
 
     - uses: seanmiddleditch/gha-setup-ninja@v5
