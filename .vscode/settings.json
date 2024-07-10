@@ -114,7 +114,8 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "__std_stream": "cpp",
-        "__memory": "cpp"
+        "__memory": "cpp",
+        "__verbose_abort": "cpp"
     },
     "search.useIgnoreFiles": false
 }
