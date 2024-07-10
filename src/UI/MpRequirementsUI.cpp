@@ -170,7 +170,10 @@ namespace MultiplayerCore::UI {
 
         auto customLevel = il2cpp_utils::try_cast<SongCore::SongLoader::CustomBeatmapLevel>(level).value_or(nullptr);
         // hacky way of being able to just break out of an "if" via break rather than a goto: label
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-bool"
         switch (customLevel != nullptr) {
+#pragma clang diagnostic pop
             // non-null ptr
             case true: {
                 auto levelDetailsOpt = customLevel->CustomSaveDataInfo->get().TryGetBasicLevelDetails();
