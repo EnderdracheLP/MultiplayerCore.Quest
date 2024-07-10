@@ -40,7 +40,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerOutroAnimationController_BindOutroTimeline, &::G
 
 MAKE_AUTO_HOOK_MATCH(MultiplayerResultsPyramidView_SetupResults, &::GlobalNamespace::MultiplayerResultsPyramidView::SetupResults, void, GlobalNamespace::MultiplayerResultsPyramidView* self, System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::MultiplayerPlayerResultsData*>* resultsData, UnityEngine::Transform* badgeStartTransform, UnityEngine::Transform* badgeMidTransform) {
     auto resultsDataList = ListW<GlobalNamespace::MultiplayerPlayerResultsData*>(resultsData);
-    auto max5Data = System::Collections::Generic::List_1<GlobalNamespace::MultiplayerPlayerResultsData*>::New_ctor();
+    auto max5Data = ListW<GlobalNamespace::MultiplayerPlayerResultsData*>::New();
 
     auto count = std::min((int)resultsDataList.size(), 5);
     for (int i = 0; i < count; i++) max5Data->Add(resultsDataList[i]);
