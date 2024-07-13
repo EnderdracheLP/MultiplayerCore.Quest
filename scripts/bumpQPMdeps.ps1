@@ -5,10 +5,10 @@ Param(
 )
 if ([string]::IsNullOrEmpty($QPMPath)) {
     $QPMPath = Get-Command qpm -ErrorAction SilentlyContinue
-    if ($QPMPath -eq $null) {
+    if ([string]::IsNullOrEmpty($QPMPath)) {
         $QPMPath = Get-Command ./QPM/qpm -ErrorAction SilentlyContinue
-        if ($QPMPath -eq $null) {
-            Write-Host "QPM not found. Please install QPM or specify it's path with '-QPMPath'."
+        if ([string]::IsNullOrEmpty($QPMPath)) {
+            Write-Host "Error: QPM not found. Please install QPM or specify it's path with '-QPMPath'." -ForegroundColor Red
             exit 1
         }
     }
@@ -22,9 +22,10 @@ if ([string]::IsNullOrEmpty($QPMJsonPath)) {
 }
 try {
     Write-Debug "Reading qpm.json from $QPMJsonPath"
-    $QPMJson = Get-Content $QPMJsonPath | ConvertFrom-Json
+    $OriginalQPMJson = Get-Content $QPMJsonPath
+    $QPMJson = $OriginalQPMJson | ConvertFrom-Json
 } catch {
-    Write-Host "Error reading qpm.json. Please make sure you're running on the correct path or specify it's path with '-QPMJsonPath'."
+    Write-Host "Error: reading qpm.json. Please make sure you're running on the correct path or specify it's path with '-QPMJsonPath'." -ForegroundColor Red
     exit 1
 }
 
@@ -49,7 +50,12 @@ $QPMJson | ConvertTo-Json -Depth 100 | foreach-object {($_ -replace "(?m)    (?<
 
 
 # Restore depemdencies via QPM
-#Write-Host "Restoring dependencies"
-#& $QPMPath restore
+Write-Host "Restoring dependencies"
+& $QPMPath restore
+if (-not $?) {
+    Write-Host "Error: Could not restore with selected dependencies undoing changes" -ForegroundColor Red
+    $OriginalQPMJson | Set-Content $QPMJsonPath
+    exit 1
+}
 
-#Write-Host "Dependencies bumped successfully"
+Write-Host "Dependencies bumped successfully"
