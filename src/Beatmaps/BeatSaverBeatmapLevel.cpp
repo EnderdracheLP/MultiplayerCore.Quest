@@ -5,7 +5,7 @@
 
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include "bsml/shared/Helpers/utilities.hpp"
-#include "songdownloader/shared/BeatSaverAPI.hpp"
+#include "beatsaverplusplus/shared/BeatSaver.hpp"
 #include "logging.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, BeatSaverBeatmapLevel);
@@ -31,7 +31,7 @@ namespace MultiplayerCore::Beatmaps {
         set_levelHash(static_cast<std::string>(hash));
     }
 
-    BeatSaverBeatmapLevel* BeatSaverBeatmapLevel::Make(const std::string& hash, const BeatSaver::Beatmap& beatmap) {
+    BeatSaverBeatmapLevel* BeatSaverBeatmapLevel::Make(const std::string& hash, const BeatSaver::Models::Beatmap& beatmap) {
         auto level = BeatSaverBeatmapLevel::New_ctor(hash);
         level->beatmap = beatmap;
 

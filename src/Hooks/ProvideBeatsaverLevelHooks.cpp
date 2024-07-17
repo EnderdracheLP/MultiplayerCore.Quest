@@ -3,7 +3,7 @@
 #include "tasks.hpp"
 #include "Utilities.hpp"
 
-#include "songdownloader/shared/BeatSaverAPI.hpp"
+#include "beatsaverplusplus/shared/BeatSaver.hpp"
 #include "songcore/shared/SongCore.hpp"
 
 #include "GlobalNamespace/BeatmapLevelsModel.hpp"
@@ -26,12 +26,12 @@ MAKE_AUTO_HOOK_MATCH(BeatmapLevelsModel_CheckBeatmapLevelDataExistsAsync, &Globa
         if (t->Result) return true;
 
         // check if map is on beatsaver
-        auto beatmap = BeatSaver::API::GetBeatmapByHash(levelHash);
-        if (beatmap.has_value()) {
-            for (auto& v : beatmap->GetVersions()) {
+        auto beatmapRes = BeatSaver::API::GetBeatmapByHash(levelHash);
+        if (beatmapRes.DataParsedSuccessful()) {
+            for (auto& v : beatmapRes.responseData->GetVersions()) {
                 if (v.GetHash() == levelHash) {
                     bool downloaded = false;
-                    BeatSaver::API::DownloadBeatmapAsync(beatmap.value(), v, [&downloaded](bool v){
+                    v.DownloadBeatmapAsync(*beatmapRes.responseData, [&downloaded](bool v){
                         downloaded = true;
                     });
                     while (!downloaded) std::this_thread::sleep_for(50ms);

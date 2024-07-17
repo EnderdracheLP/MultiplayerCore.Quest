@@ -7,7 +7,7 @@
 
 #include "lapiz/shared/utilities/MainThreadScheduler.hpp"
 #include "bsml/shared/Helpers/delegates.hpp"
-#include "songdownloader/shared/BeatSaverAPI.hpp"
+#include "beatsaverplusplus/shared/BeatSaver.hpp"
 #include "songcore/shared/SongLoader/RuntimeSongLoader.hpp"
 
 #include "GlobalNamespace/IMenuRpcManager.hpp"
@@ -136,22 +136,16 @@ namespace MultiplayerCore::Objects {
         }
 
         // Check beatsaver for the map
-        auto beatmap = BeatSaver::API::GetBeatmapByHash(std::string(levelHash));
-        if (beatmap.has_value()) {
-            auto& versions = beatmap->GetVersions();
-            const auto& beatmapVersion = std::find_if(versions.begin(), versions.end(), [&levelHash](const auto& v){
-                auto toCheckHash = v.GetHash();
-                if (toCheckHash.size() != levelHash.size()) return false;
-
-                auto toCheckItr = toCheckHash.c_str();
-                auto levelHashItr = levelHash.data();
-                auto toCheckEnd = toCheckItr + toCheckHash.size();
-
-                for (;toCheckItr < toCheckEnd; toCheckItr++, levelHashItr++) {
-                    if (tolower(*toCheckItr) != tolower(*levelHashItr)) return false;
+        auto beatmapRes = BeatSaver::API::GetBeatmapByHash(std::string(levelHash));
+        if (beatmapRes.DataParsedSuccessful()) {
+            const auto& versions = beatmapRes.responseData->GetVersions();
+            const auto& beatmapVersion = std::find_if(versions.begin(), versions.end(),
+                [&levelHash](const auto& bv){ return bv.GetHash().size() == levelHash.size() && std::ranges::equal(bv.GetHash(), levelHash,
+                    [](char a, char b){
+                        return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
+                    });
                 }
-                return true;
-            });
+            );
 
             if (beatmapVersion == versions.end()) {
                 WARNING("Level hash {} was not found in map versions provided by beatsaver!", levelHash);
@@ -160,7 +154,7 @@ namespace MultiplayerCore::Objects {
 
             std::list<std::string> requirements;
             for (const auto& diff : beatmapVersion->GetDiffs()) {
-                if (diff.GetChroma()) requirements.emplace_back("Chroma");
+                // if (diff.GetChroma()) requirements.emplace_back("Chroma");
                 if (diff.GetME()) requirements.emplace_back("Mapping Extensions");
                 if (diff.GetNE()) requirements.emplace_back("Noodle Extensions");
             }

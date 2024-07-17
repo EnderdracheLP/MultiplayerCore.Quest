@@ -6,7 +6,7 @@
 
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "songcore/shared/SongCore.hpp"
-#include "songdownloader/shared/BeatSaverAPI.hpp"
+#include "beatsaverplusplus/shared/BeatSaver.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvider);
 
@@ -40,9 +40,9 @@ namespace MultiplayerCore::Beatmaps::Providers {
             return level;
         }
 
-        auto beatmap = BeatSaver::API::GetBeatmapByHash(static_cast<std::string>(levelHash));
-        if (beatmap.has_value()) {
-            level = BeatSaverBeatmapLevel::Make(levelHash, beatmap.value());
+        auto beatmapRes = BeatSaver::API::GetBeatmapByHash(static_cast<std::string>(levelHash));
+        if (beatmapRes.DataParsedSuccessful()) {
+            level = BeatSaverBeatmapLevel::Make(levelHash, beatmapRes.responseData.value());
             // Somehow it can happen that the level is already in the cache at this point, despiste us checking before
             // TODO: Check if that can still happen
             if (!_hashToBeatsaverLevels->ContainsKey(levelHash)) _hashToBeatsaverLevels->Add(levelHash, level);

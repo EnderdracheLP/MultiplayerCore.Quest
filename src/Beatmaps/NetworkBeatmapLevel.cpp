@@ -5,7 +5,7 @@
 #include "logging.hpp"
 #include "tasks.hpp"
 
-#include "songdownloader/shared/BeatSaverAPI.hpp"
+#include "beatsaverplusplus/shared/BeatSaver.hpp"
 #include <thread>
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, NetworkBeatmapLevel);

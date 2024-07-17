@@ -49,11 +49,6 @@
       "additionalData": {}
     },
     {
-      "id": "songdownloader",
-      "versionRange": "^0.8.0",
-      "additionalData": {}
-    },
-    {
       "id": "scotland2",
       "versionRange": "^0.1.4",
       "additionalData": {
@@ -93,6 +88,16 @@
     {
       "id": "kaleb",
       "versionRange": "^0.1.9",
+      "additionalData": {}
+    },
+    {
+      "id": "beatsaverplusplus",
+      "versionRange": "^0.1.5",
+      "additionalData": {}
+    },
+    {
+      "id": "web-utils",
+      "versionRange": "^0.6.6",
       "additionalData": {}
     }
   ]

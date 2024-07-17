@@ -50,11 +50,6 @@
         "additionalData": {}
       },
       {
-        "id": "songdownloader",
-        "versionRange": "^0.8.0",
-        "additionalData": {}
-      },
-      {
         "id": "scotland2",
         "versionRange": "^0.1.4",
         "additionalData": {
@@ -95,10 +90,35 @@
         "id": "kaleb",
         "versionRange": "^0.1.9",
         "additionalData": {}
+      },
+      {
+        "id": "beatsaverplusplus",
+        "versionRange": "^0.1.5",
+        "additionalData": {}
+      },
+      {
+        "id": "web-utils",
+        "versionRange": "^0.6.6",
+        "additionalData": {}
       }
     ]
   },
   "restoredDependencies": [
+    {
+      "dependency": {
+        "id": "web-utils",
+        "versionRange": "=0.6.6",
+        "additionalData": {
+          "soLink": "https://github.com/RedBrumbler/WebUtils/releases/download/v0.6.6/libweb-utils.so",
+          "debugSoLink": "https://github.com/RedBrumbler/WebUtils/releases/download/v0.6.6/debug_libweb-utils.so",
+          "overrideSoName": "libweb-utils.so",
+          "modLink": "https://github.com/RedBrumbler/WebUtils/releases/download/v0.6.6/WebUtils.qmod",
+          "branchName": "version/v0_6_6",
+          "cmake": false
+        }
+      },
+      "version": "0.6.6"
+    },
     {
       "dependency": {
         "id": "bsml",
@@ -127,46 +147,6 @@
     },
     {
       "dependency": {
-        "id": "rapidjson-macros",
-        "versionRange": "=1.2.1",
-        "additionalData": {
-          "headersOnly": true,
-          "branchName": "version/v1_2_1",
-          "cmake": true
-        }
-      },
-      "version": "1.2.1"
-    },
-    {
-      "dependency": {
-        "id": "web-utils",
-        "versionRange": "=0.6.6",
-        "additionalData": {
-          "soLink": "https://github.com/RedBrumbler/WebUtils/releases/download/v0.6.6/libweb-utils.so",
-          "debugSoLink": "https://github.com/RedBrumbler/WebUtils/releases/download/v0.6.6/debug_libweb-utils.so",
-          "overrideSoName": "libweb-utils.so",
-          "modLink": "https://github.com/RedBrumbler/WebUtils/releases/download/v0.6.6/WebUtils.qmod",
-          "branchName": "version/v0_6_6",
-          "cmake": false
-        }
-      },
-      "version": "0.6.6"
-    },
-    {
-      "dependency": {
-        "id": "scotland2",
-        "versionRange": "=0.1.4",
-        "additionalData": {
-          "soLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.4/libsl2.so",
-          "debugSoLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.4/debug_libsl2.so",
-          "overrideSoName": "libsl2.so",
-          "branchName": "version/v0_1_4"
-        }
-      },
-      "version": "0.1.4"
-    },
-    {
-      "dependency": {
         "id": "sombrero",
         "versionRange": "=0.1.42",
         "additionalData": {
@@ -175,25 +155,6 @@
         }
       },
       "version": "0.1.42"
-    },
-    {
-      "dependency": {
-        "id": "fmt",
-        "versionRange": "=10.0.0",
-        "additionalData": {
-          "headersOnly": true,
-          "branchName": "version/v10_0_0",
-          "compileOptions": {
-            "systemIncludes": [
-              "fmt/include/"
-            ],
-            "cppFlags": [
-              "-DFMT_HEADER_ONLY"
-            ]
-          }
-        }
-      },
-      "version": "10.0.0"
     },
     {
       "dependency": {
@@ -210,17 +171,17 @@
     {
       "dependency": {
         "id": "songcore",
-        "versionRange": "=1.1.13",
+        "versionRange": "=1.1.14",
         "additionalData": {
-          "soLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.13/libsongcore.so",
-          "debugSoLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.13/debug_libsongcore.so",
+          "soLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.14/libsongcore.so",
+          "debugSoLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.14/debug_libsongcore.so",
           "overrideSoName": "libsongcore.so",
-          "modLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.13/SongCore.qmod",
-          "branchName": "version/v1_1_13",
+          "modLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.14/SongCore.qmod",
+          "branchName": "version/v1_1_14",
           "cmake": true
         }
       },
-      "version": "1.1.13"
+      "version": "1.1.14"
     },
     {
       "dependency": {
@@ -257,13 +218,13 @@
     {
       "dependency": {
         "id": "paper",
-        "versionRange": "=3.6.3",
+        "versionRange": "=3.6.4",
         "additionalData": {
-          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.3/libpaperlog.so",
-          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.3/debug_libpaperlog.so",
+          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.4/libpaperlog.so",
+          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.4/debug_libpaperlog.so",
           "overrideSoName": "libpaperlog.so",
-          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.3/paperlog.qmod",
-          "branchName": "version/v3_6_3",
+          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.4/paperlog.qmod",
+          "branchName": "version/v3_6_4",
           "compileOptions": {
             "systemIncludes": [
               "shared/utfcpp/source"
@@ -272,21 +233,7 @@
           "cmake": false
         }
       },
-      "version": "3.6.3"
-    },
-    {
-      "dependency": {
-        "id": "config-utils",
-        "versionRange": "=1.4.2",
-        "additionalData": {
-          "headersOnly": true,
-          "soLink": "https://github.com/darknight1050/config-utils/releases/download/v1.4.2/libconfig-utils_test.so",
-          "overrideSoName": "libconfig-utils_test.so",
-          "branchName": "version/v1_4_2",
-          "cmake": true
-        }
-      },
-      "version": "1.4.2"
+      "version": "3.6.4"
     },
     {
       "dependency": {
@@ -310,19 +257,6 @@
     },
     {
       "dependency": {
-        "id": "playlistcore",
-        "versionRange": "=1.4.1",
-        "additionalData": {
-          "soLink": "https://github.com/Metalit/PlaylistCore/releases/download/v1.4.1/libplaylistcore.so",
-          "overrideSoName": "libplaylistcore.so",
-          "modLink": "https://github.com/Metalit/PlaylistCore/releases/download/v1.4.1/PlaylistCore.qmod",
-          "branchName": "version/v1_4_1"
-        }
-      },
-      "version": "1.4.1"
-    },
-    {
-      "dependency": {
         "id": "bs-cordl",
         "versionRange": "=3700.0.0",
         "additionalData": {
@@ -343,19 +277,6 @@
         }
       },
       "version": "3700.0.0"
-    },
-    {
-      "dependency": {
-        "id": "libcurl",
-        "versionRange": "=7.78.0",
-        "additionalData": {
-          "staticLinking": true,
-          "soLink": "https://github.com/darknight1050/openssl-curl-android/releases/download/v7.78.0/libcurl.a",
-          "overrideSoName": "libcurl.a",
-          "branchName": "version-v7.78.0"
-        }
-      },
-      "version": "7.78.0"
     },
     {
       "dependency": {
@@ -398,33 +319,50 @@
     },
     {
       "dependency": {
-        "id": "beatsaverplusplus",
+        "id": "scotland2",
         "versionRange": "=0.1.4",
         "additionalData": {
-          "soLink": "https://github.com/RedBrumbler/BeatSaverPlusPlus/releases/download/v0.1.4/libbeatsaverplusplus.so",
-          "debugSoLink": "https://github.com/RedBrumbler/BeatSaverPlusPlus/releases/download/v0.1.4/debug_libbeatsaverplusplus.so",
-          "overrideSoName": "libbeatsaverplusplus.so",
-          "modLink": "https://github.com/RedBrumbler/BeatSaverPlusPlus/releases/download/v0.1.4/BeatSaverPlusPlus.qmod",
-          "branchName": "version/v0_1_4",
-          "cmake": false
+          "soLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.4/libsl2.so",
+          "debugSoLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.4/debug_libsl2.so",
+          "overrideSoName": "libsl2.so",
+          "branchName": "version/v0_1_4"
         }
       },
       "version": "0.1.4"
     },
     {
       "dependency": {
-        "id": "songdownloader",
-        "versionRange": "=0.8.0",
+        "id": "beatsaverplusplus",
+        "versionRange": "=0.1.5",
         "additionalData": {
-          "soLink": "https://github.com/darknight1050/SongDownloader/releases/download/v0.8.0/libsongdownloader.so",
-          "debugSoLink": "https://github.com/darknight1050/SongDownloader/releases/download/v0.8.0/debug_libsongdownloader.so",
-          "overrideSoName": "libsongdownloader.so",
-          "modLink": "https://github.com/darknight1050/SongDownloader/releases/download/v0.8.0/SongDownloader.qmod",
-          "branchName": "version/v0_8_0",
-          "cmake": true
+          "soLink": "https://github.com/RedBrumbler/BeatSaverPlusPlus/releases/download/v0.1.5/libbeatsaverplusplus.so",
+          "debugSoLink": "https://github.com/RedBrumbler/BeatSaverPlusPlus/releases/download/v0.1.5/debug_libbeatsaverplusplus.so",
+          "overrideSoName": "libbeatsaverplusplus.so",
+          "modLink": "https://github.com/RedBrumbler/BeatSaverPlusPlus/releases/download/v0.1.5/BeatSaverPlusPlus.qmod",
+          "branchName": "version/v0_1_5",
+          "cmake": false
         }
       },
-      "version": "0.8.0"
+      "version": "0.1.5"
+    },
+    {
+      "dependency": {
+        "id": "fmt",
+        "versionRange": "=10.0.0",
+        "additionalData": {
+          "headersOnly": true,
+          "branchName": "version/v10_0_0",
+          "compileOptions": {
+            "systemIncludes": [
+              "fmt/include/"
+            ],
+            "cppFlags": [
+              "-DFMT_HEADER_ONLY"
+            ]
+          }
+        }
+      },
+      "version": "10.0.0"
     }
   ]
 }

@@ -2,7 +2,7 @@
 
 #include "Abstractions/MpBeatmapLevel.hpp"
 #include "Packets/MpBeatmapPacket.hpp"
-#include "songdownloader/shared/Types/BeatSaver/Beatmap.hpp"
+#include "beatsaverplusplus/shared/Models/Beatmap.hpp"
 
 DECLARE_CLASS_CUSTOM(MultiplayerCore::Beatmaps, NetworkBeatmapLevel, Abstractions::MpBeatmapLevel,
     DECLARE_INSTANCE_FIELD_PRIVATE(Packets::MpBeatmapPacket*, _packet);

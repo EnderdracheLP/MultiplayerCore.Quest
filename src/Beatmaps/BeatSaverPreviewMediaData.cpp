@@ -8,7 +8,7 @@
 #include "UnityEngine/AudioType.hpp"
 #include "bsml/shared/Helpers/utilities.hpp"
 #include "bsml/shared/BSML/MainThreadScheduler.hpp"
-#include "songdownloader/shared/BeatSaverAPI.hpp"
+#include "beatsaverplusplus/shared/BeatSaver.hpp"
 #include <chrono>
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, BeatSaverPreviewMediaData);
@@ -30,17 +30,30 @@ namespace MultiplayerCore::Beatmaps {
 
         if (!_coverImageTask || _coverImageTask->IsCancellationRequested) {
             _coverImageTask = StartTask<UnityEngine::Sprite*>([this](CancellationToken token) -> UnityEngine::Sprite* {
-                auto coverOpt = BeatSaver::API::GetCoverImage(_levelHash);
-                if (coverOpt.has_value()) {
-                    auto coverBytes = il2cpp_utils::vectorToArray(coverOpt.value());
+                auto beatmapRes = BeatSaver::API::GetBeatmapByHash(_levelHash);
+                if (beatmapRes.DataParsedSuccessful()) {
+                    auto versions = beatmapRes.responseData->GetVersions();
+                    const auto& v = std::find_if(versions.begin(), versions.end(),
+                        [levelHash = std::string_view(this->_levelHash)](const auto& bv){ return bv.GetHash().size() == levelHash.size() && std::ranges::equal(bv.GetHash(), levelHash,
+                            [](char a, char b){
+                                return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
+                            });
+                        }
+                    );
+                    if (v == versions.end()) return (UnityEngine::Sprite*)nullptr;
+                    
+                    auto coverOpt = v->GetCoverImage();
+                    if (coverOpt.has_value()) {
+                        auto coverBytes = il2cpp_utils::vectorToArray(coverOpt.value());
 
-                    std::atomic<UnityEngine::Sprite*> result = nullptr;
-                    BSML::MainThreadScheduler::Schedule([coverBytes, &result](){
-                        result = BSML::Utilities::LoadSpriteRaw(coverBytes);
-                    });
+                        std::atomic<UnityEngine::Sprite*> result = nullptr;
+                        BSML::MainThreadScheduler::Schedule([coverBytes, &result](){
+                            result = BSML::Utilities::LoadSpriteRaw(coverBytes);
+                        });
 
-                    while(!result) std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                    return (UnityEngine::Sprite*)result;
+                        while(!result) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                        return (UnityEngine::Sprite*)result;
+                    }
                 }
                 return (UnityEngine::Sprite*)nullptr;
             }, std::forward<CancellationToken>(cancellationToken));
@@ -57,12 +70,18 @@ namespace MultiplayerCore::Beatmaps {
 
         if (!_audioClipTask || _audioClipTask->IsCancellationRequested) {
             _audioClipTask = StartTask<UnityEngine::AudioClip*>([this](CancellationToken cancelToken) -> UnityEngine::AudioClip* {
-                auto beatmapOpt = BeatSaver::API::GetBeatmapByHash(_levelHash);
+                auto beatmapRes = BeatSaver::API::GetBeatmapByHash(_levelHash);
                 if (cancelToken.IsCancellationRequested) return (UnityEngine::AudioClip*)nullptr;
 
-                if (beatmapOpt.has_value()) {
-                    auto& versions = beatmapOpt->GetVersions();
-                    auto v = std::find_if(versions.begin(), versions.end(), [levelHash = std::string_view(this->_levelHash)](auto x){ return x.GetHash() == levelHash; });
+                if (beatmapRes.DataParsedSuccessful()) {
+                    const auto& versions = beatmapRes.responseData->GetVersions();
+                    const auto& v = std::find_if(versions.begin(), versions.end(),
+                        [levelHash = std::string_view(this->_levelHash)](const auto& bv){ return bv.GetHash().size() == levelHash.size() && std::ranges::equal(bv.GetHash(), levelHash,
+                            [](char a, char b){
+                                return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
+                            });
+                        }
+                    );                    
                     if (v == versions.end()) return (UnityEngine::AudioClip*)nullptr;
 
                     auto webRequest = UnityEngine::Networking::UnityWebRequestMultimedia::GetAudioClip(v->GetPreviewURL(), UnityEngine::AudioType::MPEG);

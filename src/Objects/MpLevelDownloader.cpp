@@ -1,5 +1,5 @@
 #include "Objects/MpLevelDownloader.hpp"
-#include "songdownloader/shared/BeatSaverAPI.hpp"
+#include "beatsaverplusplus/shared/BeatSaver.hpp"
 #include "songcore/shared/SongLoader/RuntimeSongLoader.hpp"
 #include "songcore/shared/SongCore.hpp"
 #include "logging.hpp"
@@ -46,11 +46,11 @@ namespace MultiplayerCore::Objects {
             return false;
         }
 
-        auto bm = BeatSaver::API::GetBeatmapByHash(hash);
-        if (bm.has_value()) {
-            auto& versions = bm->GetVersions();
-            auto v = std::find_if(versions.begin(), versions.end(),
-                [hash = std::string_view(hash)](auto& x){ return std::ranges::equal(x.GetHash(), hash,
+        auto bmRes = BeatSaver::API::GetBeatmapByHash(hash);
+        if (bmRes.DataParsedSuccessful()) {
+            const auto& versions = bmRes.responseData->GetVersions();
+            const auto& v = std::find_if(versions.begin(), versions.end(),
+                [hash = std::string_view(hash)](const auto& bv){ return bv.GetHash().size() == hash.size() && std::ranges::equal(bv.GetHash(), hash,
                     [](char a, char b){
                         return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
                     });
@@ -60,19 +60,19 @@ namespace MultiplayerCore::Objects {
                 ERROR("Could not find version for hash {}", hash);
                 return false;
             }
-            std::optional<bool> downloadSuccess;
+            std::optional<std::string> downloadPath;
             DEBUG("Starting download of beatmap: {}", hash);
-            BeatSaver::API::DownloadBeatmapAsync(bm.value(), *v, [&downloadSuccess](bool success){
-                downloadSuccess = success;
+            v->DownloadBeatmapAsync(*bmRes.responseData, [&downloadPath](const std::optional<std::filesystem::path>& path){
+                downloadPath = path.has_value() ? path->string() : std::string();
             }, progress);
 
-            while(!downloadSuccess.has_value()) std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            if (!downloadSuccess.value()) {
-                WARNING("Download failed for {}", bm->GetId());
+            while(!downloadPath.has_value()) std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            if (downloadPath.value().empty()) {
+                WARNING("Download failed for {}", bmRes.responseData->GetId());
                 return false;
             }
 
-            DEBUG("Download finished succesfully, refreshing songs now");
+            DEBUG("Download finished succesfully to '{}', refreshing songs now", downloadPath.value());
             SongCore::API::Loading::RefreshSongs(false).wait();
 
             auto level = SongCore::API::Loading::GetLevelByHash(hash);
