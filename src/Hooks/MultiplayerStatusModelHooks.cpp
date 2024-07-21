@@ -20,13 +20,14 @@ MAKE_AUTO_HOOK_FIND_VERBOSE(JsonConvert_DeserializeObject_MultiplayerStatusData,
     auto* genMethod = info->genericMethod;
     // Then, we look at our context, and get our method instantiation
     auto* method_inst = genMethod->context.method_inst;
-    DEBUG("JsonConvert_DeserializeObject_MultiplayerStatusData");
+    DEBUG("JsonConvert_DeserializeObject_MultiplayerStatusData check:  ptr method_inst='{}', type_argc='{}', ptr type_argv='{}'", fmt::ptr(method_inst), method_inst->type_argc, fmt::ptr(method_inst->type_argv));
     // Then, we compare our types
     if (method_inst->type_argc == 1 && il2cpp_functions::type_equals(method_inst->type_argv[0], il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_type<GlobalNamespace::MultiplayerStatusData*>::get())) {
         // THIS IS OUR CALL! LETS DO OUR CUSTOM BEHAVIOR HERE
         DEBUG("JsonConvert_DeserializeObject_MultiplayerStatusData CUSTOM TYPE RETURN");
         return MultiplayerCore::Models::MpStatusData::New_ctor(value);
     } else {
+        DEBUG("JsonConvert_DeserializeObject_MultiplayerStatusData orig call");
         // call orig here, remember to pass the info parameter to your orig call!
         return JsonConvert_DeserializeObject_MultiplayerStatusData(value, info);
     }
@@ -46,13 +47,14 @@ MAKE_AUTO_HOOK_FIND_VERBOSE(JsonUtility_FromJson_MultiplayerStatusData, getJsonU
     auto* genMethod = info->genericMethod;
     // Then, we look at our context, and get our method instantiation
     auto* method_inst = genMethod->context.method_inst;
-    DEBUG("JsonUtility_FromJson_MultiplayerStatusData");
+    DEBUG("JsonUtility_FromJson_MultiplayerStatusData check:  ptr method_inst='{}', type_argc='{}', ptr type_argv='{}'", fmt::ptr(method_inst), method_inst->type_argc, fmt::ptr(method_inst->type_argv));
     // Then, we compare our types
-    if (method_inst->type_argc == 1 && il2cpp_functions::type_equals(method_inst->type_argv[0], il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_type<GlobalNamespace::MultiplayerStatusData*>::get())) {
+    if (method_inst && method_inst->type_argc == 1 && il2cpp_functions::type_equals(method_inst->type_argv[0], il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_type<GlobalNamespace::MultiplayerStatusData*>::get())) {
         // THIS IS OUR CALL! LETS DO OUR CUSTOM BEHAVIOR HERE
         DEBUG("JsonUtility_FromJson_MultiplayerStatusData CUSTOM TYPE RETURN");
         return MultiplayerCore::Models::MpStatusData::New_ctor(value);
     } else {
+        DEBUG("JsonUtility_FromJson_MultiplayerStatusData orig call");
         // call orig here, remember to pass the info parameter to your orig call!
         return JsonUtility_FromJson_MultiplayerStatusData(value, info);
     }
