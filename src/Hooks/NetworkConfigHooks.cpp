@@ -42,7 +42,7 @@ namespace MultiplayerCore::Hooks {
 
             // only 128 ids can exist, 0 & 127 are taken as server and broadcast
             // thus 128 - 2 = 126 absolute max player count
-            networkConfig->_maxPartySize = std::clamp(cfg->maxPartySize, 0, 126);
+            networkConfig->_maxPartySize = std::clamp(cfg->maxPartySize, 2, 126);
             LOG_VALUE("maxPartySize", maxPartySize);
             networkConfig->_discoveryPort = cfg->discoveryPort;
             LOG_VALUE("discoveryPort", discoveryPort);
