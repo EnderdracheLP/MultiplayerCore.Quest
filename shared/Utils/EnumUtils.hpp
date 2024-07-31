@@ -1,10 +1,18 @@
 #pragma once
 
+#include "System/Type.hpp"
 #include "System/Enum.hpp"
 #include <string>
 
 namespace MultiplayerCore::Utils {
     struct EnumUtils {
+        template <class T>
+        static StringW GetEnumName(T value)
+        {
+            auto enumType = (System::Type*)csTypeOf(T);
+            return enumType->GetEnumName((System::Object*)il2cpp_functions::value_box(classof(T), &value));
+        }
+
         template<typename T>
         static T GetEnumValue(const std::string& enumName) {
             return EnumUtils::GetEnumValue<T>(enumName, false);
