@@ -2,8 +2,10 @@
 #include "logging.hpp"
 #include "InvokingLock.hpp"
 
+#include "Hooks/NetworkConfigHooks.hpp"
 #include "Objects/MpPlayersDataModel.hpp"
 // This file exists to override methods on LobbyPlayersDataModel for the MultiplayerCore.Objects.MpPlayersDataModel, since on quest methods are not transformed into virtual calls
+
 
 #include "GlobalNamespace/NetworkUtility.hpp"
 #include "GlobalNamespace/AuthenticationToken.hpp"
@@ -82,19 +84,19 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_SetLocalPlayerBeatmapLevel, &::G
 }
 
 MAKE_AUTO_HOOK_ORIG_MATCH(NetworkUtility_GetHashedUserId, &::GlobalNamespace::NetworkUtility::GetHashedUserId, StringW, StringW userId, ::GlobalNamespace::AuthenticationToken::Platform platform) {
-    StringW hashedUserId;
     // StringW prefix;
     // if (getConfig().config.FindMember("UserIdPrefix") != getConfig().config.MemberEnd() && getConfig().config["UserIdPrefix"].IsString())
     //     prefix = StringW(getConfig().config["UserIdPrefix"].GetString());
 
-    if (platform == ::GlobalNamespace::AuthenticationToken::Platform::OculusQuest || platform == ::GlobalNamespace::AuthenticationToken::Platform::Oculus) {
+    if (MultiplayerCore::Hooks::NetworkConfigHooks::IsOverridingApi && (platform == ::GlobalNamespace::AuthenticationToken::Platform::OculusQuest || platform == ::GlobalNamespace::AuthenticationToken::Platform::Oculus)) {
+        StringW hashedUserId;
         DEBUG("User is on Quest, using custom prefix");
         DEBUG("Setting userId to hash {}", /*StringW(prefix + */StringW("OculusQuest#" + userId));
         hashedUserId = ::GlobalNamespace::NetworkUtility::GetHashBase64(/*prefix + */StringW("OculusQuest#" + userId));
-        DEBUG("Hashed userId is %s", static_cast<std::string>(hashedUserId).c_str());
+        DEBUG("Hashed userId is {}", hashedUserId);
+        return hashedUserId;
     }
     else {
         return NetworkUtility_GetHashedUserId(/*prefix ? prefix + userId : */userId, platform);
     }
-    return hashedUserId;
 }
