@@ -88,11 +88,10 @@ MAKE_AUTO_HOOK_ORIG_MATCH(NetworkUtility_GetHashedUserId, &::GlobalNamespace::Ne
     // if (getConfig().config.FindMember("UserIdPrefix") != getConfig().config.MemberEnd() && getConfig().config["UserIdPrefix"].IsString())
     //     prefix = StringW(getConfig().config["UserIdPrefix"].GetString());
 
-    if (MultiplayerCore::Hooks::NetworkConfigHooks::IsOverridingApi && (platform == ::GlobalNamespace::AuthenticationToken::Platform::OculusQuest || platform == ::GlobalNamespace::AuthenticationToken::Platform::Oculus)) {
-        StringW hashedUserId;
+    if (MultiplayerCore::Hooks::NetworkConfigHooks::IsOverridingAPI() && (platform == ::GlobalNamespace::AuthenticationToken::Platform::OculusQuest || platform == ::GlobalNamespace::AuthenticationToken::Platform::Oculus)) {
         DEBUG("User is on Quest, using custom prefix");
         DEBUG("Setting userId to hash {}", /*StringW(prefix + */StringW("OculusQuest#" + userId));
-        hashedUserId = ::GlobalNamespace::NetworkUtility::GetHashBase64(/*prefix + */StringW("OculusQuest#" + userId));
+        StringW hashedUserId = ::GlobalNamespace::NetworkUtility::GetHashBase64(/*prefix + */StringW("OculusQuest#" + userId));
         DEBUG("Hashed userId is {}", hashedUserId);
         return hashedUserId;
     }
