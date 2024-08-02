@@ -60,7 +60,7 @@ if ($debugbuild -eq $true) {
 } else {
 & cmake -G "Ninja" -DCMAKE_BUILD_TYPE="RelWithDebInfo" ../
 }
-& cmake --build . -j 6
+& cmake --build .
 $ExitCode = $LastExitCode
 cd ..
 exit $ExitCode

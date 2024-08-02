@@ -115,7 +115,8 @@
         "xutility": "cpp",
         "__std_stream": "cpp",
         "__memory": "cpp",
-        "__verbose_abort": "cpp"
+        "__verbose_abort": "cpp",
+        "*.bsml": "xml"
     },
     "search.useIgnoreFiles": false
 }
