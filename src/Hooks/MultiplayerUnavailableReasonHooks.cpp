@@ -30,9 +30,11 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
     if (!mpData)
     {
         if (!data) {
+            DEBUG("MultiplayerStatusData is null returning MUR-1 NetworkUnreachable");
             reason.heldRef = GlobalNamespace::MultiplayerUnavailableReason::NetworkUnreachable;
             return true;
         };
+        DEBUG("MultiplayerStatusData is not of type MpStatusData returning MUR-{}", reason.heldRef.value__);
         return MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason(data, reason);
     }
 
@@ -64,7 +66,6 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
             return true;
         }
     }
-
     return MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason(data, reason);
 }
 
@@ -74,7 +75,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_LocalizedKey, &::Global
             auto installedMod = find_mod(requiredMod);
             return fmt::format("Multiplayer Unavailable\nMod {} is out of date.\nPlease update to version {} or newer", installedMod->info.version, requiredVersion);
         } break;
-        case 6: { // game too old
+        case 6: { // game too new
             return fmt::format("Multiplayer Unavailable\nBeat Saber version is too new\nMaximum version: {}\nCurrent version: {}", maximumBsVersion, UnityEngine::Application::get_version());
         } break;
         default:
