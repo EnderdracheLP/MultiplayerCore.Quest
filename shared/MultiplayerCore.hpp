@@ -5,12 +5,20 @@
 
 namespace MultiplayerCore {
     struct MPCORE_EXPORT API {
-        /// @brief revert back to the official server, but since there's no auth on quest might be useless
+        /// @brief revert back to the official server
         static void UseOfficialServer();
 
         /// @brief Switch to the provided server config
         /// @param config config to use, pointer is owned by you, so keep it alive (static memory)
         static void UseServer(const ServerConfig* config);
+
+        /// @brief Switch to a custom server config
+        /// @param graphUrl the graph url
+        /// @param statusUrl the status url
+        /// @param maxPartySize the max party size
+        /// @param quickPlaySetupUrl the quick play setup url
+        /// @param disableSSL whether to disable connecting with ssl
+        static void UseCustomApiServer(const std::string& graphUrl, const std::string& statusUrl, int maxPartySize = OFFICIAL_MAX_PARTY_SIZE, const std::string& quickPlaySetupUrl = "", bool disableSSL = true);
 
         /// @brief Getter for the official server config
         /// @return address of the official server config

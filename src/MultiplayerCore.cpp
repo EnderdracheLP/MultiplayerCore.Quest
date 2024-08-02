@@ -10,6 +10,10 @@ namespace MultiplayerCore {
         Hooks::NetworkConfigHooks::UseServer(config);
     }
 
+    void API::UseCustomApiServer(const std::string& graphUrl, const std::string& statusUrl, int maxPartySize, const std::string& quickPlaySetupUrl, bool disableSSL) {
+        Hooks::NetworkConfigHooks::UseCustomApiServer(graphUrl, statusUrl, maxPartySize, quickPlaySetupUrl, disableSSL);
+    }
+
     const ServerConfig* API::GetOfficialServer() {
         return Hooks::NetworkConfigHooks::GetOfficialServer();
     }

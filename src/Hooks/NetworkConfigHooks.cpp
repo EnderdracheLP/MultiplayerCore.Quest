@@ -24,8 +24,22 @@ namespace MultiplayerCore::Hooks {
 
     bool NetworkConfigHooks::IsOverridingAPI() { return GetCurrentServer() && GetCurrentServer() != GetOfficialServer(); }
 
+    void NetworkConfigHooks::UseCustomApiServer(const std::string& graphUrl, const std::string& statusUrl, int maxPartySize, const std::string& quickPlaySetupUrl, bool disableSSL) {
+        static ServerConfig tempConfig;
+        if (graphUrl.empty() || statusUrl.empty()) {
+            DEBUG("Invalid server config, using official server");
+            UseOfficialServer();
+            return;
+        }
+
+        tempConfig = ServerConfig(graphUrl, statusUrl, maxPartySize, quickPlaySetupUrl, disableSSL);
+        currentServerConfig = &tempConfig;
+        ServerChanged.invoke(currentServerConfig);
+    }
+
     void NetworkConfigHooks::UseServer(const ServerConfig* cfg) {
         if (!cfg) {
+            DEBUG("Invalid server config, using official server");
             UseOfficialServer();
             return;
         }
