@@ -45,7 +45,12 @@ namespace MultiplayerCore::UI {
         _lobbyViewController = gameServerLobbyFlowCoordinator->_lobbySetupViewController;
         _gameStateController = gameServerLobbyFlowCoordinator->_lobbyGameStateController;
         _beatmapLevelsModel = beatmapLevelsModel;
-        _multiplayerSessionManager = sessionManager;
+        auto sessManOpt = il2cpp_utils::try_cast<GlobalNamespace::MultiplayerSessionManager>(sessionManager);
+        if (!sessManOpt.has_value()) {
+            CRITICAL("Failed to cast IMultiplayerSessionManager to MultiplayerSessionManager, throwing runtime_error...");
+            throw std::runtime_error("Failed to cast IMultiplayerSessionManager to MultiplayerSessionManager");
+        }
+        _multiplayerSessionManager = sessManOpt.value();
         _beatmapLevelProvider = beatmapLevelProvider;
         _packetSerializer = packetSerializer;
     }
@@ -136,16 +141,26 @@ namespace MultiplayerCore::UI {
                     UpdateDifficultyListWithBeatmapKey(playerData->beatmapKey);
                 }
             }
+
+            if (addedToHierarchy)
+            {
+                // Reset our buttons
+                ppdt->set_Value(false);
+                ppmt->set_Value(false);
+
+                // Request Updated state
+                _multiplayerSessionManager->Send(Players::Packets::GetMpPerPlayerPacket::New_ctor());
+            }
         }
 
         if (_lobbyViewController && _lobbyViewController->_isPartyOwner && ppdt && ppmt)
         {
             ppdt->gameObject->SetActive(true);
             ppmt->gameObject->SetActive(true);
-        } else {
+        } else if (ppdt && ppmt) {
             ppdt->gameObject->SetActive(false);
             ppmt->gameObject->SetActive(false);
-        }
+        } else ERROR("Toggle Settings are null, returning...");
     }
 
     void MpPerPlayerUI::DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling) {
@@ -159,9 +174,15 @@ namespace MultiplayerCore::UI {
     void MpPerPlayerUI::HandleMpPerPlayerPacket(Players::Packets::MpPerPlayerPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
         // HandleMpPerPlayerPacket
         DEBUG("Received MpPerPlayerPacket from {}|{} with values PPDEnabled: {} PPMEnabled: {}", player->userName, player->userId, packet->PPDEnabled, packet->PPMEnabled);
-        // Set Toggles
-        ppdt->set_Value(packet->PPDEnabled);
-        ppmt->set_Value(packet->PPMEnabled);
+        
+        // Check if player is party Owner
+        if (ppdt && ppmt && player->get_isConnectionOwner() && (packet->PPDEnabled != ppdt->get_Value() || packet->PPMEnabled != ppmt->get_Value())) {
+            DEBUG("Player is Connection Owner, updating toogle values");
+            ppdt->set_Value(packet->PPDEnabled);
+            ppmt->set_Value(packet->PPMEnabled);
+        } else if (!player->get_isConnectionOwner()) {
+            WARNING("Player is not Connection Owner, ignoring packet");
+        }
     }
 
     void MpPerPlayerUI::HandleGetMpPerPlayerPacket(Players::Packets::GetMpPerPlayerPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
@@ -180,10 +201,12 @@ namespace MultiplayerCore::UI {
         {
             ppdt->gameObject->SetActive(true);
             ppmt->gameObject->SetActive(true);
-        } else {
+
+            _multiplayerSessionManager->Send(Players::Packets::GetMpPerPlayerPacket::New_ctor());
+        } else if (ppdt && ppmt) {
             ppdt->gameObject->SetActive(false);
             ppmt->gameObject->SetActive(false);
-        }
+        } else ERROR("Toggle Settings are null, returning...");
     }
 
     void MpPerPlayerUI::SetLobbyState(GlobalNamespace::MultiplayerLobbyState state) {
@@ -340,5 +363,35 @@ namespace MultiplayerCore::UI {
         DEBUG("Selected difficulty at index {} - {}", index, diffName);
         _currentBeatmapKey.difficulty = diff;
         _gameServerLobbyFlowCoordinator->_lobbyPlayersDataModel->SetLocalPlayerBeatmapLevel(_currentBeatmapKey);
+    }
+
+    void MpPerPlayerUI::set_PerPlayerDifficulty(bool value) {
+        // set_PerPlayerDifficulty
+        if (ppdt) ppdt->set_Value(value);
+        // Send updated MpPerPlayerPacket
+        auto ppPacket = Players::Packets::MpPerPlayerPacket::New_ctor();
+        ppPacket->PPDEnabled = value;
+        if (ppmt) ppPacket->PPMEnabled = ppmt->get_Value();
+        _multiplayerSessionManager->Send(ppPacket->i_INetSerializable());
+    }
+
+    bool MpPerPlayerUI::get_PerPlayerDifficulty() {
+        // get_PerPlayerDifficulty
+        return ppdt ? ppdt->get_Value() : false;
+    }
+
+    void MpPerPlayerUI::set_PerPlayerModifiers(bool value) {
+        // set_PerPlayerModifiers
+        if (ppmt) ppmt->set_Value(value);
+        // Send updated MpPerPlayerPacket
+        auto ppPacket = Players::Packets::MpPerPlayerPacket::New_ctor();
+        if (ppdt) ppPacket->PPDEnabled = ppdt->get_Value();
+        ppPacket->PPMEnabled = value;
+        _multiplayerSessionManager->Send(ppPacket->i_INetSerializable());
+    }
+
+    bool MpPerPlayerUI::get_PerPlayerModifiers() {
+        // get_PerPlayerModifiers
+        return ppmt ? ppmt->get_Value() : false;
     }
 }

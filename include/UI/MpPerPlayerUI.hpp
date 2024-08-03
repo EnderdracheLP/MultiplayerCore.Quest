@@ -30,7 +30,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Obj
     DECLARE_INSTANCE_FIELD(GlobalNamespace::LobbySetupViewController*, _lobbyViewController);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::ILobbyGameStateController*, _gameStateController);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapLevelsModel*, _beatmapLevelsModel);
-    DECLARE_INSTANCE_FIELD(GlobalNamespace::IMultiplayerSessionManager*, _multiplayerSessionManager);
+    DECLARE_INSTANCE_FIELD(GlobalNamespace::MultiplayerSessionManager*, _multiplayerSessionManager);
     DECLARE_INSTANCE_FIELD(MultiplayerCore::Beatmaps::Providers::MpBeatmapLevelProvider*, _beatmapLevelProvider);
     DECLARE_INSTANCE_FIELD(MultiplayerCore::Networking::MpPacketSerializer*, _packetSerializer);
 
@@ -53,6 +53,10 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Obj
     DECLARE_INSTANCE_METHOD(void, UpdateButtonsEnabled);
 
     DECLARE_INSTANCE_METHOD(void, SetSelectedDifficulty, HMUI::SegmentedControl* control, int index);
+    DECLARE_INSTANCE_METHOD(void, set_PerPlayerDifficulty, bool value);
+    DECLARE_INSTANCE_METHOD(bool, get_PerPlayerDifficulty);
+    DECLARE_INSTANCE_METHOD(void, set_PerPlayerModifiers, bool value);
+    DECLARE_INSTANCE_METHOD(bool, get_PerPlayerModifiers);
 
     DECLARE_CTOR(ctor,
             GlobalNamespace::GameServerLobbyFlowCoordinator* gameServerLobbyFlowCoordinator,
