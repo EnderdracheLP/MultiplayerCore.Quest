@@ -88,14 +88,20 @@ namespace MultiplayerCore::Objects {
         }
 
         std::shared_future fut = _beatmapLevelProvider->GetBeatmapAsync(hash);
-        BSML::MainThreadScheduler::AwaitFuture(fut, [fut, beatmapKey, packetSerializer = this->_packetSerializer](){
+        BSML::MainThreadScheduler::AwaitFuture(fut, [fut, beatmapKey, hash, packetSerializer = this->_packetSerializer, beatmapLevelProvider = this->_beatmapLevelProvider](){
             auto level = fut.get();
             if (!level) {
                 DEBUG("couldn't get level, returning...");
                 return;
             }
 
-            DEBUG("actually sending the packet");
+            auto mpBeatmapLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(level).value_or(nullptr);
+            if (mpBeatmapLevel && mpBeatmapLevel->requirements.empty())
+            {
+                WARNING("Empty requirements for level '{}', using packet instead", hash);
+                level = beatmapLevelProvider->TryGetBeatmapFromPacketHash(hash);
+            }
+
             auto packet = MpBeatmapPacket::New_1(level, beatmapKey);
             packetSerializer->Send(packet);
         });
