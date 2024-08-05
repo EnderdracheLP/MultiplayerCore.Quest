@@ -14,7 +14,7 @@
 // File is equivalent to MultiplayerCore.Patchers.NetworkConfigPatcher from PC
 
 namespace MultiplayerCore::Hooks {
-    ServerConfig NetworkConfigHooks::officialServerConfig{};
+    ServerConfig NetworkConfigHooks::officialServerConfig = {"https://graph.oculus.com", "https://graph.oculus.com/beat_saber_multiplayer_status", OFFICIAL_MAX_PARTY_SIZE, "", false };
     const ServerConfig* NetworkConfigHooks::currentServerConfig{};
     GlobalNamespace::NetworkConfigSO* NetworkConfigHooks::networkConfig = nullptr;
     UnorderedEventCallback<const ServerConfig*> NetworkConfigHooks::ServerChanged{};
@@ -72,6 +72,10 @@ namespace MultiplayerCore::Hooks {
     }
 
     void NetworkConfigHooks::UseOfficialServer() {
+        if (!networkConfig) {
+            ERROR("NetworkConfigSO is null, official server not set");
+            return;
+        }
         UseServer(&officialServerConfig);
     }
 }
@@ -98,7 +102,6 @@ MAKE_AUTO_HOOK_MATCH(MainSystemInit_Init, &::GlobalNamespace::MainSystemInit::In
 }
 
 MAKE_AUTO_HOOK_MATCH(UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType, &GlobalNamespace::UnifiedNetworkPlayerModel::SetActiveNetworkPlayerModelType, void, GlobalNamespace::UnifiedNetworkPlayerModel* self, GlobalNamespace::UnifiedNetworkPlayerModel::ActiveNetworkPlayerModelType activeNetworkPlayerModelType) {
-    auto currentConfig = NetworkConfigHooks::GetCurrentServer();
     if (NetworkConfigHooks::IsOverridingAPI()) {
         DEBUG("Disabling MasterServer, Setting to GameLift");
         UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, GlobalNamespace::UnifiedNetworkPlayerModel::ActiveNetworkPlayerModelType::GameLift);
