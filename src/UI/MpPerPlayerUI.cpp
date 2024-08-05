@@ -22,6 +22,8 @@
 
 #include "System/Action.hpp"
 #include "System/Collections/Generic/List_1.hpp"
+#include "System/Collections/Generic/IEnumerable_1.hpp"
+#include "System/Collections/Generic/IEnumerator_1.hpp"
 
 #include "custom-types/shared/delegate.hpp"
 #include "bsml/shared/BSML.hpp"
@@ -217,14 +219,6 @@ namespace MultiplayerCore::UI {
                                              state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown) ? 1.0f : 0.25f;
         }
 
-        // auto count = difficultyControl->cells->i___System__Collections__Generic__IReadOnlyCollection_1_T_()->Count;
-        // for (int i = 0; i < count; i++) {
-        //     auto cell = difficultyControl->cells->get_Item(i);
-        //     if (!cell) continue;
-        //     cell->interactable = (state == GlobalNamespace::MultiplayerLobbyState::LobbySetup || 
-        //                           state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown);
-        // }
-
         auto cells = ListW<::UnityW<::HMUI::TableCell>>(difficultyControl->cells);
         for (auto& cell : cells) {
             if (!cell) continue;
@@ -288,12 +282,25 @@ namespace MultiplayerCore::UI {
                 }
 
                 auto level = levelOpt.value();
+                if (level->requirements.empty()) {
+                    ERROR("Level {} has empty requirements, this should not happen, falling back to packet", levelHash);
+                    // Fallback to getting packet
+                    level = il2cpp_utils::try_cast<MultiplayerCore::Beatmaps::Abstractions::MpBeatmapLevel>(_beatmapLevelProvider->GetBeatmapFromPacket(levelHash)).value_or(nullptr);
+                    if (!level) {
+                        ERROR("Failed to get level from packet for hash {}", levelHash);
+                        return;
+                    }
+                    if (level->requirements.empty()) {
+                        ERROR("Level packet {} also has empty requirements, this should not happen...", levelHash);
+                        return;
+                    }
+                }
                 auto reqCharItr = level->requirements.find(_currentBeatmapKey.beatmapCharacteristic->serializedName);
                 if (reqCharItr == level->requirements.end()) {
-                    ERROR("Failed to get requirements for characteristic {}", _currentBeatmapKey.beatmapCharacteristic->serializedName);
+                    ERROR("Level {} failed to get requirements for characteristic {}", levelHash, _currentBeatmapKey.beatmapCharacteristic->serializedName);
                     return;
                 }
-                DEBUG("Got level {} Requirements count {}", levelHash, reqCharItr->second.size());
+                DEBUG("Got level {} Requirements for characteristic {} count {}", levelHash, _currentBeatmapKey.beatmapCharacteristic->serializedName, reqCharItr->second.size());
                 // Hacky we use requirements to get the available difficulties
                 ListW<StringW> difficulties = ListW<StringW>::New(reqCharItr->second.size());
                 for (const auto& [key, value] : reqCharItr->second) {
@@ -305,11 +312,29 @@ namespace MultiplayerCore::UI {
                 UpdateDifficultyList(difficulties);
             });
         }
+        else
+        {
+            DEBUG("LevelId not custom: {}, getting difficulties from basegame", beatmapKey.levelId);
+            auto level = _beatmapLevelsModel->GetBeatmapLevel(beatmapKey.levelId);
+            if (level)
+            {
+                // Convert our difficulties into a string list
+                auto enumerator = level->GetDifficulties(beatmapKey.beatmapCharacteristic)->GetEnumerator();
+                ListW<StringW> difficulties = ListW<StringW>::New();
+                while (enumerator->i___System__Collections__IEnumerator()->MoveNext())
+                {
+                    auto diffName = Utils::EnumUtils::GetEnumName<GlobalNamespace::BeatmapDifficulty>(enumerator->Current.value__)->Replace("ExpertPlus", "Expert+");
+                    DEBUG("Adding difficulty {}", diffName);
+                    difficulties->Add(diffName);
+                }
+                UpdateDifficultyList(difficulties);
+            }
+        }
     }
 
     void MpPerPlayerUI::UpdateDifficultyList(ListW<StringW> difficulties) {
         // UpdateDifficultyList
-        if (!_allowedDifficulties || !_gameServerLobbyFlowCoordinator || !_gameServerLobbyFlowCoordinator->_unifiedNetworkPlayerModel) {
+        if (!difficulties || !_allowedDifficulties || !_gameServerLobbyFlowCoordinator || !_gameServerLobbyFlowCoordinator->_unifiedNetworkPlayerModel) {
             ERROR("Values not set, returning...");
             return;
         }
@@ -323,6 +348,7 @@ namespace MultiplayerCore::UI {
         }
         auto diffMask = upm.value()->selectionMask.difficulties;
         for (auto& diff : difficulties) {
+            // DEBUG("Checking if difficulty {} is in selection mask", diff);
             if (GlobalNamespace::BeatmapDifficultyMaskExtensions::Contains(diffMask, Utils::EnumUtils::GetEnumValue<GlobalNamespace::BeatmapDifficulty>(diff))) {
                 DEBUG("Allowed difficulty {}", diff);
                 _allowedDifficulties->Add(diff->Replace("ExpertPlus", "Expert+"));
