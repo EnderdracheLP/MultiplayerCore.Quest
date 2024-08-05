@@ -34,7 +34,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
             reason.heldRef = GlobalNamespace::MultiplayerUnavailableReason::NetworkUnreachable;
             return true;
         };
-        DEBUG("MultiplayerStatusData is not of type MpStatusData returning MUR-{}", reason.heldRef.value__);
+        DEBUG("MultiplayerStatusData is not of type MpStatusData current code MUR-{}", reason.heldRef.value__);
         return MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason(data, reason);
     }
 
