@@ -15,6 +15,14 @@ DEFINE_TYPE(MultiplayerCore::Objects, MpLevelDownloader);
 namespace MultiplayerCore::Objects {
     void MpLevelDownloader::ctor() {
         INVOKE_CTOR();
+
+        SongCore::API::Loading::GetSongWillBeDeletedEvent() += [this](::SongCore::SongLoader::CustomBeatmapLevel* level){
+            auto dl = downloads.find(level->levelID);
+            if (dl != downloads.end()) {
+                DEBUG("Removing download future for level: {}", level->levelID);
+                downloads.erase(dl);
+            }
+        };
     }
 
     std::shared_future<bool> MpLevelDownloader::TryDownloadLevelAsync(std::string levelId, std::function<void(double)> progress) {
