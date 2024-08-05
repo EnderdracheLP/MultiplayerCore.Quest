@@ -41,7 +41,7 @@ namespace MultiplayerCore::Beatmaps::Packets {
             for (const auto& c : mpBeatmapLevel->contributors) packet->contributors.emplace_back(c);
         } else {
             WARNING("BeatmapLevel not MpCore type: {}", packet->levelHash);
-            // packet->requirements.emplace(beatmapKey.difficulty.value__, std::list<std::string>());
+            packet->requirements.emplace(beatmapKey.difficulty.value__, std::list<std::string>());
         }
 
         return packet;
