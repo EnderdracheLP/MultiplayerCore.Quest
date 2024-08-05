@@ -23,5 +23,5 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvid
         GlobalNamespace::BeatmapLevel* GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet);
         GlobalNamespace::BeatmapLevel* GetBeatmapFromBeatSaver(std::string levelHash);
 
-        GlobalNamespace::BeatmapLevel* GetBeatmapFromPacket(std::string levelHash);
+        GlobalNamespace::BeatmapLevel* TryGetBeatmapFromPacketHash(std::string levelHash);
 )

@@ -285,7 +285,7 @@ namespace MultiplayerCore::UI {
                 if (level->requirements.empty()) {
                     ERROR("Level {} has empty requirements, this should not happen, falling back to packet", levelHash);
                     // Fallback to getting packet
-                    level = il2cpp_utils::try_cast<MultiplayerCore::Beatmaps::Abstractions::MpBeatmapLevel>(_beatmapLevelProvider->GetBeatmapFromPacket(levelHash)).value_or(nullptr);
+                    level = il2cpp_utils::try_cast<MultiplayerCore::Beatmaps::Abstractions::MpBeatmapLevel>(_beatmapLevelProvider->TryGetBeatmapFromPacketHash(levelHash)).value_or(nullptr);
                     if (!level) {
                         ERROR("Failed to get level from packet for hash {}", levelHash);
                         return;

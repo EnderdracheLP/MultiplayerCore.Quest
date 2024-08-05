@@ -70,7 +70,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
         return level;
     }
 
-    GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::GetBeatmapFromPacket(std::string levelHash) {
+    GlobalNamespace::BeatmapLevel* MpBeatmapLevelProvider::TryGetBeatmapFromPacketHash(std::string levelHash) {
         GlobalNamespace::BeatmapLevel* level = nullptr;
         if (_hashToNetworkLevels->TryGetValue(levelHash, byref(level))) {
             return level;
