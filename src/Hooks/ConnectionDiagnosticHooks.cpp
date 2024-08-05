@@ -248,6 +248,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_PresentConnectionEr
     // else {
     //     // Create a separate ping thread
         DEBUG("Starting ping thread");
+        // TODO: Possibly just call PingUtility::Ping(addressToPing)
         std::thread(MultiplayerCore::Hooks::Ping, addressToPing).detach();
     // }
 
