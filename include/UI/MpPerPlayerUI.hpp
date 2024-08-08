@@ -12,6 +12,7 @@
 #include "Zenject/IInitializable.hpp"
 
 #include "UnityEngine/UI/VerticalLayoutGroup.hpp"
+#include "UnityEngine/UI/HorizontalLayoutGroup.hpp"
 #include "UnityEngine/CanvasGroup.hpp"
 
 #include "HMUI/TextSegmentedControl.hpp"
@@ -68,6 +69,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Obj
 
     // UI Elements
     DECLARE_INSTANCE_FIELD(UnityEngine::UI::VerticalLayoutGroup*, segmentVert);
+    DECLARE_INSTANCE_FIELD(UnityEngine::UI::HorizontalLayoutGroup*, ppth);
     DECLARE_INSTANCE_FIELD(HMUI::TextSegmentedControl*, difficultyControl);
     DECLARE_INSTANCE_FIELD(BSML::ToggleSetting*, ppdt);
     DECLARE_INSTANCE_FIELD(BSML::ToggleSetting*, ppmt);

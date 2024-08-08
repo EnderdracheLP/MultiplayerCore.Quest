@@ -10,6 +10,8 @@
 #include "lapiz/shared/zenject/Zenjector.hpp"
 #include "bsml/shared/BSML.hpp"
 
+#define BEATSAVER_PLUSPLUS_AUTO_INIT
+
 modloader::ModInfo modInfo{MOD_ID, VERSION, VERSION_LONG};
 
 MPCORE_EXPORT_FUNC void setup(CModInfo* info) {

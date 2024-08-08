@@ -66,10 +66,10 @@ namespace MultiplayerCore::UI {
         if (segmentVert) _difficultyCanvasGroup = segmentVert->gameObject->AddComponent<UnityEngine::CanvasGroup*>();
 
         // PerPlayerToggles
-        BSML::parse_and_construct(Assets::MpPerPlayerToggles_bsml, _lobbyViewController->_startGameReadyButton->gameObject->transform, this);
+        BSML::parse_and_construct(Assets::MpPerPlayerToggles_bsml, _lobbyViewController->transform, this);
 
         // Check if UI Elements were created
-        if (!segmentVert || !ppdt || !ppmt || !difficultyControl || !_difficultyCanvasGroup) {
+        if (!segmentVert || !ppdt || !ppmt || !difficultyControl || !_difficultyCanvasGroup || !ppth) {
             CRITICAL("Failed to create UI Elements, UI will not function!");
             return;
         }
@@ -155,14 +155,13 @@ namespace MultiplayerCore::UI {
             }
         }
 
-        if (_lobbyViewController && _lobbyViewController->_isPartyOwner && ppdt && ppmt)
-        {
-            ppdt->gameObject->SetActive(true);
-            ppmt->gameObject->SetActive(true);
-        } else if (ppdt && ppmt) {
-            ppdt->gameObject->SetActive(false);
-            ppmt->gameObject->SetActive(false);
-        } else ERROR("Toggle Settings are null, returning...");
+        ppdt->set_interactable(_lobbyViewController->_isPartyOwner);
+        ppdt->text->alpha = _lobbyViewController->_isPartyOwner ? 1.0f : 0.25f;
+        ppmt->set_interactable(_lobbyViewController->_isPartyOwner);
+        ppmt->text->alpha = _lobbyViewController->_isPartyOwner ? 1.0f : 0.25f;
+
+        auto locposition = _lobbyViewController->_startGameReadyButton->gameObject->transform->localPosition;
+        ppth->gameObject->transform->localPosition = locposition;
     }
 
     void MpPerPlayerUI::DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling) {
@@ -199,25 +198,25 @@ namespace MultiplayerCore::UI {
 
     void MpPerPlayerUI::UpdateButtonsEnabled() {
         // UpdateButtonsEnabled
-        if (_lobbyViewController && _lobbyViewController->_isPartyOwner && ppdt && ppmt)
-        {
-            ppdt->gameObject->SetActive(true);
-            ppmt->gameObject->SetActive(true);
+        ppdt->set_interactable(_lobbyViewController->_isPartyOwner);
+        ppdt->text->alpha = _lobbyViewController->_isPartyOwner ? 1.0f : 0.25f;
+        ppmt->set_interactable(_lobbyViewController->_isPartyOwner);
+        ppmt->text->alpha = _lobbyViewController->_isPartyOwner ? 1.0f : 0.25f;
 
-            _multiplayerSessionManager->Send(Players::Packets::GetMpPerPlayerPacket::New_ctor());
-        } else if (ppdt && ppmt) {
-            ppdt->gameObject->SetActive(false);
-            ppmt->gameObject->SetActive(false);
-        } else ERROR("Toggle Settings are null, returning...");
+        // Request updated button states from server
+        _multiplayerSessionManager->Send(Players::Packets::GetMpPerPlayerPacket::New_ctor());
     }
 
     void MpPerPlayerUI::SetLobbyState(GlobalNamespace::MultiplayerLobbyState state) {
         // SetLobbyState
         DEBUG("Current Lobby State {}", Utils::EnumUtils::GetEnumName<GlobalNamespace::MultiplayerLobbyState>(state));
-        if (_difficultyCanvasGroup) {
-            _difficultyCanvasGroup->alpha = (state == GlobalNamespace::MultiplayerLobbyState::LobbySetup || 
-                                             state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown) ? 1.0f : 0.25f;
+        if (!_lobbyViewController || !_difficultyCanvasGroup || !difficultyControl || !ppdt || !ppmt) {
+            ERROR("UI was not properly initialized, returning...");
+            return;
         }
+
+        _difficultyCanvasGroup->alpha = (state == GlobalNamespace::MultiplayerLobbyState::LobbySetup || 
+                                        state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown) ? 1.0f : 0.25f;
 
         auto cells = ListW<::UnityW<::HMUI::TableCell>>(difficultyControl->cells);
         for (auto& cell : cells) {
@@ -226,17 +225,17 @@ namespace MultiplayerCore::UI {
                                    state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown);
         }
 
-        if (!_lobbyViewController)
-            return;
-
         if (_lobbyViewController->_isPartyOwner)
         {
-            if (ppdt && ppmt) {
-                ppdt->set_interactable(state == GlobalNamespace::MultiplayerLobbyState::LobbySetup || 
-                                      state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown);
-                ppmt->set_interactable(state == GlobalNamespace::MultiplayerLobbyState::LobbySetup ||
-                                      state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown);
-            }
+            ppdt->set_interactable(state == GlobalNamespace::MultiplayerLobbyState::LobbySetup || 
+                                    state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown);
+            ppmt->set_interactable(state == GlobalNamespace::MultiplayerLobbyState::LobbySetup ||
+                                    state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown);
+
+            ppdt->text->alpha = (state == GlobalNamespace::MultiplayerLobbyState::LobbySetup || 
+                                state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown) ? 1.0f : 0.25f;
+            ppmt->text->alpha = (state == GlobalNamespace::MultiplayerLobbyState::LobbySetup ||
+                                state == GlobalNamespace::MultiplayerLobbyState::LobbyCountdown) ? 1.0f : 0.25f;
         }
     }
 
