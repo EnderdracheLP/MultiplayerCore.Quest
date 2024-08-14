@@ -198,10 +198,11 @@ namespace MultiplayerCore::UI {
 
     void MpPerPlayerUI::UpdateButtonsEnabled() {
         // UpdateButtonsEnabled
-        ppdt->set_interactable(_lobbyViewController->_isPartyOwner);
-        ppdt->text->alpha = _lobbyViewController->_isPartyOwner ? 1.0f : 0.25f;
-        ppmt->set_interactable(_lobbyViewController->_isPartyOwner);
-        ppmt->text->alpha = _lobbyViewController->_isPartyOwner ? 1.0f : 0.25f;
+        bool isPartyOwner = _gameServerLobbyFlowCoordinator->isPartyOwner;
+        ppdt->set_interactable(isPartyOwner);
+        ppdt->text->alpha = isPartyOwner ? 1.0f : 0.25f;
+        ppmt->set_interactable(isPartyOwner);
+        ppmt->text->alpha = isPartyOwner ? 1.0f : 0.25f;
 
         // Request updated button states from server
         _multiplayerSessionManager->Send(Players::Packets::GetMpPerPlayerPacket::New_ctor());
