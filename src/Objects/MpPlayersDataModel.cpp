@@ -44,6 +44,15 @@ namespace MultiplayerCore::Objects {
         Deactivate();
     }
 
+    void MpPlayersDataModel::HandlePlayerConnected(GlobalNamespace::IConnectedPlayer* connectedPlayer) {
+        GlobalNamespace::LobbyPlayerData* localPlayerData = nullptr;
+        if (_playersData->TryGetValue(localUserId, byref(localPlayerData)) && localPlayerData) {
+            std::thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, localPlayerData->beatmapKey).detach();
+        }
+
+        Base::HandleMultiplayerSessionManagerPlayerConnected(connectedPlayer);
+    }
+
     void MpPlayersDataModel::HandleMpCoreBeatmapPacket(MpBeatmapPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
         DEBUG("'{}' selected song '{}'", player->get_userId(), packet->levelHash);
         DEBUG("Looking for characteristic {} on {}", packet->characteristic, fmt::ptr(_beatmapCharacteristicCollection));

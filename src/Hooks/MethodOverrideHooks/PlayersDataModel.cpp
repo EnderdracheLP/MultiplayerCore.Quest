@@ -37,6 +37,20 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_Deactivate, &::GlobalNamespace::
             LobbyPlayersDataModel_Deactivate(self);
     }
 }
+// override HandleMultiplayerSessionManagerPlayerConnected
+MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected, &::GlobalNamespace::LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerConnected, void, GlobalNamespace::LobbyPlayersDataModel* self, GlobalNamespace::IConnectedPlayer* connectedPlayer) {
+    INVOKE_LOCK(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected);
+    if (!lock) {
+        LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected(self, connectedPlayer);
+    } else {
+        static auto customKlass = classof(MpPlayersDataModel*);
+        if (self->klass == customKlass)
+            reinterpret_cast<MpPlayersDataModel*>(self)->HandlePlayerConnected(connectedPlayer);
+        else
+            LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected(self, connectedPlayer);
+    }
+}
+
 // override HandleMenuRpcManagerGetRecommendedBeatmap
 MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap, &::GlobalNamespace::LobbyPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap, void, GlobalNamespace::LobbyPlayersDataModel* self, StringW userId) {
     INVOKE_LOCK(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap);
