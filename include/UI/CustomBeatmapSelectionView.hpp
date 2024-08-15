@@ -1,6 +1,7 @@
 #pragma once
 
 #include "custom-types/shared/macros.hpp"
+#include "custom-types/shared/Coroutine.hpp"
 #include "lapiz/shared/macros.hpp"
 
 #include "Objects/MpPlayersDataModel.hpp"
@@ -15,4 +16,7 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, CustomBeatmapSelectionView, GlobalNam
     DECLARE_OVERRIDE_METHOD_MATCH(void, SetBeatmap, &GlobalNamespace::BeatmapSelectionView::SetBeatmap, ByRef<GlobalNamespace::BeatmapKey> beatmapKey);
 
     DECLARE_INJECT_METHOD(void, Inject, MultiplayerCore::Objects::MpPlayersDataModel* mpPlayersDataModel, Beatmaps::Providers::MpBeatmapLevelProvider* mpBeatmapLevelProvider);
+
+    public:
+    custom_types::Helpers::Coroutine SetBeatmapCoroutine(GlobalNamespace::BeatmapKey beatmapKey, std::string levelHash);
 )
