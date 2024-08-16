@@ -60,7 +60,7 @@ namespace MultiplayerCore::UI {
 
     void MpLoadingIndicator::Tick() {
         if (_isDownloading) {
-            _loadingControl->ShowDownloadingProgress(fmt::format("Downloading ({:.2f}%)...", (float)_downloadProgress), _downloadProgress);
+            _loadingControl->ShowDownloadingProgress(fmt::format("Downloading ({:.2f}%)...", static_cast<float>(_downloadProgress * 100.0f)), _downloadProgress);
             return;
         } else if (
             _screenController->get_countdownShown() &&
