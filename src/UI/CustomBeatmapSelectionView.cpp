@@ -9,8 +9,6 @@
 #include "Utilities.hpp"
 #include "logging.hpp"
 
-#include "bsml/shared/BSML/SharedCoroutineStarter.hpp"
-
 DEFINE_TYPE(MultiplayerCore::UI, CustomBeatmapSelectionView);
 
 namespace MultiplayerCore::UI {
@@ -34,7 +32,7 @@ namespace MultiplayerCore::UI {
             return base(this, beatmapKey);
         }
 
-        BSML::SharedCoroutineStarter::StartCoroutine(custom_types::Helpers::CoroutineHelper::New(SetBeatmapCoroutine(beatmapKey.heldRef, levelHash)));
+        StartCoroutine(custom_types::Helpers::CoroutineHelper::New(SetBeatmapCoroutine(beatmapKey.heldRef, levelHash)));
     }
 
     custom_types::Helpers::Coroutine CustomBeatmapSelectionView::SetBeatmapCoroutine(GlobalNamespace::BeatmapKey beatmapKey, std::string levelHash) {

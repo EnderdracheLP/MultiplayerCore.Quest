@@ -9,8 +9,6 @@
 #include "Utilities.hpp"
 #include "logging.hpp"
 
-#include "bsml/shared/BSML/SharedCoroutineStarter.hpp"
-
 DEFINE_TYPE(MultiplayerCore::UI, CustomEditableBeatmapSelectionView);
 
 namespace MultiplayerCore::UI {
@@ -34,48 +32,7 @@ namespace MultiplayerCore::UI {
             return base(this, beatmapKey);
         }
 
-        BSML::SharedCoroutineStarter::StartCoroutine(custom_types::Helpers::CoroutineHelper::New(SetBeatmapCoroutine(beatmapKey.heldRef, levelHash)));
-
-        // auto packet = _mpPlayersDataModel->FindLevelPacket(levelHash);
-        // if (!packet) { // level was probably selected by the local player from their installed maps, since no other player had it selected
-        //     DEBUG("Could not find packet for levelhash {}", levelHash);
-        //     return base(this, beatmapKey);
-        // }
-
-        // // we have a packet to select from, update values correctly without calling base, and setup the levelbar with our own level
-        // _clearButton->gameObject->SetActive(showClearButton);
-        // _noLevelText->enabled = false;
-        // _levelBar->hide = false;
-
-        // // create a beatmap level for display
-        // auto level = _mpBeatmapLevelProvider->GetBeatmapFromPacket(packet);
-
-        // using BasicDataDict = System::Collections::Generic::Dictionary_2<System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>, GlobalNamespace::BeatmapBasicData*>;
-        // BasicDataDict* dict = reinterpret_cast<BasicDataDict*>(level->beatmapBasicData);
-
-        // if (!dict) {
-        //     dict = BasicDataDict::New_ctor();
-        //     level->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
-        // }
-
-        // auto key = System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>(
-        //     beatmapKey->beatmapCharacteristic,
-        //     beatmapKey->difficulty
-        // );
-
-        // if (!dict->ContainsKey(key)) {
-        //     dict->Add(
-        //         key,
-        //         GlobalNamespace::BeatmapBasicData::New_ctor(
-        //             0, 0, GlobalNamespace::EnvironmentName::getStaticF_Empty(),
-        //             nullptr, 0, 0, 0,
-        //             (level->allMappers.size() > 0 ? level->allMappers : std::initializer_list<StringW>{packet->levelAuthorName}), level->allLighters
-        //         )
-        //     );
-        // }
-
-        // level->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
-        // _levelBar->SetupData(level, beatmapKey->difficulty, beatmapKey->beatmapCharacteristic);
+        StartCoroutine(custom_types::Helpers::CoroutineHelper::New(SetBeatmapCoroutine(beatmapKey.heldRef, levelHash)));
     }
 
     custom_types::Helpers::Coroutine CustomEditableBeatmapSelectionView::SetBeatmapCoroutine(GlobalNamespace::BeatmapKey beatmapKey, std::string levelHash) {
