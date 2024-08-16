@@ -64,7 +64,7 @@ namespace MultiplayerCore::Beatmaps {
         );
         if (v != level->beatmap.GetVersions().end()) {
             if (v->GetDiffs().empty()) {
-                WARNING("No difficulties found for hash {}, this should not happen!", hash);
+                WARNING("No difficulties found for hash {} using BPP, this should not happen!", hash);
             }
             else {
                 for (const auto& difficulty : v->GetDiffs()) {
@@ -79,10 +79,10 @@ namespace MultiplayerCore::Beatmaps {
         else {
             WARNING("Could not find version for hash {}", hash);
             // Using latest to get the difficulties
-            if (level->beatmap.GetVersions().back().GetDiffs().empty()) {
-                WARNING("No difficulties found for hash {}, this should not happen!", hash);
+            if (level->beatmap.GetVersions().front().GetDiffs().empty()) {
+                WARNING("No difficulties found for hash {} using BPP, this should not happen!", hash);
             }
-            for (const auto& difficulty : level->beatmap.GetVersions().back().GetDiffs()) {
+            for (const auto& difficulty : level->beatmap.GetVersions().front().GetDiffs()) {
                 DEBUG("Adding difficulty {} to characteristic {}", difficulty.GetDifficulty(), difficulty.GetCharacteristic());
                 auto& list = level->requirements[difficulty.GetCharacteristic()][ConvertDifficulty(difficulty.GetDifficulty())];
             }
