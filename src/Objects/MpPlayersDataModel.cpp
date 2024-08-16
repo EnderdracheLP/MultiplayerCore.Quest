@@ -96,7 +96,7 @@ namespace MultiplayerCore::Objects {
         }
 
         std::shared_future fut = _beatmapLevelProvider->GetBeatmapAsync(hash);
-        BSML::MainThreadScheduler::AwaitFuture(fut, [fut, beatmapKey, hash, packetSerializer = this->_packetSerializer, beatmapLevelProvider = this->_beatmapLevelProvider](){
+        BSML::MainThreadScheduler::AwaitFuture(fut, [fut, beatmapKey, hash, packetSerializer = this->_packetSerializer, beatmapLevelProvider = this->_beatmapLevelProvider]() mutable -> void {
             auto level = fut.get();
             if (!level) {
                 DEBUG("couldn't get level, returning...");
@@ -107,7 +107,15 @@ namespace MultiplayerCore::Objects {
             if (mpBeatmapLevel && mpBeatmapLevel->requirements.empty())
             {
                 WARNING("Empty requirements for level '{}', using packet instead", hash);
-                level = beatmapLevelProvider->TryGetBeatmapFromPacketHash(hash);
+                auto packetLevel = beatmapLevelProvider->TryGetBeatmapFromPacketHash(hash);
+                if (packetLevel) {
+                    level = packetLevel;
+                } else {
+                    // Uh oh, we need the difficulties from this level, but we don't have them
+                    // We know that in this case the selected difficulty must exist, so we can at least add that one
+                    ERROR("Could not determine difficulties for level, things may break or not work as expected");
+                    mpBeatmapLevel->requirements[static_cast<std::string>(beatmapKey.beatmapCharacteristic->serializedName)][(uint32_t)beatmapKey.difficulty.value__] = std::list<std::string>();
+                }
             }
 
             auto packet = MpBeatmapPacket::New_1(level, beatmapKey);
@@ -127,6 +135,7 @@ namespace MultiplayerCore::Objects {
 
     Beatmaps::Packets::MpBeatmapPacket* MpPlayersDataModel::FindLevelPacket(std::string_view levelHash) {
         Beatmaps::Packets::MpBeatmapPacket* packet = nullptr;
+        return packet;
         auto enumerator = _lastPlayerBeatmapPackets->GetEnumerator();
         while (enumerator.MoveNext()) {
             auto [_, p] = enumerator.Current;
