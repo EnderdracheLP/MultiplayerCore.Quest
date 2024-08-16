@@ -1,7 +1,7 @@
 #pragma once
 
 #include "custom-types/shared/macros.hpp"
-#include "custom-types/shared/Coroutine.hpp"
+#include "custom-types/shared/coroutine.hpp"
 #include "lapiz/shared/macros.hpp"
 
 #include "Objects/MpPlayersDataModel.hpp"
