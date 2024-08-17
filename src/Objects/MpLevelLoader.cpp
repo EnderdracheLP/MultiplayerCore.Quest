@@ -152,7 +152,7 @@ namespace MultiplayerCore::Objects {
                     DEBUG("Failed to download level");
                     // Somehow returning error here doesn't work, the game will just crash if we fail to download a level
                     _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::NotOwned);
-                    ClearLoading();
+                    _beatmapLevelData = nullptr;
                     return ::GlobalNamespace::LoadBeatmapLevelDataResult::getStaticF_Error();
                 }
                 auto level = _runtimeSongLoader->GetLevelByLevelID(levelId);

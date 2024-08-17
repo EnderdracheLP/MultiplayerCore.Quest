@@ -2,8 +2,6 @@
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "Beatmaps/Providers/MpBeatmapLevelProvider.hpp"
 #include "GlobalNamespace/LevelBar.hpp"
-#include "GlobalNamespace/BeatmapBasicData.hpp"
-#include "GlobalNamespace/EnvironmentName.hpp"
 #include "UI/MpRequirementsUI.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "Utilities.hpp"
@@ -58,36 +56,9 @@ namespace MultiplayerCore::UI {
         _noLevelText->enabled = false;
         _levelBar->hide = false;
 
+        level = _mpBeatmapLevelProvider->AddBasicBeatmapDataToLevel(level, beatmapKey, packet);
 
-        using BasicDataDict = System::Collections::Generic::Dictionary_2<System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>, GlobalNamespace::BeatmapBasicData*>;
-        BasicDataDict* dict = reinterpret_cast<BasicDataDict*>(level->beatmapBasicData);
-
-        if (!dict) {
-            dict = BasicDataDict::New_ctor();
-            level->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
-        }
-
-        auto key = System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>(
-            beatmapKey.beatmapCharacteristic,
-            beatmapKey.difficulty
-        );
-
-        // TODO: Figure out why when using BeatSaverBeatmapLevel, allMappers and allLighters cause a segfault
-        if (!dict->ContainsKey(key)) {
-            dict->Add(
-                key,
-                GlobalNamespace::BeatmapBasicData::New_ctor(
-                    0, 0, GlobalNamespace::EnvironmentName::getStaticF_Empty(),
-                    nullptr, 0, 0, 0,
-                    (level->allMappers.size() > 0 ? level->allMappers : std::initializer_list<StringW>{packet ? packet->levelAuthorName : ""}), level->allLighters
-
-                )
-            );
-        }
-
-        level->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
         _levelBar->SetupData(level, beatmapKey.difficulty, beatmapKey.beatmapCharacteristic);
-
         co_return;
     }
 }

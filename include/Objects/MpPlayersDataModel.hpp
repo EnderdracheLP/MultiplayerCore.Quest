@@ -11,7 +11,7 @@
 
 DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpPlayersDataModel, GlobalNamespace::LobbyPlayersDataModel,
     DECLARE_INSTANCE_FIELD_PRIVATE(Networking::MpPacketSerializer*, _packetSerializer);
-    DECLARE_INSTANCE_FIELD_PRIVATE(Beatmaps::Providers::MpBeatmapLevelProvider*, _beatmapLevelProvider);
+    DECLARE_INSTANCE_FIELD(Beatmaps::Providers::MpBeatmapLevelProvider*, _beatmapLevelProvider);
     using PacketDict = System::Collections::Generic::Dictionary_2<StringW, Beatmaps::Packets::MpBeatmapPacket*>;
     DECLARE_INSTANCE_FIELD_PRIVATE(PacketDict*, _lastPlayerBeatmapPackets);
 
