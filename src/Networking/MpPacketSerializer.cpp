@@ -55,4 +55,8 @@ namespace MultiplayerCore::Networking {
     bool MpPacketSerializer::HandlesType(Il2CppReflectionType* type) {
         return std::find(registeredTypes.begin(), registeredTypes.end(), type) != registeredTypes.end();
     }
+
+    GlobalNamespace::IConnectedPlayer* MpPacketSerializer::get_connectionOwner() {
+        return _sessionManager->get_connectionOwner();
+    }
 }
