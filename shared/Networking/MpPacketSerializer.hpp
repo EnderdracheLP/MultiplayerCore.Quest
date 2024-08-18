@@ -155,6 +155,16 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
 
         template<::MultiplayerCore::INetSerializable TPacket>
         requires(std::is_pointer_v<TPacket>)
+        void SendToPlayer(TPacket packet, GlobalNamespace::IConnectedPlayer* player) {
+            /* TODO: try catch, logging? */
+            if (_sessionManager) {
+                _sessionManager->SendToPlayer(packet->i_INetSerializable(), player);
+            }
+        }
+
+
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket>)
         void Send(TPacket packet) {
             /* TODO: try catch, logging? */
             if (_sessionManager) {
