@@ -205,7 +205,7 @@ namespace MultiplayerCore::UI {
         ppmt->text->alpha = isPartyOwner ? 1.0f : 0.25f;
 
         // Request updated button states from server
-        _multiplayerSessionManager->Send(Players::Packets::GetMpPerPlayerPacket::New_ctor());
+        _multiplayerSessionManager->SendToPlayer(Players::Packets::GetMpPerPlayerPacket::New_ctor(), _multiplayerSessionManager->connectionOwner);
     }
 
     void MpPerPlayerUI::SetLobbyState(GlobalNamespace::MultiplayerLobbyState state) {
@@ -398,7 +398,7 @@ namespace MultiplayerCore::UI {
         auto ppPacket = Players::Packets::MpPerPlayerPacket::New_ctor();
         ppPacket->PPDEnabled = value;
         if (ppmt) ppPacket->PPMEnabled = ppmt->get_Value();
-        _multiplayerSessionManager->Send(ppPacket->i_INetSerializable());
+        _multiplayerSessionManager->SendToPlayer(ppPacket->i_INetSerializable(), _multiplayerSessionManager->connectionOwner);
     }
 
     bool MpPerPlayerUI::get_PerPlayerDifficulty() {
@@ -413,7 +413,7 @@ namespace MultiplayerCore::UI {
         auto ppPacket = Players::Packets::MpPerPlayerPacket::New_ctor();
         if (ppdt) ppPacket->PPDEnabled = ppdt->get_Value();
         ppPacket->PPMEnabled = value;
-        _multiplayerSessionManager->Send(ppPacket->i_INetSerializable());
+        _multiplayerSessionManager->SendToPlayer(ppPacket->i_INetSerializable(), _multiplayerSessionManager->connectionOwner);
     }
 
     bool MpPerPlayerUI::get_PerPlayerModifiers() {
