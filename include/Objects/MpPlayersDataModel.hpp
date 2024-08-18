@@ -32,7 +32,7 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpPlayersDataModel, GlobalNamesp
         void HandleMenuRpcManagerGetRecommendedBeatmap_override(StringW userId);
         void HandleMenuRpcManagerRecommendBeatmap_override(StringW userId, GlobalNamespace::BeatmapKeyNetSerializable* beatmapKey);
         void SetLocalPlayerBeatmapLevel_override(GlobalNamespace::BeatmapKey& beatmapKey);
-        void SendMpBeatmapPacket(GlobalNamespace::BeatmapKey beatmapKey);
+        void SendMpBeatmapPacket(GlobalNamespace::BeatmapKey beatmapKey, GlobalNamespace::IConnectedPlayer* player = nullptr);
     private:
         void PutPlayerPacket(StringW playerId, Beatmaps::Packets::MpBeatmapPacket* packet);
 )
