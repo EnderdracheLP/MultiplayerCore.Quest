@@ -9,6 +9,8 @@ using namespace MultiplayerCore;
 #include "bsml/shared/BSML/MainThreadScheduler.hpp"
 #include "custom-types/shared/delegate.hpp"
 
+#include "songcore/shared/SongCore.hpp"
+
 #include "GlobalNamespace/LobbyGameStateController.hpp"
 #include "GlobalNamespace/ILevelGameplaySetupData.hpp"
 #include "GlobalNamespace/IBeatmapLevelData.hpp"
@@ -18,6 +20,7 @@ using namespace MultiplayerCore;
 #include "GlobalNamespace/MenuTransitionsHelper.hpp"
 #include "GlobalNamespace/ColorSchemesSettings.hpp"
 #include "GlobalNamespace/LevelBar.hpp"
+#include "GlobalNamespace/MultiplayerResultsViewController.hpp"
 #include "BGLib/Polyglot/Localization.hpp"
 #include "System/Action.hpp"
 #include "System/Action_2.hpp"
@@ -80,19 +83,20 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LobbyGameStateController_StartMultiplayerLevel, &::Glo
     LobbyGameStateController_StartMultiplayerLevel(self, gameplaySetupData, beatmapLevelData, beforeSceneSwitchCallback);
 }
 
-MAKE_AUTO_HOOK_ORIG_MATCH(LevelBar_Setup, static_cast<void (::GlobalNamespace::LevelBar::*)(::GlobalNamespace::BeatmapKey)>(&::GlobalNamespace::LevelBar::Setup), void, GlobalNamespace::LevelBar* self, ::GlobalNamespace::BeatmapKey beatmapKey) {
-    INFO("LevelBar_Setup");
+MAKE_HOOK_MATCH(MultiplayerResultsViewController_Init, &::GlobalNamespace::MultiplayerResultsViewController::Init, void, GlobalNamespace::MultiplayerResultsViewController* self, GlobalNamespace::MultiplayerResultsData* multiplayerResultsData, GlobalNamespace::BeatmapKey beatmapKey,  bool showBackToLobbyButton, bool showBackToMenuButton) {
+    INFO("MultiplayerResultsViewController_Init");
+    MultiplayerResultsViewController_Init(self, multiplayerResultsData, beatmapKey, showBackToLobbyButton, showBackToMenuButton);
     auto hash = HashFromLevelID(beatmapKey.levelId);
-    if (mpLevelProvider && !hash.empty()) {
+    if (mpLevelProvider && !hash.empty() && !SongCore::API::Loading::GetLevelByHash(hash)) {
         std::shared_future beatmapLevelFut = mpLevelProvider->GetBeatmapAsync(hash);
+        self->_levelBar->hide = true;
         BSML::MainThreadScheduler::AwaitFuture(beatmapLevelFut, [beatmapLevelFut, self, hash, beatmapKey]() mutable -> void {
             GlobalNamespace::BeatmapLevel* beatmapLevel = beatmapLevelFut.get();
             if (!beatmapLevel) {
                 beatmapLevel = Beatmaps::NoInfoBeatmapLevel::New_ctor(hash);
             }
-            self->SetupData(beatmapLevel, beatmapKey.difficulty, beatmapKey.beatmapCharacteristic);
+            self->_levelBar->Setup(beatmapLevel, beatmapKey.difficulty, beatmapKey.beatmapCharacteristic);
+            self->_levelBar->hide = false;
         });
-        return;
     }
-    LevelBar_Setup(self, beatmapKey);
 }
