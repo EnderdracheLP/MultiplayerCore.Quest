@@ -60,7 +60,7 @@ namespace MultiplayerCore::UI {
 
         level = _mpBeatmapLevelProvider->AddBasicBeatmapDataToLevel(level, beatmapKey, packet);
 
-        _levelBar->SetupData(level, beatmapKey.difficulty, beatmapKey.beatmapCharacteristic);
+        _levelBar->Setup(level, beatmapKey.difficulty, beatmapKey.beatmapCharacteristic);
         co_return;
     }
 }
