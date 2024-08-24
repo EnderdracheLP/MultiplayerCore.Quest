@@ -19,6 +19,10 @@
 #include "GlobalNamespace/BeatmapDifficultyMask.hpp"
 #include "GlobalNamespace/BeatmapDifficultyMaskExtensions.hpp"
 #include "GlobalNamespace/ILobbyPlayersDataModel.hpp"
+#include "GlobalNamespace/SelectModifiersViewController.hpp"
+#include "GlobalNamespace/GameplayModifiersPanelController.hpp"
+#include "GlobalNamespace/GameplayModifiers.hpp"
+#include "GlobalNamespace/GameplayModifierToggle.hpp"
 
 #include "System/Action.hpp"
 #include "System/Collections/Generic/List_1.hpp"
@@ -76,7 +80,8 @@ namespace MultiplayerCore::UI {
 
         // Create Event Delegates
         didActivateDelegate = custom_types::MakeDelegate<HMUI::ViewController::DidActivateDelegate*>(this, (std::function<void(MultiplayerCore::UI::MpPerPlayerUI*, bool, bool, bool)>)&MpPerPlayerUI::DidActivate);
-        didDeactivateDelegate = custom_types::MakeDelegate<HMUI::ViewController::DidDeactivateDelegate*>(this, (std::function<void(MultiplayerCore::UI::MpPerPlayerUI*, bool, bool)>)&MpPerPlayerUI::DidDeactivate);
+        modifierSelectionDidActivateDelegate = custom_types::MakeDelegate<HMUI::ViewController::DidActivateDelegate*>(this, (std::function<void(MultiplayerCore::UI::MpPerPlayerUI*, bool, bool, bool)>)&MpPerPlayerUI::ModifierSelectionDidActivate);
+        // didDeactivateDelegate = custom_types::MakeDelegate<HMUI::ViewController::DidDeactivateDelegate*>(this, (std::function<void(MultiplayerCore::UI::MpPerPlayerUI*, bool, bool)>)&MpPerPlayerUI::DidDeactivate);
         setLobbyStateDelegate = custom_types::MakeDelegate<System::Action_1<GlobalNamespace::MultiplayerLobbyState>*>(this, (std::function<void(MultiplayerCore::UI::MpPerPlayerUI*, GlobalNamespace::MultiplayerLobbyState)>)&MpPerPlayerUI::SetLobbyState);
         localSelectedBeatmapDelegate = custom_types::MakeDelegate<System::Action_1<GlobalNamespace::LevelSelectionFlowCoordinator::State*>*>(this, (std::function<void(MultiplayerCore::UI::MpPerPlayerUI*, GlobalNamespace::LevelSelectionFlowCoordinator::State*)>)&MpPerPlayerUI::LocalSelectedBeatmap);
         updateDifficultyListDelegate = custom_types::MakeDelegate<System::Action_1<GlobalNamespace::BeatmapKey>*>(this, (std::function<void(MultiplayerCore::UI::MpPerPlayerUI*, GlobalNamespace::BeatmapKey)>)&MpPerPlayerUI::UpdateDifficultyListWithBeatmapKey); // static_cast<void(MultiplayerCore::UI::MpPerPlayerUI::*)(GlobalNamespace::BeatmapKey)>()
@@ -88,7 +93,8 @@ namespace MultiplayerCore::UI {
 
         // Add Event Listeners
         _lobbyViewController->add_didActivateEvent(didActivateDelegate);
-        _lobbyViewController->add_didDeactivateEvent(didDeactivateDelegate);
+        _gameServerLobbyFlowCoordinator->_selectModifiersViewController->add_didActivateEvent(modifierSelectionDidActivateDelegate);
+        // _lobbyViewController->add_didDeactivateEvent(didDeactivateDelegate);
 
         // Register MpPerPlayerPacket
         _packetSerializer->RegisterCallback<Players::Packets::MpPerPlayerPacket*>(std::bind(&MpPerPlayerUI::HandleMpPerPlayerPacket, this, std::placeholders::_1, std::placeholders::_2));
@@ -105,7 +111,9 @@ namespace MultiplayerCore::UI {
         // Dispose
         // Remove Event Listeners
         _lobbyViewController->remove_didActivateEvent(didActivateDelegate);
-        _lobbyViewController->remove_didDeactivateEvent(didDeactivateDelegate);
+        _gameServerLobbyFlowCoordinator->_selectModifiersViewController->remove_didActivateEvent(modifierSelectionDidActivateDelegate);
+
+        // _lobbyViewController->remove_didDeactivateEvent(didDeactivateDelegate);
         _gameStateController->remove_lobbyStateChangedEvent(setLobbyStateDelegate);
         _gameServerLobbyFlowCoordinator->_multiplayerLevelSelectionFlowCoordinator->remove_didSelectLevelEvent(localSelectedBeatmapDelegate);
         _gameServerLobbyFlowCoordinator->_serverPlayerListViewController->remove_selectSuggestedBeatmapEvent(updateDifficultyListDelegate);
@@ -164,12 +172,32 @@ namespace MultiplayerCore::UI {
         ppth->gameObject->transform->localPosition = locposition;
     }
 
-    void MpPerPlayerUI::DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling) {
-        // DidDeactivate
-        if (removedFromHierarchy) {
-            
+    void MpPerPlayerUI::ModifierSelectionDidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
+        DEBUG("ModifierSelectionDidActivate");
+        auto modifierController = _gameServerLobbyFlowCoordinator->_selectModifiersViewController->_gameplayModifiersPanelController;
+        // modifierController->gamepayModifiers->
+        auto toggles = modifierController->_gameplayModifierToggles;
+        for (auto toggle : toggles)
+        {
+            DEBUG("Toggle: {}", toggle->gameObject->name);
+
+            if (toggle->gameObject->name == "FasterSong" || toggle->gameObject->name == "SlowerSong" || 
+                toggle->gameObject->name == "SuperFastSong")
+            {
+                toggle->toggle->set_interactable(!ppmt->get_Value());
+                auto canvas = toggle->gameObject->GetComponent<UnityEngine::CanvasGroup*>();
+                if (!canvas) canvas = toggle->gameObject->AddComponent<UnityEngine::CanvasGroup*>();
+                canvas->alpha = ppmt->get_Value() ? 0.25f : 1.0f;
+            }
         }
     }
+
+    // void MpPerPlayerUI::DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling) {
+    //     // DidDeactivate
+    //     if (removedFromHierarchy) {
+            
+    //     }
+    // }
 
 
     void MpPerPlayerUI::HandleMpPerPlayerPacket(Players::Packets::MpPerPlayerPacket* packet, GlobalNamespace::IConnectedPlayer* player) {
@@ -184,6 +212,27 @@ namespace MultiplayerCore::UI {
         } else if (!player->get_isConnectionOwner()) {
             WARNING("Player is not Connection Owner, ignoring packet");
         }
+
+        // If a SongSpeed modifier was already set, remove it and re-announce our modifiers
+        auto modifierController = _gameServerLobbyFlowCoordinator->_selectModifiersViewController->_gameplayModifiersPanelController;
+        if (player->get_isConnectionOwner() && packet->PPMEnabled && modifierController && modifierController->gameplayModifiers && 
+                modifierController->gameplayModifiers->_songSpeed != GlobalNamespace::GameplayModifiers::SongSpeed::Normal) 
+        {
+            // Can't just set the field, as it checks if the instance changed
+            // modifierController->_gameplayModifiers->_songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::Normal;
+            modifierController->_gameplayModifiers = modifierController->gameplayModifiers->CopyWith(
+                        ::System::Nullable_1<::GlobalNamespace::__GameplayModifiers__EnergyType>(), ::System::Nullable_1<bool>(),
+                        ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(),
+                        ::System::Nullable_1<::GlobalNamespace::__GameplayModifiers__EnabledObstacleType>(), ::System::Nullable_1<bool>(),
+                        ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(),
+                        // SongSpeed is set to Normal
+                        ::System::Nullable_1<::GlobalNamespace::__GameplayModifiers__SongSpeed>(true, GlobalNamespace::GameplayModifiers::SongSpeed::Normal), 
+                        ::System::Nullable_1<bool>(),
+                        ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>());
+            _gameServerLobbyFlowCoordinator->_lobbyPlayersDataModel->SetLocalPlayerGameplayModifiers(
+                modifierController->gameplayModifiers);
+        }
+        
     }
 
     void MpPerPlayerUI::HandleGetMpPerPlayerPacket(Players::Packets::GetMpPerPlayerPacket* packet, GlobalNamespace::IConnectedPlayer* player) {

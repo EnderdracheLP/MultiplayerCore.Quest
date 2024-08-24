@@ -43,7 +43,8 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Obj
     DECLARE_OVERRIDE_METHOD_MATCH(void, Dispose, &::System::IDisposable::Dispose);
 
     DECLARE_INSTANCE_METHOD(void, DidActivate, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling);
-    DECLARE_INSTANCE_METHOD(void, DidDeactivate, bool removedFromHierarchy, bool screenSystemDisabling);
+    DECLARE_INSTANCE_METHOD(void, ModifierSelectionDidActivate, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling);
+    // DECLARE_INSTANCE_METHOD(void, DidDeactivate, bool removedFromHierarchy, bool screenSystemDisabling);
     DECLARE_INSTANCE_METHOD(void, SetLobbyState, GlobalNamespace::MultiplayerLobbyState state);
     DECLARE_INSTANCE_METHOD(void, LocalSelectedBeatmap, GlobalNamespace::LevelSelectionFlowCoordinator::State* state);
     DECLARE_INSTANCE_METHOD(void, UpdateDifficultyListWithBeatmapKey, GlobalNamespace::BeatmapKey beatmapKey);
@@ -78,7 +79,8 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Obj
     // Event Listeners
     // Delegates
     DECLARE_INSTANCE_FIELD(HMUI::ViewController::DidActivateDelegate*, didActivateDelegate);
-    DECLARE_INSTANCE_FIELD(HMUI::ViewController::DidDeactivateDelegate*, didDeactivateDelegate);
+    DECLARE_INSTANCE_FIELD(HMUI::ViewController::DidActivateDelegate*, modifierSelectionDidActivateDelegate);
+    // DECLARE_INSTANCE_FIELD(HMUI::ViewController::DidDeactivateDelegate*, didDeactivateDelegate);
     DECLARE_INSTANCE_FIELD(System::Action_1<GlobalNamespace::MultiplayerLobbyState>*, setLobbyStateDelegate);
     DECLARE_INSTANCE_FIELD(System::Action_1<GlobalNamespace::LevelSelectionFlowCoordinator::State*>*, localSelectedBeatmapDelegate);
     DECLARE_INSTANCE_FIELD(System::Action_1<GlobalNamespace::BeatmapKey>*, updateDifficultyListDelegate);
