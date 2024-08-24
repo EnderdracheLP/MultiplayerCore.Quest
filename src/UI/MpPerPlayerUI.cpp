@@ -1,4 +1,5 @@
 #include "UI/MpPerPlayerUI.hpp"
+#include "Hooks/NetworkConfigHooks.hpp"
 #include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
 #include "Utils/EnumUtils.hpp"
 #include "Utilities.hpp"
@@ -44,7 +45,8 @@ namespace MultiplayerCore::UI {
             GlobalNamespace::BeatmapLevelsModel* beatmapLevelsModel,
             GlobalNamespace::IMultiplayerSessionManager* sessionManager,
             MultiplayerCore::Beatmaps::Providers::MpBeatmapLevelProvider* beatmapLevelProvider,
-            MultiplayerCore::Networking::MpPacketSerializer* packetSerializer
+            MultiplayerCore::Networking::MpPacketSerializer* packetSerializer,
+            MultiplayerCore::Repositories::MpStatusRepository* statusRepository
         ) {
         // Constructor
         _gameServerLobbyFlowCoordinator = gameServerLobbyFlowCoordinator;
@@ -59,6 +61,7 @@ namespace MultiplayerCore::UI {
         _multiplayerSessionManager = sessManOpt.value();
         _beatmapLevelProvider = beatmapLevelProvider;
         _packetSerializer = packetSerializer;
+        _statusRepository = statusRepository;
     }
 
     void MpPerPlayerUI::Initialize() {
@@ -170,6 +173,12 @@ namespace MultiplayerCore::UI {
 
         auto locposition = _lobbyViewController->_startGameReadyButton->gameObject->transform->localPosition;
         ppth->gameObject->transform->localPosition = locposition;
+
+        DEBUG("Enabling PP Difficulties: {} PP Modifiers: {}", _statusRepository->GetLastStatusData()->get_SupportsPPDifficulties(), _statusRepository->GetLastStatusData()->get_SupportsPPModifiers());
+
+        ppth->gameObject->SetActive(Hooks::NetworkConfigHooks::IsOverridingAPI() && (_statusRepository->GetLastStatusData()->get_SupportsPPDifficulties() || _statusRepository->GetLastStatusData()->get_SupportsPPModifiers()));
+        ppdt->gameObject->SetActive(_statusRepository->GetLastStatusData()->get_SupportsPPDifficulties());
+        ppmt->gameObject->SetActive(_statusRepository->GetLastStatusData()->get_SupportsPPModifiers());
     }
 
     void MpPerPlayerUI::ModifierSelectionDidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {

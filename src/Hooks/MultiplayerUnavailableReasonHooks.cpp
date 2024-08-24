@@ -2,6 +2,7 @@
 #include "logging.hpp"
 
 #include "Models/MpStatusData.hpp"
+#include "Repositories/MpStatusRepository.hpp"
 
 #include "GlobalNamespace/MultiplayerUnavailableReason.hpp"
 #include "GlobalNamespace/MultiplayerUnavailableReasonMethods.hpp"
@@ -37,6 +38,10 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
         DEBUG("MultiplayerStatusData is not of type MpStatusData current code MUR-{}", reason.heldRef.value__);
         return MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavailableReason(data, reason);
     }
+
+    auto statusRepo = MultiplayerCore::Repositories::MpStatusRepository::get_Instance();
+    if (statusRepo) statusRepo->ReportStatus(mpData);
+    else ERROR("StatusRepo is null");
 
     if (!mpData->RequiredMods.empty()) {
         for (const auto& req : mpData->RequiredMods) {

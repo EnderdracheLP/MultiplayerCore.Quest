@@ -2,6 +2,7 @@
 
 #include "./_config.h"
 #include "ServerConfig.hpp"
+#include "Repositories/MpStatusRepository.hpp"
 
 namespace MultiplayerCore {
     struct MPCORE_EXPORT API {
@@ -35,5 +36,13 @@ namespace MultiplayerCore {
         /// @brief Check whether we are overriding the api
         /// @return true for overriding, false for not
         static bool IsOverridingAPI();
+
+        /// @brief Get the status of the last checked server
+        /// @return the status data of the last checked server
+        static MultiplayerCore::Models::MpStatusData* GetLastStatusData();
+
+        /// @brief Event called when the status is updated for a given url
+        /// @return BS-hook callback instance reference to add your event handler to
+        static UnorderedEventCallback<std::string, const MultiplayerCore::Models::MpStatusData*>& GetStatusUpdatedForUrlEvent();
     };
 }

@@ -21,6 +21,7 @@
 
 #include "Beatmaps/Providers/MpBeatmapLevelProvider.hpp"
 #include "Networking/MpPacketSerializer.hpp"
+#include "Repositories/MpStatusRepository.hpp"
 
 #include "Players/Packets/MpPerPlayerPacket.hpp"
 #include "Players/Packets/GetMpPerPlayerPacket.hpp"
@@ -34,6 +35,7 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Obj
     DECLARE_INSTANCE_FIELD(GlobalNamespace::MultiplayerSessionManager*, _multiplayerSessionManager);
     DECLARE_INSTANCE_FIELD(MultiplayerCore::Beatmaps::Providers::MpBeatmapLevelProvider*, _beatmapLevelProvider);
     DECLARE_INSTANCE_FIELD(MultiplayerCore::Networking::MpPacketSerializer*, _packetSerializer);
+    DECLARE_INSTANCE_FIELD(MultiplayerCore::Repositories::MpStatusRepository*, _statusRepository);
 
     // Values
     DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapKey, _currentBeatmapKey);
@@ -65,7 +67,8 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Obj
             GlobalNamespace::BeatmapLevelsModel* beatmapLevelsModel,
             GlobalNamespace::IMultiplayerSessionManager* sessionManager,
             MultiplayerCore::Beatmaps::Providers::MpBeatmapLevelProvider* beatmapLevelProvider,
-            MultiplayerCore::Networking::MpPacketSerializer* packetSerializer
+            MultiplayerCore::Networking::MpPacketSerializer* packetSerializer,
+            MultiplayerCore::Repositories::MpStatusRepository* statusRepository
     );
 
     // UI Elements

@@ -29,4 +29,12 @@ namespace MultiplayerCore {
     bool API::IsOverridingAPI() {
         return Hooks::NetworkConfigHooks::IsOverridingAPI();
     }
+
+    MultiplayerCore::Models::MpStatusData* API::GetLastStatusData() {
+        return Repositories::MpStatusRepository::get_Instance()->GetLastStatusData();
+    }
+
+    UnorderedEventCallback<std::string, const MultiplayerCore::Models::MpStatusData*>& API::GetStatusUpdatedForUrlEvent() {
+        return Repositories::MpStatusRepository::get_Instance()->statusUpdatedForUrlEvent;
+    }
 }
