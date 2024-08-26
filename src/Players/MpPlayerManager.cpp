@@ -51,8 +51,18 @@ namespace MultiplayerCore::Players {
 
         auto packet = MpPlayerData::New_ctor();
         packet->platformId = _localPlayerInfo->platformUserId;
-        // we're either in testing, so unknown, or we're regular quest user so OculusQuest
-        packet->platform = _localPlayerInfo->platform == GlobalNamespace::UserInfo::Platform::Test ? MultiplayerCore::Players::Platform::Unknown : MultiplayerCore::Players::Platform::OculusQuest;
+        // we're either in testing, so unknown, or we're regular user on OculusQuest or Pico
+        // packet->platform = _localPlayerInfo->platform == GlobalNamespace::UserInfo::Platform::Test ? MultiplayerCore::Players::Platform::Unknown : MultiplayerCore::Players::Platform::OculusQuest;
+        if (_localPlayerInfo->platform == GlobalNamespace::UserInfo::Platform::Test) {
+            packet->platform = MultiplayerCore::Players::Platform::Unknown;
+        } else if (_localPlayerInfo->platform.value__ == 20) {
+            packet->platform = MultiplayerCore::Players::Platform::Pico;
+        }
+        else if (_localPlayerInfo->platform == GlobalNamespace::UserInfo::Platform::Oculus) {
+            packet->platform = MultiplayerCore::Players::Platform::OculusQuest;
+        } else {
+            packet->platform = MultiplayerCore::Players::Platform::Unknown;
+        }
         _packetSerializer->Send(packet);
     }
 

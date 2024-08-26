@@ -109,6 +109,13 @@ MAKE_AUTO_HOOK_ORIG_MATCH(NetworkUtility_GetHashedUserId, &::GlobalNamespace::Ne
         DEBUG("Hashed userId is {}", hashedUserId);
         return hashedUserId;
     }
+    else if (MultiplayerCore::Hooks::NetworkConfigHooks::IsOverridingAPI() && platform.value__ == 20) {
+        DEBUG("User is on Pico, using custom prefix");
+        DEBUG("Setting userId to hash {}", /*StringW(prefix + */userId);
+        StringW hashedUserId = ::GlobalNamespace::NetworkUtility::GetHashBase64(/*prefix + */StringW("Pico#" + userId));
+        DEBUG("Hashed userId is {}", hashedUserId);
+        return hashedUserId;
+    }
     else {
         return NetworkUtility_GetHashedUserId(/*prefix ? prefix + userId : */userId, platform);
     }
