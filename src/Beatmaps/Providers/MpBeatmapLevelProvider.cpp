@@ -68,6 +68,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
             catch (const std::exception& e) {
                 // Fuck, had this happen a few times and then not, so idk what's going on there
                 CRITICAL("IMPORTANT FORWARD TO MpCore DEVS IF YOU SEE THIS!!! - Failed to create BeatSaverBeatmapLevel: {}", e.what());
+                Paper::Logger::Backtrace(MOD_ID, 20);
                 return nullptr;
             }
         }
