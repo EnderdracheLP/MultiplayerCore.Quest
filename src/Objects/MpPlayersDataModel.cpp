@@ -48,7 +48,7 @@ namespace MultiplayerCore::Objects {
         Base::HandleMultiplayerSessionManagerPlayerConnected(connectedPlayer);
         GlobalNamespace::LobbyPlayerData* localPlayerData = nullptr;
         if (_playersData->TryGetValue(localUserId, byref(localPlayerData)) && localPlayerData) {
-            std::thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, localPlayerData->beatmapKey, connectedPlayer).detach();
+            SendMpBeatmapPacket(localPlayerData->beatmapKey, connectedPlayer);
         }
     }
 
@@ -65,7 +65,7 @@ namespace MultiplayerCore::Objects {
     void MpPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap_override(StringW userId) {
         GlobalNamespace::LobbyPlayerData* localPlayerData = nullptr;
         if (_playersData->TryGetValue(userId, byref(localPlayerData)) && localPlayerData) {
-            std::thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, localPlayerData->beatmapKey, nullptr).detach();
+            SendMpBeatmapPacket(localPlayerData->beatmapKey, nullptr);
         }
 
         Base::HandleMenuRpcManagerGetRecommendedBeatmap(userId);
@@ -80,7 +80,7 @@ namespace MultiplayerCore::Objects {
 
     void MpPlayersDataModel::SetLocalPlayerBeatmapLevel_override(GlobalNamespace::BeatmapKey& beatmapKey) {
         DEBUG("Setting local player beatmap level id '{}'\r\nCheck difficulty '{}'\r\nCheck characteristic '{}'\r\nCheck BeatmapKey Valid '{}'", beatmapKey.levelId, (int)beatmapKey.difficulty, beatmapKey.beatmapCharacteristic ? beatmapKey.beatmapCharacteristic->serializedName : "null", beatmapKey.IsValid());
-        std::thread(&MpPlayersDataModel::SendMpBeatmapPacket, this, static_cast<GlobalNamespace::BeatmapKey>(beatmapKey), nullptr).detach();
+        SendMpBeatmapPacket(beatmapKey, nullptr);
 
         Base::SetLocalPlayerBeatmapLevel(byref(beatmapKey));
     }
@@ -95,36 +95,25 @@ namespace MultiplayerCore::Objects {
             return;
         }
 
-        std::shared_future fut = _beatmapLevelProvider->GetBeatmapAsync(hash);
-        BSML::MainThreadScheduler::AwaitFuture(fut, [fut, beatmapKey, hash, player, packetSerializer = this->_packetSerializer, beatmapLevelProvider = this->_beatmapLevelProvider]() mutable -> void {
-            auto level = fut.get();
-            if (!level) {
-                DEBUG("couldn't get level, returning...");
-                return;
-            }
+        auto levelData = _beatmapLevelProvider->GetBeatmapFromLocalBeatmaps(hash);
+        auto packet = levelData ? MpBeatmapPacket::New_1(levelData, beatmapKey) : FindLevelPacket(hash);
+        if (!packet) {
+            WARNING("Could not get level data for beatmap '{}', returning!", hash);
+            return;
+        }
 
-            auto mpBeatmapLevel = il2cpp_utils::try_cast<Beatmaps::Abstractions::MpBeatmapLevel>(level).value_or(nullptr);
-            if (mpBeatmapLevel && mpBeatmapLevel->requirements.empty())
-            {
-                WARNING("Empty requirements for level '{}', using packet instead", hash);
-                auto packetLevel = beatmapLevelProvider->TryGetBeatmapFromPacketHash(hash);
-                if (packetLevel) {
-                    level = packetLevel;
-                } else {
-                    // Uh oh, we need the difficulties from this level, but we don't have them
-                    // We know that in this case the selected difficulty must exist, so we can at least add that one
-                    ERROR("Could not determine difficulties for level, things may break or not work as expected");
-                    mpBeatmapLevel->requirements[static_cast<std::string>(beatmapKey.beatmapCharacteristic->serializedName)][(uint32_t)beatmapKey.difficulty.value__] = std::list<std::string>();
-                }
-            }
+        // Check we have a value here, otherwise per player difficulty will break, 
+        // honestly should just add difficulties to the packet, instead of relying on the requirements
+        if (packet->requirements.empty() || !packet->requirements.contains(beatmapKey.difficulty.value__)) {
+            ERROR("Could not determine difficulties for level, things may break or not work as expected");
+        }
 
-            auto packet = MpBeatmapPacket::New_1(level, beatmapKey);
-            if (player) {
-                packetSerializer->SendToPlayer(packet, player);
-            } else {
-                packetSerializer->Send(packet);
-            }
-        });
+
+        if (player) {
+            _packetSerializer->SendToPlayer(packet, player);
+        } else {
+            _packetSerializer->Send(packet);
+        }
     }
 
     Beatmaps::Packets::MpBeatmapPacket* MpPlayersDataModel::GetPlayerPacket(StringW playerId) {
