@@ -39,12 +39,19 @@
 
 DEFINE_TYPE(MultiplayerCore::UI, MpPerPlayerUI);
 
+template<typename T>
+std::future<T> finished_future(T& value) {
+    std::promise<T> p;
+    p.set_value(std::forward<T>(value));
+    return p.get_future();
+}
 namespace MultiplayerCore::UI {
     void MpPerPlayerUI::ctor(
             GlobalNamespace::GameServerLobbyFlowCoordinator* gameServerLobbyFlowCoordinator,
             GlobalNamespace::BeatmapLevelsModel* beatmapLevelsModel,
             GlobalNamespace::IMultiplayerSessionManager* sessionManager,
             MultiplayerCore::Beatmaps::Providers::MpBeatmapLevelProvider* beatmapLevelProvider,
+            MultiplayerCore::Objects::MpPlayersDataModel* playersDataModel,
             MultiplayerCore::Networking::MpPacketSerializer* packetSerializer,
             MultiplayerCore::Repositories::MpStatusRepository* statusRepository
         ) {
@@ -60,6 +67,7 @@ namespace MultiplayerCore::UI {
         }
         _multiplayerSessionManager = sessManOpt.value();
         _beatmapLevelProvider = beatmapLevelProvider;
+        _playersDataModel = playersDataModel;
         _packetSerializer = packetSerializer;
         _statusRepository = statusRepository;
     }
@@ -343,13 +351,17 @@ namespace MultiplayerCore::UI {
                 if (level->requirements.empty()) {
                     ERROR("Level {} has empty requirements, this should not happen, falling back to packet", levelHash);
                     // Fallback to getting packet
-                    level = il2cpp_utils::try_cast<MultiplayerCore::Beatmaps::Abstractions::MpBeatmapLevel>(_beatmapLevelProvider->TryGetBeatmapFromPacketHash(levelHash)).value_or(nullptr);
+                    auto packet = _playersDataModel->FindLevelPacket(levelHash);
+                    if (packet) {
+                        level = il2cpp_utils::try_cast<MultiplayerCore::Beatmaps::Abstractions::MpBeatmapLevel>(_beatmapLevelProvider->GetBeatmapFromPacket(packet)).value_or(nullptr);
+                    }
                     if (!level) {
                         ERROR("Failed to get level from packet for hash {}", levelHash);
                         return;
                     }
                     if (level->requirements.empty()) {
                         ERROR("Level packet {} also has empty requirements, this should not happen...", levelHash);
+                        UpdateDifficultyList(ListW<StringW>::New(Utils::EnumUtils::GetEnumName<GlobalNamespace::BeatmapDifficulty>(_currentBeatmapKey.difficulty)));
                         return;
                     }
                 }

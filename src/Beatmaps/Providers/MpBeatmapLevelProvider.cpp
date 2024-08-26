@@ -12,16 +12,10 @@
 #include "GlobalNamespace/BeatmapBasicData.hpp"
 #include "System/ValueTuple_2.hpp"
 
+#include "Utilities.hpp"
 #include "logging.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvider);
-
-template<typename T>
-std::future<T> finished_future(T& value) {
-    std::promise<T> p;
-    p.set_value(std::forward<T>(value));
-    return p.get_future();
-}
 
 namespace MultiplayerCore::Beatmaps::Providers {
     void MpBeatmapLevelProvider::ctor() {

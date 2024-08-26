@@ -19,4 +19,11 @@ namespace MultiplayerCore {
         if (hash.ends_with(" WIP")) hash = hash.substr(0, hash.size() - 4);
         return std::string(hash);
     }
+
+    template<typename T>
+    std::future<T> finished_future(T& value) {
+        std::promise<T> p;
+        p.set_value(std::forward<T>(value));
+        return p.get_future();
+    }
 }

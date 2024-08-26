@@ -26,23 +26,29 @@ using namespace MultiplayerCore;
 #include "System/Action_2.hpp"
 #include "System/Action_1.hpp"
 
-static Beatmaps::Providers::MpBeatmapLevelProvider* mpLevelProvider = nullptr;
+#include "Utilities.hpp"
+
+static Objects::MpPlayersDataModel* _mpPlayersDataModel = nullptr;
+static Beatmaps::Providers::MpBeatmapLevelProvider* _mpLevelProvider = nullptr;
 
 MAKE_AUTO_HOOK_ORIG_MATCH(LobbyGameStateController_StartMultiplayerLevel, &::GlobalNamespace::LobbyGameStateController::StartMultiplayerLevel, void, GlobalNamespace::LobbyGameStateController* self, GlobalNamespace::ILevelGameplaySetupData* gameplaySetupData, GlobalNamespace::IBeatmapLevelData* beatmapLevelData, System::Action* beforeSceneSwitchCallback) {
     INFO("LobbyGameStateController_StartMultiplayerLevel");
-    auto mpPlayerDataModel = il2cpp_utils::try_cast<Objects::MpPlayersDataModel>(self->_lobbyPlayersDataModel).value_or(nullptr);
-    mpLevelProvider = mpPlayerDataModel ? mpPlayerDataModel->_beatmapLevelProvider : mpLevelProvider;
+    _mpPlayersDataModel = il2cpp_utils::try_cast<Objects::MpPlayersDataModel>(self->_lobbyPlayersDataModel).value_or(nullptr);
+    _mpLevelProvider = _mpPlayersDataModel ? _mpPlayersDataModel->_beatmapLevelProvider : _mpLevelProvider;
     static GlobalNamespace::BeatmapKey key;
     key = gameplaySetupData ? gameplaySetupData->beatmapKey : GlobalNamespace::BeatmapKey();
     auto hash  = key.IsValid() ? HashFromLevelID(key.levelId) : "";
 
-    DEBUG("Check gameplaySetupData ptr {}, beatmapLevelData ptr {}, mpPlayerDataModel ptr {}, mpLevelProvider ptr {}, hash {}", fmt::ptr(gameplaySetupData), fmt::ptr(beatmapLevelData), fmt::ptr(mpPlayerDataModel), fmt::ptr(mpLevelProvider), hash);
+    DEBUG("Check gameplaySetupData ptr {}, beatmapLevelData ptr {}, mpPlayerDataModel ptr {}, mpLevelProvider ptr {}, hash {}", fmt::ptr(gameplaySetupData), fmt::ptr(beatmapLevelData), fmt::ptr(_mpPlayersDataModel), fmt::ptr(_mpLevelProvider), hash);
 
-    if (gameplaySetupData && !beatmapLevelData && mpLevelProvider && !hash.empty()) {
+    if (gameplaySetupData && !beatmapLevelData && _mpLevelProvider && !hash.empty()) {
         WARNING("No beatmapLevelData, attempting to go into spectator with our level type");
-        // Use our custom BeatmapLevelProvider
-        // TODO: Maybe use a CT for this but doesn't seem worth the effort for just one hook
-        std::shared_future beatmapLevelFut = mpLevelProvider->GetBeatmapAsync(hash);
+        auto packet = _mpPlayersDataModel->FindLevelPacket(hash);
+        GlobalNamespace::BeatmapLevel* packetLevel = nullptr;
+        if (packet) {
+            packetLevel = _mpLevelProvider->GetBeatmapFromPacket(packet);
+        }
+        std::shared_future beatmapLevelFut = packetLevel ? finished_future(packetLevel) : _mpLevelProvider->GetBeatmapAsync(hash);
         self->countdownStarted = false;
         self->StopListeningToGameStart(); // Ensure we stop listening for the start event while we run our start task
 
@@ -55,7 +61,7 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LobbyGameStateController_StartMultiplayerLevel, &::Glo
                 beatmapLevel = Beatmaps::NoInfoBeatmapLevel::New_ctor(hash);
             }
             // GlobalNamespace::BeatmapLevel* beatmapLevel = Beatmaps::NoInfoBeatmapLevel::New_ctor(hash);
-            mpLevelProvider->AddBasicBeatmapDataToLevel(beatmapLevel, key);
+            _mpLevelProvider->AddBasicBeatmapDataToLevel(beatmapLevel, key);
 
             static ConstString gameModeText = "Multiplayer";
             self->_menuTransitionsHelper->StartMultiplayerLevel(gameModeText, byref(key), beatmapLevel, beatmapLevelData, 
@@ -75,7 +81,7 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LobbyGameStateController_StartMultiplayerLevel, &::Glo
         });
         return;
     } // Safety check to avoid crashing the game, we leave the lobby then
-    else if (!beatmapLevelData && !mpLevelProvider && !hash.empty()) {
+    else if (!beatmapLevelData && !_mpLevelProvider && !hash.empty()) {
         WARNING("No beatmapLevelData and no MpBeatmapLevelProvider, cannot start level, disconnecting...");
         self->HandleMultiplayerLevelDidDisconnect(GlobalNamespace::DisconnectedReason::ClientConnectionClosed);
         return;
@@ -87,8 +93,13 @@ MAKE_HOOK_MATCH(MultiplayerResultsViewController_Init, &::GlobalNamespace::Multi
     INFO("MultiplayerResultsViewController_Init");
     MultiplayerResultsViewController_Init(self, multiplayerResultsData, beatmapKey, showBackToLobbyButton, showBackToMenuButton);
     auto hash = HashFromLevelID(beatmapKey.levelId);
-    if (mpLevelProvider && !hash.empty() && !SongCore::API::Loading::GetLevelByHash(hash)) {
-        std::shared_future beatmapLevelFut = mpLevelProvider->GetBeatmapAsync(hash);
+    if (_mpLevelProvider && !hash.empty() && !SongCore::API::Loading::GetLevelByHash(hash)) {
+        auto packet = _mpPlayersDataModel->FindLevelPacket(hash);
+        GlobalNamespace::BeatmapLevel* packetLevel = nullptr;
+        if (packet) {
+            packetLevel = _mpLevelProvider->GetBeatmapFromPacket(packet);
+        }
+        std::shared_future beatmapLevelFut = packetLevel ? finished_future(packetLevel) : _mpLevelProvider->GetBeatmapAsync(hash);
         self->_levelBar->hide = true;
         BSML::MainThreadScheduler::AwaitFuture(beatmapLevelFut, [beatmapLevelFut, self, hash, beatmapKey]() mutable -> void {
             GlobalNamespace::BeatmapLevel* beatmapLevel = beatmapLevelFut.get();
