@@ -58,11 +58,18 @@ namespace MultiplayerCore::Beatmaps::Providers {
                     DEBUG("Diff: {}", diff.GetDifficulty());
                 }
             }
-            level = BeatSaverBeatmapLevel::Make(levelHash, result);
-            // Somehow it can happen that the level is already in the cache at this point, despite us checking before
-            // TODO: Check if that can still happen
-            if (!_hashToBeatsaverLevels->ContainsKey(levelHash)) _hashToBeatsaverLevels->Add(levelHash, level);
-            return level;
+            try {
+                level = BeatSaverBeatmapLevel::Make(levelHash, result);
+                // Somehow it can happen that the level is already in the cache at this point, despite us checking before
+                // TODO: Check if that can still happen
+                if (!_hashToBeatsaverLevels->ContainsKey(levelHash)) _hashToBeatsaverLevels->Add(levelHash, level);
+                return level;
+            }
+            catch (const std::exception& e) {
+                // Fuck, had this happen a few times and then not, so idk what's going on there
+                CRITICAL("IMPORTANT FORWARD TO MpCore DEVS IF YOU SEE THIS!!! - Failed to create BeatSaverBeatmapLevel: {}", e.what());
+                return nullptr;
+            }
         }
 
         return nullptr;
