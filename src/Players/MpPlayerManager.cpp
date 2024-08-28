@@ -24,13 +24,13 @@ namespace MultiplayerCore::Players {
         _packetSerializer->RegisterCallback<MpPlayerData*>(
             std::bind(&MpPlayerManager::HandlePlayerData, this, std::placeholders::_1, std::placeholders::_2)
         );
-        _sessionManager->add_playerConnectedEvent(
-            BSML::MakeSystemAction<GlobalNamespace::IConnectedPlayer*>(
-                std::function<void(GlobalNamespace::IConnectedPlayer*)>(
-                    std::bind(&MpPlayerManager::HandlePlayerConnected, this, std::placeholders::_1)
-                )
-            )
-        );
+        // _sessionManager->add_playerConnectedEvent(
+        //     BSML::MakeSystemAction<GlobalNamespace::IConnectedPlayer*>(
+        //         std::function<void(GlobalNamespace::IConnectedPlayer*)>(
+        //             std::bind(&MpPlayerManager::HandlePlayerConnected, this, std::placeholders::_1)
+        //         )
+        //     )
+        // );
     }
 
     custom_types::Helpers::Coroutine MpPlayerManager::AwaitUser() {
