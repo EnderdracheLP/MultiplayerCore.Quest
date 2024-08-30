@@ -37,6 +37,20 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_Deactivate, &::GlobalNamespace::
             LobbyPlayersDataModel_Deactivate(self);
     }
 }
+// override HandleMultiplayerSessionManagerPlayerConnected
+MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected, &::GlobalNamespace::LobbyPlayersDataModel::HandleMultiplayerSessionManagerPlayerConnected, void, GlobalNamespace::LobbyPlayersDataModel* self, GlobalNamespace::IConnectedPlayer* connectedPlayer) {
+    INVOKE_LOCK(LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected);
+    if (!lock) {
+        LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected(self, connectedPlayer);
+    } else {
+        static auto customKlass = classof(MpPlayersDataModel*);
+        if (self->klass == customKlass)
+            reinterpret_cast<MpPlayersDataModel*>(self)->HandlePlayerConnected(connectedPlayer);
+        else
+            LobbyPlayersDataModel_HandleMultiplayerSessionManagerPlayerConnected(self, connectedPlayer);
+    }
+}
+
 // override HandleMenuRpcManagerGetRecommendedBeatmap
 MAKE_AUTO_HOOK_ORIG_MATCH(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap, &::GlobalNamespace::LobbyPlayersDataModel::HandleMenuRpcManagerGetRecommendedBeatmap, void, GlobalNamespace::LobbyPlayersDataModel* self, StringW userId) {
     INVOKE_LOCK(LobbyPlayersDataModel_HandleMenuRpcManagerGetRecommendedBeatmap);
@@ -92,6 +106,13 @@ MAKE_AUTO_HOOK_ORIG_MATCH(NetworkUtility_GetHashedUserId, &::GlobalNamespace::Ne
         DEBUG("User is on Quest, using custom prefix");
         DEBUG("Setting userId to hash {}", /*StringW(prefix + */StringW("OculusQuest#" + userId));
         StringW hashedUserId = ::GlobalNamespace::NetworkUtility::GetHashBase64(/*prefix + */StringW("OculusQuest#" + userId));
+        DEBUG("Hashed userId is {}", hashedUserId);
+        return hashedUserId;
+    }
+    else if (MultiplayerCore::Hooks::NetworkConfigHooks::IsOverridingAPI() && platform.value__ == 20) {
+        DEBUG("User is on Pico, using custom prefix");
+        DEBUG("Setting userId to hash {}", /*StringW(prefix + */userId);
+        StringW hashedUserId = ::GlobalNamespace::NetworkUtility::GetHashBase64(/*prefix + */StringW("Pico#" + userId));
         DEBUG("Hashed userId is {}", hashedUserId);
         return hashedUserId;
     }

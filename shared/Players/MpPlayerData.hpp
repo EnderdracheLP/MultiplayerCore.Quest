@@ -13,7 +13,9 @@ namespace MultiplayerCore::Players {
         Steam = 1,
         OculusPC = 2,
         OculusQuest = 3,
-        PS4 = 4
+        PS4 = 4,
+        PS5 = 5,
+        Pico = 6,
     };
 }
 

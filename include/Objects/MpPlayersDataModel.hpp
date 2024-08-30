@@ -11,7 +11,7 @@
 
 DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpPlayersDataModel, GlobalNamespace::LobbyPlayersDataModel,
     DECLARE_INSTANCE_FIELD_PRIVATE(Networking::MpPacketSerializer*, _packetSerializer);
-    DECLARE_INSTANCE_FIELD_PRIVATE(Beatmaps::Providers::MpBeatmapLevelProvider*, _beatmapLevelProvider);
+    DECLARE_INSTANCE_FIELD(Beatmaps::Providers::MpBeatmapLevelProvider*, _beatmapLevelProvider);
     using PacketDict = System::Collections::Generic::Dictionary_2<StringW, Beatmaps::Packets::MpBeatmapPacket*>;
     DECLARE_INSTANCE_FIELD_PRIVATE(PacketDict*, _lastPlayerBeatmapPackets);
 
@@ -28,10 +28,11 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpPlayersDataModel, GlobalNamesp
         using Base = GlobalNamespace::LobbyPlayersDataModel;
         void Activate_override();
         void Deactivate_override();
+        void HandlePlayerConnected(GlobalNamespace::IConnectedPlayer* connectedPlayer);
         void HandleMenuRpcManagerGetRecommendedBeatmap_override(StringW userId);
         void HandleMenuRpcManagerRecommendBeatmap_override(StringW userId, GlobalNamespace::BeatmapKeyNetSerializable* beatmapKey);
         void SetLocalPlayerBeatmapLevel_override(GlobalNamespace::BeatmapKey& beatmapKey);
-        void SendMpBeatmapPacket(GlobalNamespace::BeatmapKey beatmapKey);
+        void SendMpBeatmapPacket(GlobalNamespace::BeatmapKey beatmapKey, GlobalNamespace::IConnectedPlayer* player = nullptr);
     private:
         void PutPlayerPacket(StringW playerId, Beatmaps::Packets::MpBeatmapPacket* packet);
 )

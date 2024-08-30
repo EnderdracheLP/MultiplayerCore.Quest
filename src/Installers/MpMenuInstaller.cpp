@@ -3,6 +3,7 @@
 #include "UI/MpColorsUI.hpp"
 #include "UI/MpLoadingIndicator.hpp"
 #include "UI/MpRequirementsUI.hpp"
+#include "UI/MpPerPlayerUI.hpp"
 #include "Patchers/BeatmapSelectionViewPatcher.hpp"
 
 #include "Zenject/DiContainer.hpp"
@@ -19,6 +20,7 @@ namespace MultiplayerCore::Installers {
 
         container->BindInterfacesAndSelfTo<MpColorsUI*>()->AsSingle();
         container->BindInterfacesAndSelfTo<MpRequirementsUI*>()->AsSingle();
+        container->BindInterfacesAndSelfTo<MpPerPlayerUI*>()->AsSingle();
         container->BindInterfacesAndSelfTo<MpLoadingIndicator*>()->AsSingle();
         container->BindInterfacesAndSelfTo<BeatmapSelectionViewPatcher*>()->AsSingle();
     }

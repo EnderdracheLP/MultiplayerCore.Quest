@@ -7,6 +7,7 @@
 #include "Beatmaps/Providers/MpBeatmapLevelProvider.hpp"
 #include "Patchers/ModeSelectionPatcher.hpp"
 #include "Patchers/PlayerCountPatcher.hpp"
+#include "Repositories/MpStatusRepository.hpp"
 
 #include "Zenject/DiContainer.hpp"
 #include "Zenject/FromBinderNonGeneric.hpp"
@@ -19,6 +20,7 @@ using namespace MultiplayerCore::Players;
 using namespace MultiplayerCore::Objects;
 using namespace MultiplayerCore::Patchers;
 using namespace MultiplayerCore::Beatmaps::Providers;
+using namespace MultiplayerCore::Repositories;
 
 namespace MultiplayerCore::Installers {
     void MpAppInstaller::InstallBindings() {
@@ -41,5 +43,8 @@ namespace MultiplayerCore::Installers {
 
         // logging stuff
         container->Bind<BGNetDebugLogger*>()->ToSelf()->AsSingle();
+
+        // repositories
+        container->BindInterfacesAndSelfTo<MpStatusRepository*>()->AsSingle();
     }
 }

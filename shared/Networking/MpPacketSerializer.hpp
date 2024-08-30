@@ -153,6 +153,34 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Networking, MpPacketSerializer
             packetHandlers.erase(packetId);
         }
 
+        /// <summary>
+        /// Obtains the connection owner / the player representing the dedicated server
+        /// </summary>
+        GlobalNamespace::IConnectedPlayer* get_connectionOwner();
+        __declspec(property(get = get_connectionOwner))::GlobalNamespace::IConnectedPlayer* connectionOwner;
+
+        /// <summary>
+        /// Sends a packet to the server / connection owner
+        /// </summary>
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket>)
+        void SendToServer(TPacket packet) {
+            /* TODO: try catch, logging? */
+            if (_sessionManager) {
+                _sessionManager->SendToPlayer(packet->i_INetSerializable(), connectionOwner);
+            }
+        }
+
+        template<::MultiplayerCore::INetSerializable TPacket>
+        requires(std::is_pointer_v<TPacket>)
+        void SendToPlayer(TPacket packet, GlobalNamespace::IConnectedPlayer* player) {
+            /* TODO: try catch, logging? */
+            if (_sessionManager) {
+                _sessionManager->SendToPlayer(packet->i_INetSerializable(), player);
+            }
+        }
+
+
         template<::MultiplayerCore::INetSerializable TPacket>
         requires(std::is_pointer_v<TPacket>)
         void Send(TPacket packet) {

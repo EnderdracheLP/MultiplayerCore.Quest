@@ -104,28 +104,28 @@ namespace MultiplayerCore::Models {
         if (doc.HasParseError() || !doc.IsObject()) return;
 
         auto docEnd = doc.MemberEnd();
-        GET(requiredMods, _requiredMods);
+        GET(required_mods, _requiredMods);
 
-        GET(minimumAppVersion, minimumAppVersion);
-        GET(maximumAppVersion, maximumAppVersion);
+        GET(minimum_app_version, minimumAppVersion);
+        GET(maximum_app_version, maximumAppVersion);
 
         // simple get from json into values
         GET(status, status);
         GET(maintenanceStartTime, maintenanceStartTime);
         GET(maintenanceEndTime, maintenanceEndTime);
         GET(useGamelift, useGamelift);
-        GET(useSsl, _useSsl);
+        GET(use_ssl, _useSsl);
         GET(name, _name);
         GET(description, _description);
-        GET(imageUrl, _imageUrl);
-        GET(maxPlayers, _maxPlayers);
-        GET(supportsPPModifiers, _supportsPPModifiers);
-        GET(supportsPPDifficulties, _supportsPPDifficulties);
-        GET(supportsPPMaps, _supportsPPMaps);
+        GET(image_url, _imageUrl);
+        GET(max_players, _maxPlayers);
+        GET(supports_pp_modifiers, _supportsPPModifiers);
+        GET(supports_pp_difficulties, _supportsPPDifficulties);
+        GET(supports_pp_maps, _supportsPPMaps);
 
-        auto userMessageItr = doc.FindMember("userMessage");
+        auto userMessageItr = doc.FindMember("user_message");
         if (userMessageItr != docEnd && userMessageItr->value.IsObject()) {
-            const auto& localizedMessagesItr = userMessageItr->value.FindMember("localizedMessages");
+            const auto& localizedMessagesItr = userMessageItr->value.FindMember("localizations");
             if (localizedMessagesItr != userMessageItr->value.MemberEnd() && localizedMessagesItr->value.IsArray()) {
                 const auto& localizedMessages = localizedMessagesItr->value.GetArray();
 

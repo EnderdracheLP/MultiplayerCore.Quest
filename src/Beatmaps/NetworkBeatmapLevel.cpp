@@ -35,7 +35,6 @@ namespace MultiplayerCore::Beatmaps {
             nullptr
         );
 
-        // TODO: Check if we need requirements and other extra data here
         requirements.emplace(packet->characteristic, packet->requirements);
         difficultyColors.emplace(packet->characteristic, packet->mapColors);
         for (const auto& contributor : packet->contributors)

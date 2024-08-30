@@ -55,29 +55,43 @@ namespace MultiplayerCore::Beatmaps {
             nullptr
         );
 
-        // TODO: Check if we need requirements and other extra data here
-        auto v = std::find_if(beatmap.GetVersions().begin(), beatmap.GetVersions().end(), 
+        auto v = std::find_if(level->beatmap.GetVersions().begin(), level->beatmap.GetVersions().end(), 
             [hash = std::string_view(hash)](auto& x){ return std::ranges::equal(x.GetHash(), hash, 
                 [](char a, char b){
                     return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); 
                 });
             }
         );
-        if (v != beatmap.GetVersions().end()) {
-            for (const auto& difficulty : v->GetDiffs()) {
-                auto& list = level->requirements[difficulty.GetCharacteristic()][ConvertDifficulty(difficulty.GetDifficulty())];
-                if (difficulty.GetChroma()) list.emplace_back("Chroma");
-                if (difficulty.GetNE()) list.emplace_back("Noodle Extensions");
-                if (difficulty.GetME()) list.emplace_back("Mapping Extensions");
+        if (v != level->beatmap.GetVersions().end()) {
+            if (v->GetDiffs().empty()) {
+                WARNING("No difficulties found for hash {} using BPP, this should not happen!", hash);
+            }
+            else {
+                for (const auto& difficulty : v->GetDiffs()) {
+                    DEBUG("Adding difficulty {} to characteristic {}", difficulty.GetDifficulty(), difficulty.GetCharacteristic());
+                    auto& list = level->requirements[difficulty.GetCharacteristic()][ConvertDifficulty(difficulty.GetDifficulty())];
+                    // if (difficulty.GetChroma()) list.emplace_back("Chroma");
+                    if (difficulty.GetNE()) list.emplace_back("Noodle Extensions");
+                    if (difficulty.GetME()) list.emplace_back("Mapping Extensions");
+                }
             }
         }
         else {
             WARNING("Could not find version for hash {}", hash);
+            // Using latest to get the difficulties
+            if (level->beatmap.GetVersions().front().GetDiffs().empty()) {
+                WARNING("No difficulties found for hash {} using BPP, this should not happen!", hash);
+            }
+            for (const auto& difficulty : level->beatmap.GetVersions().front().GetDiffs()) {
+                DEBUG("Adding difficulty {} to characteristic {}", difficulty.GetDifficulty(), difficulty.GetCharacteristic());
+                auto& list = level->requirements[difficulty.GetCharacteristic()][ConvertDifficulty(difficulty.GetDifficulty())];
+            }
         }
 
         level->contributors.emplace_back(ExtraSongData::Contributor{ beatmap.GetMetadata().GetLevelAuthorName(), "Level Author", "" });
         level->contributors.emplace_back(ExtraSongData::Contributor{ beatmap.GetUploader().GetUsername(), "Uploader", beatmap.GetUploader().GetAvatarURL() });
 
+        DEBUG("Created BeatSaverBeatmapLevel for hash {}, returning level", hash);
         return level;
     }
 }
