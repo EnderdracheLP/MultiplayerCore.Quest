@@ -17,15 +17,15 @@
                 },
                 "lldbConfig": {
                     "sourceMaps": [
+                        "C:/Tools/source/repos/BS-Modding-F/MultiplayerCore.Quest/ ${workspaceFolder}",
                         "\\home\\runner\\work\\MultiQuestensions\\MultiplayerCore.Quest\\ ${workspaceFolder}",
+                        "\\home\\runner\\work\\MultiplayerCore.Quest\\MultiplayerCore.Quest\\ ${workspaceFolder}",
                         "/home/runner/work/MultiplayerCore.Quest/MultiplayerCore.Quest/ ${workspaceFolder}",
                         "/home/runner/work/MultiQuestensions/ ${workspaceFolder}/../",
                         "/home/runner/work/SongDownloader/ ${workspaceFolder}/../",
                         "/home/runner/work/SongDownloader/SongDownloader/shared ${workspaceFolder}/extern/includes/SongDownloader/shared",
-                        "/home/runner/work/SongLoader/ ${workspaceFolder}/../",
-                        "/home/runner/work/SongLoader/SongLoader/shared ${workspaceFolder}/extern/includes/SongLoader/shared",
-                        "/home/runner/work/questui/ ${workspaceFolder}/../",
-                        "/home/runner/work/questui/questui/shared ${workspaceFolder}/extern/includes/questui/shared",
+                        "/home/runner/work/Quest-SongCore/Quest-SongCore/shared ${workspaceFolder}/extern/includes/songcore/shared",
+                        "/home/runner/work/BSML/BSML/shared ${workspaceFolder}/extern/includes/bsml/shared",
                         "/home/runner/work/beatsaber-hook/ ${workspaceFolder}/../",
                         "/home/runner/work/beatsaber-hook/beatsaber-hook/ ${workspaceFolder}/extern/includes/beatsaber-hook/",
                         "/home/runner/work/custom-types/ ${workspaceFolder}/../",
@@ -34,6 +34,7 @@
                     "librarySearchPaths": [
                         "${workspaceFolder}/build/debug/",
                         "${workspaceFolder}/extern/libs/",
+                        "${workspaceFolder}/symbols/",
                         "${workspaceFolder}/../Symbols/"
                     ]
                 }
@@ -50,25 +51,25 @@
                 },
                 "lldbConfig": {
                     "sourceMaps": [
+                        "C:/Tools/source/repos/BS-Modding-F/MultiplayerCore.Quest/ ${workspaceFolder}",
                         "\\home\\runner\\work\\MultiplayerCore.Quest\\MultiplayerCore.Quest\\ ${workspaceFolder}",
                         "/home/runner/work/MultiplayerCore.Quest/MultiplayerCore.Quest/ ${workspaceFolder}",
                         "\\home\\runner\\work\\MultiQuestensions\\MultiQuestensions\\ ${workspaceFolder}/../MultiQuestensions/",
                         "/home/runner/work/MultiQuestensions/ ${workspaceFolder}/../MultiQuestensions/",
-                        "/home/runner/work/SongDownloader/ ${workspaceFolder}/../",
                         "/home/runner/work/SongDownloader/SongDownloader/shared ${workspaceFolder}/extern/includes/SongDownloader/shared",
-                        "/home/runner/work/SongLoader/ ${workspaceFolder}/../",
-                        "/home/runner/work/SongLoader/SongLoader/shared ${workspaceFolder}/extern/includes/SongLoader/shared",
-                        "/home/runner/work/questui/ ${workspaceFolder}/../",
-                        "/home/runner/work/questui/questui/shared ${workspaceFolder}/extern/includes/questui/shared",
+                        "/home/runner/work/Quest-SongCore/Quest-SongCore/shared ${workspaceFolder}/extern/includes/songcore/shared",
+                        "/home/runner/work/Quest-BSML/Quest-BSML/shared ${workspaceFolder}/extern/includes/bsml/shared",
                         "/home/runner/work/beatsaber-hook/ ${workspaceFolder}/../",
                         "/home/runner/work/beatsaber-hook/beatsaber-hook/ ${workspaceFolder}/extern/includes/beatsaber-hook/",
                         "/home/runner/work/custom-types/ ${workspaceFolder}/../",
-                        "/home/runner/work/Il2CppQuestTypePatching/Il2CppQuestTypePatching/shared ${workspaceFolder}/extern/includes/custom-types/shared"                    ],
+                        "/home/runner/work/Il2CppQuestTypePatching/Il2CppQuestTypePatching/shared ${workspaceFolder}/extern/includes/custom-types/shared"
+                        ],
                     "librarySearchPaths": [
                         "${workspaceFolder}/build/debug/",
                         "${workspaceFolder}/extern/libs/",
                         "${workspaceFolder}/../Symbols/",
-                        "${workspaceFolder}/../MultiQuestensions/MultiQuestensions/build/debug/",
+                        "${workspaceFolder}/symbols/",
+                        "${workspaceFolder}/../MultiQuestensions/MultiQuestensions/build/debug/"
                     ]
                 }
             }

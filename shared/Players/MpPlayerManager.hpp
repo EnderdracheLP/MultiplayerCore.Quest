@@ -1,20 +1,38 @@
 #pragma once
-#include "../Players/MpPlayerData.hpp"
-#include "../Utils/event.hpp"
-#include "GlobalNamespace/IConnectedPlayer.hpp"
 
-namespace MultiplayerCore::Players {
-    struct MpPlayerManager {
+#include "custom-types/shared/macros.hpp"
+#include "custom-types/shared/coroutine.hpp"
+#include "Zenject/IInitializable.hpp"
+#include "System/IDisposable.hpp"
+#include "MpPlayerData.hpp"
 
-        static event<GlobalNamespace::IConnectedPlayer*, MultiplayerCore::Players::MpPlayerData*> ReceivedPlayerData;
-        // C++ equivalent to basegame events
-        static event<GlobalNamespace::IConnectedPlayer*> connectingEvent;//When the local player is connecting, This is ran before the player joins the lobby
-        static event<GlobalNamespace::DisconnectedReason, GlobalNamespace::IConnectedPlayer*> disconnectedEvent;//When the local player disconnects from the lobby
-        static event<GlobalNamespace::IConnectedPlayer*> playerConnectedEvent;//When a remote player joins
-        static event<GlobalNamespace::IConnectedPlayer*> playerDisconnectedEvent;//when a remote player leaves
-        
+#include "../Networking/MpPacketSerializer.hpp"
+#include "GlobalNamespace/IPlatformUserModel.hpp"
+#include "GlobalNamespace/IMultiplayerSessionManager.hpp"
+#include "GlobalNamespace/UserInfo.hpp"
 
-        static bool TryGetMpPlayerData(std::string const& playerId, MultiplayerCore::Players::MpPlayerData*& player);
-        static MultiplayerCore::Players::MpPlayerData* GetMpPlayerData(std::string const& playerId);
-    };
-} 
+#include "System/Collections/Concurrent/ConcurrentDictionary_2.hpp"
+
+using ConcurrentPlayerDataDictionary = System::Collections::Concurrent::ConcurrentDictionary_2<StringW, MultiplayerCore::Players::MpPlayerData*>;
+
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Players, MpPlayerManager, System::Object, std::vector<Il2CppClass*>({classof(::Zenject::IInitializable*), classof(::System::IDisposable*)}),
+    DECLARE_INSTANCE_FIELD_PRIVATE(MultiplayerCore::Networking::MpPacketSerializer*, _packetSerializer);
+    DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::IPlatformUserModel*, _platformUserModel);
+    DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::IMultiplayerSessionManager*, _sessionManager);
+    DECLARE_INSTANCE_FIELD_PRIVATE(ConcurrentPlayerDataDictionary*, _playerData);
+    DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::UserInfo*, _localPlayerInfo);
+
+    DECLARE_OVERRIDE_METHOD_MATCH(void, Initialize, &::Zenject::IInitializable::Initialize);
+    DECLARE_OVERRIDE_METHOD_MATCH(void, Dispose, &::System::IDisposable::Dispose);
+
+    DECLARE_CTOR(ctor, MultiplayerCore::Networking::MpPacketSerializer* packetSerializer, GlobalNamespace::IPlatformUserModel* platformUserModel, GlobalNamespace::IMultiplayerSessionManager* sessionManager);
+    DECLARE_INSTANCE_METHOD(void, HandlePlayerConnected, GlobalNamespace::IConnectedPlayer* player);
+    DECLARE_INSTANCE_METHOD(void, HandlePlayerData, MpPlayerData* packet, GlobalNamespace::IConnectedPlayer* player);
+
+    public:
+        bool TryGetPlayer(StringW userId, MpPlayerData*& outplayer);
+        MpPlayerData* GetPlayer(StringW userId);
+
+        UnorderedEventCallback<GlobalNamespace::IConnectedPlayer*, MpPlayerData*> PlayerConnectedEvent;
+        custom_types::Helpers::Coroutine AwaitUser();
+)

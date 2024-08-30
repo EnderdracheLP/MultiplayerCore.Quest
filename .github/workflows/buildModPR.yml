@@ -20,6 +20,12 @@ jobs:
         submodules: true
         lfs: true
 
+    - name: Get Version
+      shell: pwsh
+      run: |
+        $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Split('-')[0])-$($branchMain).${{ github.run_number }}+$($branchSub)ra${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+
     - uses: seanmiddleditch/gha-setup-ninja@v3
 
 #    - name: Install Powershell
@@ -50,29 +56,29 @@ jobs:
 
 
     # extract branch name
-    - name: Extract branch name
-      if: github.event_name != 'pull_request'
-      shell: bash
-      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-      id: extract_branch
+#    - name: Extract branch name
+#      if: github.event_name != 'pull_request'
+#      shell: bash
+#      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+#      id: extract_branch
 
     # extract branch name on pull request
-    - name: Print branch name
-      if: github.event_name == 'pull_request'
-      run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
+#    - name: Print branch name
+#      if: github.event_name == 'pull_request'
+#      run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
 
-    - name: Set version
-      run: echo "version=$(echo $version_num-$BRANCH_NAME.${{ github.run_number }})" >> $GITHUB_ENV
+#    - name: Set version
+#      run: echo "version=$(echo $version_num-$BRANCH_NAME.${{ github.run_number }})" >> $GITHUB_ENV
 
     # print branch name and version
-    - name: Get branch name
-      run: |
-        echo 'The branch name is' $BRANCH_NAME
-        echo 'The version is' $version
+#    - name: Get branch name
+#      run: |
+#        echo 'The branch name is' $BRANCH_NAME
+#        echo 'The version is' $version
 
-    - name: Create ndkpath.txt
-      run: |
-        echo "$ANDROID_NDK_LATEST_HOME" > ${GITHUB_WORKSPACE}/ndkpath.txt
+#    - name: Create ndkpath.txt
+#      run: |
+#        echo "$ANDROID_NDK_LATEST_HOME" > ${GITHUB_WORKSPACE}/ndkpath.txt
 
     - name: Get QPM
       if: steps.cache-qpm.outputs.cache-hit != 'true'
@@ -80,30 +86,31 @@ jobs:
       with:
         github_token: ${{secrets.GITHUB_TOKEN}}
         workflow: cargo-build.yml
-        name: linux-qpm-rust
+        name: linux-qpm
         path: QPM
-        repo: RedBrumbler/QuestPackageManager-Rust
+        repo: QuestPackageManager/QPM.CLI
         
     - name: QPM Collapse
       run: |
-        chmod +x ./QPM/qpm-rust
-        ./QPM/qpm-rust collapse
+        chmod +x ./QPM/qpm
+        ./QPM/qpm collapse
         
     - name: QPM Dependencies Cache
       id: cache-qpm-deps
-      uses: actions/cache@v3
+      uses: actions/cache@v2
       env:
         cache-name: cache-qpm-deps
       with:
-        path: /home/runner/.local/share/QPM-Rust/cache
-        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.json', '.github/BuildQSounds.yml') }}
+        path: /home/runner/.local/share/QPM-RS/cache
+        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.shared.json') }}
         restore-keys: |
           ${{ runner.os }}-${{ env.cache-name }}-
           ${{ runner.os }}-${{ env.cache-name }}
       
-    - name: QPM Restore
+    - name: QPM Set Version & Restore
       run: |
-        ./QPM/qpm-rust restore
+        ./QPM/qpm package edit --version ${{ env.version }}
+        ./QPM/qpm restore
 
     - name: Check dependency Folders
       run: |
@@ -113,16 +120,14 @@ jobs:
         echo "Checking libs"
         ls -lh ${GITHUB_WORKSPACE}/extern/libs
         echo ""
-        echo "Checking QPM-Rust/cache Folder"
-        ls -lh $HOME/.local/share/QPM-Rust/cache
+        echo "Checking QPM/cache Folder"
+        ls -lh $HOME/.local/share/QPM-RS/cache
         echo ""
 
     - name: Build
       run: |
         cd ${GITHUB_WORKSPACE}
-        ./QPM/qpm-rust package edit --version ${{ env.version }}
-        ./QPM/qpm-rust qmod build
-        pwsh -Command ./build.ps1 --actions
+        pwsh -Command ./build.ps1 -actions
 
     - name: Get Library Name
       id: libname
@@ -135,7 +140,7 @@ jobs:
     - name: Package QMOD
       run: |
         cd ${GITHUB_WORKSPACE}
-        pwsh -Command ./buildQMOD.ps1 -package
+        ./QPM/qpm qmod zip -i ./build/ -i ./extern/libs/ ${module_id}_${version}.qmod
 
 
     - name: Upload non-debug artifact
@@ -155,7 +160,7 @@ jobs:
 
 
     - name: Upload QMOD
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.module_id }}-(UNZIP-for-QMOD).qmod
         path: ./${{ env.module_id }}_${{ env.version }}.qmod

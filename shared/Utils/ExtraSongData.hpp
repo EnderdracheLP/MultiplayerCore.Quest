@@ -1,173 +1,169 @@
 #pragma once
-#include <string>
-#include <string_view>
-#include <optional>
-#include <vector>
 
-#include "EnumUtils.hpp"
-
+#include "../_config.h"
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 
-#include "songloader/shared/API.hpp"
-
-#include "UnityEngine/Sprite.hpp"
 #include "UnityEngine/Color.hpp"
-
+#include "GlobalNamespace/BeatmapDifficulty.hpp"
 #include "LiteNetLib/Utils/NetDataReader.hpp"
 #include "LiteNetLib/Utils/NetDataWriter.hpp"
 
-#include "GlobalNamespace/BeatmapDifficulty.hpp"
-#include "GlobalNamespace/CustomPreviewBeatmapLevel.hpp"
+#include <optional>
+#include <vector>
 
-//Temporary include
-#include "main.hpp"
+#include "songcore/shared/SongCore.hpp"
+
+#define GET_COL(col) \
+    auto col##Itr = json.FindMember(#col); \
+    if (col##Itr != mEnd) col = col##Itr->value.GetFloat();
 
 namespace MultiplayerCore::Utils {
-    struct ExtraSongData {
-        struct Contributor {
-            Contributor(std::string name, std::string role, std::string iconPath) :
+    struct MPCORE_EXPORT ExtraSongData {
+        struct MPCORE_EXPORT Contributor {
+            Contributor(const std::string& name, const std::string& role, const std::string& iconPath) :
                 name(name), role(role), iconPath(iconPath) {}
-            const std::string role;
-            const std::string name;
-            const std::string iconPath;
 
-            // UnityEngine::Sprite* icon;
+            Contributor(const Contributor&) = default;
+            const std::string name, role, iconPath;
         };
 
-        struct RequirementData
-		{
-            RequirementData(std::vector<std::string> requirements, std::vector<std::string> suggestions, std::vector<std::string> warnings, std::vector<std::string> information) :
-                _requirements(std::move(requirements)), _suggestions(std::move(suggestions)), _warnings(std::move(warnings)), _information(std::move(information)) {}
-			std::vector<std::string> _requirements;
+        struct MPCORE_EXPORT RequirementData {
+            RequirementData(std::vector<std::string> const& requirements, std::vector<std::string> const& suggestions, std::vector<std::string> const& warnings, std::vector<std::string> const& information) :
+                requirements(requirements), suggestions(suggestions), warnings(warnings), information(information) {}
+            RequirementData(std::vector<std::string>& requirements, std::vector<std::string>& suggestions, std::vector<std::string>& warnings, std::vector<std::string>& information) :
+                requirements(std::move(requirements)), suggestions(std::move(suggestions)), warnings(std::move(warnings)), information(std::move(information)) {}
+			const std::vector<std::string> requirements;
+			const std::vector<std::string> suggestions;
+			const std::vector<std::string> warnings;
+			const std::vector<std::string> information;
+        };
 
-			std::vector<std::string> _suggestions;
+        struct MPCORE_EXPORT MapColor : UnityEngine::Color {
+            using UnityEngine::Color::Color;
+            constexpr MapColor(const UnityEngine::Color& col) : UnityEngine::Color(col.r, col.g, col.b, col.a) {}
+            constexpr MapColor() : UnityEngine::Color(1.0f, 1.0f, 1.0f, 1.0f) {}
 
-			std::vector<std::string> _warnings;
+            constexpr MapColor(float r, float g, float b) : UnityEngine::Color(r, g, b, 1.0f) {}
 
-			std::vector<std::string> _information;
-		};
-
-		struct MapColor : public UnityEngine::Color {
-            constexpr MapColor() : UnityEngine::Color() {}
-            MapColor(float r, float g, float b) : UnityEngine::Color(r, g, b, 1.0f) {}
-            inline MapColor(rapidjson::Value::Object json) {
-                auto rItr = json.FindMember("r");
-                r = rItr != json.MemberEnd() ? rItr->value.GetFloat() : 1.0f;
-                auto gItr = json.FindMember("g");
-                g = gItr != json.MemberEnd() ? gItr->value.GetFloat() : 1.0f;
-                auto bItr = json.FindMember("b");
-                b = bItr != json.MemberEnd() ? bItr->value.GetFloat() : 1.0f;
+            inline MapColor(const rapidjson::Value& json) : UnityEngine::Color(1.0f, 1.0f, 1.0f, 1.0f) {
+                auto mEnd = json.MemberEnd();
+                GET_COL(r); GET_COL(g); GET_COL(b);
             }
-            MapColor(LiteNetLib::Utils::NetDataReader* reader) : UnityEngine::Color(reader->GetFloat(), reader->GetFloat(), reader->GetFloat(), 1.0f) {}
-            inline void Serialize(LiteNetLib::Utils::NetDataWriter* writer) {
-                writer->Put(r);
-                writer->Put(g);
-                writer->Put(b);
+
+            inline MapColor(LiteNetLib::Utils::NetDataReader* reader)
+                : UnityEngine::Color(reader->GetFloat(), reader->GetFloat(), reader->GetFloat(), 1.0f) {}
+
+            inline void Serialize(LiteNetLib::Utils::NetDataWriter* writer) const {
+                writer->Put(r); writer->Put(g); writer->Put(b);
             }
+
             inline void Deserialize(LiteNetLib::Utils::NetDataReader* reader) {
                 r = reader->GetFloat();
                 g = reader->GetFloat();
                 b = reader->GetFloat();
+                a = 1.0f;
             }
         };
+        static_assert(sizeof(MapColor) == sizeof(UnityEngine::Color), "Size of MapColor and UnityEngine color did not match!");
 
-        struct DifficultyData {
+        struct MPCORE_EXPORT DifficultyData {
             DifficultyData() {}
-            DifficultyData(std::string_view beatmapCharacteristicName, 
-            GlobalNamespace::BeatmapDifficulty difficulty, std::optional<std::string_view> difficultyLabel, 
-            std::optional<RequirementData> additionalDifficultyData,
-            MapColor colorLeft, MapColor colorRight, 
-            MapColor envColorLeft, MapColor envColorRight,
-            MapColor envColorLeftBoost, MapColor envColorRightBoost,
-            MapColor obstacleColor) :
-                _beatmapCharacteristicName(beatmapCharacteristicName), 
-                _difficultyLabel(difficultyLabel), _difficulty(difficulty), 
+
+            DifficultyData(
+                std::string_view beatmapCharacteristicName,
+                GlobalNamespace::BeatmapDifficulty difficulty,
+                std::optional<std::string> difficultyLabel,
+                std::optional<RequirementData> additionalDifficultyData,
+                MapColor colorLeft,
+                MapColor colorRight,
+                MapColor envColorLeft,
+                MapColor envColorRight,
+                MapColor envColorLeftBoost,
+                MapColor envColorRightBoost,
+                MapColor obstacleColor
+            ) :
+                beatmapCharacteristicName(beatmapCharacteristicName),
+                difficultyLabel(difficultyLabel),
+                difficulty(difficulty),
                 additionalDifficultyData(additionalDifficultyData),
-                _colorLeft(colorLeft), _colorRight(colorRight),
-                _envColorLeft(envColorLeft), _envColorRight(envColorRight),
-                _envColorLeftBoost(envColorLeftBoost), _envColorRightBoost(envColorRightBoost),
-                _obstacleColor(obstacleColor) {}
+                colorLeft(colorLeft),
+                colorRight(colorRight),
+                envColorLeft(envColorLeft),
+                envColorRight(envColorRight),
+                envColorLeftBoost(envColorLeftBoost),
+                envColorRightBoost(envColorRightBoost),
+                obstacleColor(obstacleColor) {}
 
-            std::string _beatmapCharacteristicName;
+            std::string beatmapCharacteristicName;
+			std::optional<std::string> difficultyLabel;
 
-			GlobalNamespace::BeatmapDifficulty _difficulty;
-
-			std::optional<std::string_view> _difficultyLabel;
-
+			GlobalNamespace::BeatmapDifficulty difficulty;
 			std::optional<RequirementData> additionalDifficultyData;
 
-			MapColor _colorLeft;
-
-			MapColor _colorRight;
-
-			MapColor _envColorLeft;
-
-			MapColor _envColorRight;
-
-			MapColor _envColorLeftBoost;
-
-			MapColor _envColorRightBoost;
-
-			MapColor _obstacleColor;
+			MapColor colorLeft;
+			MapColor colorRight;
+			MapColor envColorLeft;
+			MapColor envColorRight;
+			MapColor envColorLeftBoost;
+			MapColor envColorRightBoost;
+			MapColor obstacleColor;
         };
 
         std::vector<const Contributor> contributors;
+        std::string customEnvironmentName;
+        std::string customEnvironmentHash;
+        std::vector<const DifficultyData> difficulties;
+        std::string defaultCharacteristicName;
 
-        std::string _customEnvironmentName;
-
-        std::string _customEnvironmentHash;
-
-        std::vector<const DifficultyData> _difficulties;
-
-        std::string _defaultCharacteristicName;
-
-        static inline std::optional<ExtraSongData> FromLevelId(std::string levelId)
-        {
-            auto customPreview = RuntimeSongLoader::API::GetLevelById(levelId);
-            if (customPreview)
-            {
-                return FromMapPath((*customPreview)->customLevelPath);
-            }
-            else
-            {
-                return std::nullopt;
-            }
+        static inline std::optional<ExtraSongData> FromLevelHash(const std::string& levelId) {
+            auto customLevel = SongCore::API::Loading::GetLevelByHash(levelId);
+            if (!customLevel) return std::nullopt;
+            return FromSaveData(customLevel->standardLevelInfoSaveDataV2.value_or(nullptr));
         }
 
-        static inline std::optional<ExtraSongData> FromPreviewBeatmapLevel(GlobalNamespace::IPreviewBeatmapLevel* preview)
-        {
-            std::optional<GlobalNamespace::CustomPreviewBeatmapLevel*> customPreview = il2cpp_utils::try_cast<GlobalNamespace::CustomPreviewBeatmapLevel>(preview);
-            if (customPreview)
-            {
-                return FromMapPath((*customPreview)->customLevelPath);
-            }
-            else
-            {
-                return std::nullopt;
-            }
+        static inline std::optional<ExtraSongData> FromLevelId(const std::string& levelId) {
+            auto customLevel = SongCore::API::Loading::GetLevelByLevelID(levelId);
+            if (!customLevel) return std::nullopt;
+            return FromSaveData(customLevel->standardLevelInfoSaveDataV2.value_or(nullptr));
         }
 
-        static inline std::optional<ExtraSongData> FromMapPath(std::string songPath)
-        {
-            if (fileexists(songPath + "/Info.dat")) {
-                songPath += "/Info.dat";
-            }
-            else if (fileexists(songPath + "/info.dat")) {
-                songPath += "/info.dat";
-            }
-            else {
-                // If we can't find the info.dat file, we can't parse it.
-                // So we return nullopt.
-                return std::nullopt;
-            }
-            rapidjson::Document document;
-            document.Parse(readfile(songPath));
-            if (document.HasParseError() || !document.IsObject()) {
-                return std::nullopt;
-            }
-            return ExtraSongData(document);
+        static inline std::optional<ExtraSongData> FromBeatmapLevel(GlobalNamespace::BeatmapLevel* level) {
+            auto customLevel = il2cpp_utils::try_cast<SongCore::SongLoader::CustomBeatmapLevel>(level).value_or(nullptr);
+            if (!customLevel) return std::nullopt;
+            return FromSaveData(customLevel->standardLevelInfoSaveDataV2.value_or(nullptr));
         }
 
-        ExtraSongData(rapidjson::Document& document);
+        static inline std::optional<ExtraSongData> FromMapPath(const std::string& path) {
+            auto infoPath = path + "/Info.dat";
+            if (!fileexists(infoPath)) {
+                infoPath = path + "/info.dat";
+                if (!fileexists(infoPath)) {
+                    // couldn't find info.dat, return nullopt
+                    return std::nullopt;
+                }
+            }
+
+            rapidjson::Document doc;
+            doc.Parse(readfile(infoPath));
+            if (doc.HasParseError() || !doc.IsObject()) {
+                // couldn't parse info.dat, return nullopt
+                return std::nullopt;
+            }
+
+            return ExtraSongData(doc);
+        }
+
+        static std::optional<ExtraSongData> FromSaveData(SongCore::CustomJSONData::CustomLevelInfoSaveDataV2* saveData) {
+            if (!saveData || !saveData->CustomSaveDataInfo.has_value()) return std::nullopt;
+            auto levelDetailsOpt = saveData->CustomSaveDataInfo->get().TryGetBasicLevelDetails();
+            if (!levelDetailsOpt.has_value()) return std::nullopt;
+            return ExtraSongData(levelDetailsOpt.value());
+        }
+
+        ExtraSongData(const rapidjson::Document& doc);
+        ExtraSongData(const SongCore::CustomJSONData::CustomSaveDataInfo::BasicCustomLevelDetails& levelDetails);
     };
 }
+DEFINE_IL2CPP_ARG_TYPE(::MultiplayerCore::Utils::ExtraSongData::MapColor, "UnityEngine", "Color");
+
+#undef GET_COL

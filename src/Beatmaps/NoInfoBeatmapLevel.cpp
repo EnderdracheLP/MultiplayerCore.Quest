@@ -1,39 +1,36 @@
 #include "Beatmaps/NoInfoBeatmapLevel.hpp"
-#include "custom-types/shared/register.hpp"
-#include "songloader/shared/API.hpp"
+#include "Beatmaps/BeatSaverPreviewMediaData.hpp"
+#include "System/Collections/Generic/Dictionary_2.hpp"
+#include "System/ValueTuple_2.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, NoInfoBeatmapLevel);
 
 namespace MultiplayerCore::Beatmaps {
-	void NoInfoBeatmapLevel::New(StringW hash) {
-		this->__ctor();
-		levelHash = hash;
-	}
+    void NoInfoBeatmapLevel::ctor_1(StringW hash) {
+        INVOKE_CTOR();
+        INVOKE_BASE_CTOR(classof(Abstractions::MpBeatmapLevel*));
 
-	System::Threading::Tasks::Task_1<UnityEngine::Sprite*>* NoInfoBeatmapLevel::GetCoverImageAsync(System::Threading::CancellationToken cancellationToken) {
-		return System::Threading::Tasks::Task_1<UnityEngine::Sprite*>::New_ctor(static_cast<UnityEngine::Sprite*>(nullptr));
-	}
+        set_levelHash(static_cast<std::string>(hash));
+        static ConstString Empty("");
 
-
-#pragma region All the pain in form of getter functions
-
-	ConstString emptyString("");
-
-	StringW NoInfoBeatmapLevel::get_songName() {
-		return emptyString;
-	}
-
-	StringW NoInfoBeatmapLevel::get_songSubName() {
-		return emptyString;
-	}
-
-	StringW NoInfoBeatmapLevel::get_songAuthorName() {
-		return emptyString;
-	}
-
-	StringW NoInfoBeatmapLevel::get_levelAuthorName() {
-		return emptyString;
-	}
-
-#pragma endregion
+        _ctor(
+            -1,
+            false,
+            fmt::format("custom_level_{}", hash),
+            Empty,
+            Empty,
+            Empty,
+            ArrayW<StringW>::Empty(),
+            ArrayW<StringW>::Empty(),
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            GlobalNamespace::PlayerSensitivityFlag::Safe,
+            BeatSaverPreviewMediaData::New_ctor(hash)->i_IPreviewMediaData(),
+            System::Collections::Generic::Dictionary_2<System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>, GlobalNamespace::BeatmapBasicData*>::New_ctor()->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_()
+        );
+    }
 }

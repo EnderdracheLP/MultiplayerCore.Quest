@@ -1,83 +1,66 @@
 #include "Beatmaps/LocalBeatmapLevel.hpp"
-#include "custom-types/shared/register.hpp"
 #include "Utils/ExtraSongData.hpp"
-using namespace MultiplayerCore::Utils;
-
-#include "GlobalNamespace/VarIntExtensions.hpp"
-#include "songloader/shared/API.hpp"
+#include "logging.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, LocalBeatmapLevel);
 
+using namespace MultiplayerCore::Utils;
+
 namespace MultiplayerCore::Beatmaps {
-	void LocalBeatmapLevel::New(StringW hash, GlobalNamespace::IPreviewBeatmapLevel* preview) {
-		INVOKE_CTOR();
-		this->__ctor();
-		levelHash = hash;
-		std::optional<ExtraSongData> extraSongData = ExtraSongData::FromPreviewBeatmapLevel(preview);
-		if (extraSongData)
-		{
-            auto difficulties = extraSongData->_difficulties;
-			for (const Utils::ExtraSongData::DifficultyData& difficulty : difficulties)
-			{
-				if (!requirements.contains(difficulty._beatmapCharacteristicName))
-				{
-					std::unordered_map<uint8_t, std::vector<std::string>> reqsMap;
-					reqsMap[difficulty._difficulty] = difficulty.additionalDifficultyData ? difficulty.additionalDifficultyData->_requirements : std::vector<std::string>();
-					requirements[difficulty._beatmapCharacteristicName] = reqsMap;
-				}
 
-				if (!difficultyColors.contains(difficulty._beatmapCharacteristicName))
-				{
-					std::unordered_map<uint8_t, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors> colorMap;
-					colorMap[(uint8_t)difficulty._difficulty] = Abstractions::DifficultyColors(difficulty);
-					difficultyColors[difficulty._beatmapCharacteristicName] = colorMap;
-				}
+    void LocalBeatmapLevel::ctor_2(StringW hash, GlobalNamespace::BeatmapLevel* localLevel) {
+        INVOKE_CTOR();
+        INVOKE_BASE_CTOR(classof(Abstractions::MpBeatmapLevel*));
 
-				if (!difficultyColors.contains(difficulty._beatmapCharacteristicName))
-				{
-					std::unordered_map<uint8_t, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors> colorMap;
-					colorMap[(uint8_t)difficulty._difficulty] = Abstractions::DifficultyColors(difficulty);
-					difficultyColors[difficulty._beatmapCharacteristicName] = colorMap;
-				}
+        // invoke beatmaplevel ctor
+        _ctor(
+            localLevel->version,
+            localLevel->hasPrecalculatedData,
+            localLevel->levelID,
+            localLevel->songName,
+            localLevel->songSubName,
+            localLevel->songAuthorName,
+            localLevel->allMappers,
+            localLevel->allLighters,
+            localLevel->beatsPerMinute,
+            localLevel->integratedLufs,
+            localLevel->songTimeOffset,
+            localLevel->previewStartTime,
+            localLevel->previewDuration,
+            localLevel->songDuration,
+            localLevel->contentRating,
+            localLevel->previewMediaData,
+            localLevel->beatmapBasicData
+        );
 
-				contributors = std::move(extraSongData->contributors);
-			}
-		}
-		_preview = preview;
-	}
+        _localLevel = localLevel;
+        set_levelHash(static_cast<std::string>(hash));
 
-#pragma region All the pain in form of getter functions
+        auto extraSongData = ExtraSongData::FromBeatmapLevel(localLevel);
+        if (extraSongData.has_value()) {
+            DEBUG("Got extra song data for level {}", hash);
+            auto& difficulties = extraSongData->difficulties;
+            for (const auto& difficulty : difficulties) {
+                if (difficulty.additionalDifficultyData) {
+                    auto& list = requirements[difficulty.beatmapCharacteristicName][difficulty.difficulty.value__];
+                    for (const auto& req : difficulty.additionalDifficultyData->requirements)
+                        list.emplace_back(req);
+                }
 
-	StringW LocalBeatmapLevel::get_levelID() {
-		return _preview->get_levelID();
-	}
-	
-	StringW LocalBeatmapLevel::get_songName() {
-		return _preview->get_songName();
-	}
+                difficultyColors[difficulty.beatmapCharacteristicName][difficulty.difficulty.value__] =
+                    Abstractions::DifficultyColors(
+                        difficulty.colorLeft, difficulty.colorRight,
+                        difficulty.envColorLeft, difficulty.envColorRight,
+                        difficulty.envColorLeftBoost, difficulty.envColorRightBoost,
+                        difficulty.obstacleColor
+                    );
+            }
 
-	StringW LocalBeatmapLevel::get_songSubName() {
-		return _preview->get_songSubName();
-	}
-
-	StringW LocalBeatmapLevel::get_songAuthorName() {
-		return _preview->get_songAuthorName();
-	}
-
-	StringW LocalBeatmapLevel::get_levelAuthorName() {
-		return _preview->get_levelAuthorName();
-	}
-
-	float LocalBeatmapLevel::get_beatsPerMinute() {
-		return _preview->get_beatsPerMinute();
-	}
-
-	float LocalBeatmapLevel::get_songDuration() {
-		return _preview->get_songDuration();
-	}
-
-	::System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::PreviewDifficultyBeatmapSet*>* LocalBeatmapLevel::get_previewDifficultyBeatmapSets()	{
-		return _preview->get_previewDifficultyBeatmapSets();
-	}
-#pragma endregion
+            for (const auto& contributor : extraSongData->contributors)
+                contributors.emplace_back(contributor);
+        }
+        else {
+            DEBUG("Failed to get extra song data for level {}", hash);
+        }
+    }
 }

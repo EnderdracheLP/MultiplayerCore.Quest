@@ -1,209 +1,136 @@
-#include "main.hpp"
-#include "Hooks/Hooks.hpp"
-#include "ServerConfigManager.hpp"
-#include "System/Security/Cryptography/X509Certificates/X509Certificate2.hpp"
-#include "GlobalNamespace/DnsEndPoint.hpp"
+#include "Hooks/NetworkConfigHooks.hpp"
+#include "logging.hpp"
+#include "hooking.hpp"
+
 #include "GlobalNamespace/NetworkConfigSO.hpp"
+#include "GlobalNamespace/MainSystemInit.hpp"
 #include "GlobalNamespace/ClientCertificateValidator.hpp"
 #include "GlobalNamespace/UnifiedNetworkPlayerModel.hpp"
-#include "GlobalNamespace/UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType.hpp"
-#include "GlobalNamespace/MainSystemInit.hpp"
+#include "IgnoranceCore/IgnoranceClient.hpp"
+#include "System/Security/Cryptography/X509Certificates/X509Certificate2.hpp"
 
-namespace MultiplayerCore 
-{
-    MasterServerConfig currentConfig;
-    MasterServerConfig originalConfig;
+#define LOG_VALUE(identifier, value) DEBUG("Overriding NetworkConfigSO::" identifier " to '{}'", cfg->value)
 
-    event<MasterServerConfig> ServerConfigManager::MasterServerChanged;
+// File is equivalent to MultiplayerCore.Patchers.NetworkConfigPatcher from PC
 
-    // event_handler<MasterServerConfig> _masterServerConfigChangedHandler = MultiplayerCore::event_handler<MasterServerConfig>(HandleRegisterMpPacketCallbacks);
+namespace MultiplayerCore::Hooks {
+    ServerConfig NetworkConfigHooks::officialServerConfig = {"https://graph.oculus.com", "https://graph.oculus.com/beat_saber_multiplayer_status", OFFICIAL_MAX_PARTY_SIZE, "", false };
+    const ServerConfig* NetworkConfigHooks::currentServerConfig{};
+    GlobalNamespace::NetworkConfigSO* NetworkConfigHooks::networkConfig = nullptr;
+    UnorderedEventCallback<const ServerConfig*> NetworkConfigHooks::ServerChanged{};
 
+    const ServerConfig* NetworkConfigHooks::GetCurrentServer() { return currentServerConfig; }
+    const ServerConfig* NetworkConfigHooks::GetOfficialServer() { return &officialServerConfig; }
 
-    GlobalNamespace::NetworkConfigSO* networkConfig;
+    bool NetworkConfigHooks::IsOverridingAPI() { return GetCurrentServer() && GetCurrentServer() != GetOfficialServer(); }
 
-    GlobalNamespace::NetworkConfigSO* ServerConfigManager::GetNetworkConfig()
-    {
-        return networkConfig;
+    void NetworkConfigHooks::UseCustomApiServer(const std::string& graphUrl, const std::string& statusUrl, int maxPartySize, const std::string& quickPlaySetupUrl, bool disableSSL) {
+        static ServerConfig tempConfig;
+        if (graphUrl.empty() || statusUrl.empty()) {
+            DEBUG("Invalid server config, using official server");
+            UseOfficialServer();
+            return;
+        }
+
+        tempConfig = ServerConfig(graphUrl, statusUrl, maxPartySize, quickPlaySetupUrl, disableSSL);
+        currentServerConfig = &tempConfig;
+        ServerChanged.invoke(currentServerConfig);
     }
 
-    MasterServerConfig ServerConfigManager::GetMasterServerConfig()
-    {
-        return currentConfig;
-    }
+    void NetworkConfigHooks::UseServer(const ServerConfig* cfg) {
+        if (!cfg) {
+            DEBUG("Invalid server config, using official server");
+            UseOfficialServer();
+            return;
+        }
 
-    void ServerConfigManager::UseMasterServer(MasterServerConfig config) {
-        getLogger().debug("Master server set to '%s:%d'", config.masterServerHostName.c_str(), config.masterServerPort);
-        currentConfig = config;
+        currentServerConfig = cfg;
+
         if (networkConfig) {
-            networkConfig->masterServerHostName = currentConfig.masterServerHostName;
-            networkConfig->masterServerPort = currentConfig.masterServerPort;
-            networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl;
-            networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl;
-            networkConfig->maxPartySize = currentConfig.maxPartySize;
-            networkConfig->discoveryPort = currentConfig.discoveryPort;
-            networkConfig->partyPort = currentConfig.partyPort;
-            networkConfig->multiplayerPort = currentConfig.multiplayerPort;
-            networkConfig->forceGameLift = currentConfig.disableGameLift;
+            networkConfig->_graphUrl = cfg->graphUrl;
+            LOG_VALUE("graphUrl", graphUrl);
+            networkConfig->_multiplayerStatusUrl = cfg->masterServerStatusUrl;
+            LOG_VALUE("multiplayerStatusUrl", masterServerStatusUrl);
+            networkConfig->_quickPlaySetupUrl = cfg->quickPlaySetupUrl;
+            LOG_VALUE("quickPlaySetupUrl", quickPlaySetupUrl);
+
+            // only 128 ids can exist, 0 & 127 are taken as server and broadcast
+            // thus 128 - 2 = 126 absolute max player count
+            networkConfig->_maxPartySize = std::clamp(cfg->maxPartySize, 2, 126);
+            LOG_VALUE("maxPartySize", maxPartySize);
+            networkConfig->_discoveryPort = cfg->discoveryPort;
+            LOG_VALUE("discoveryPort", discoveryPort);
+            networkConfig->_partyPort = cfg->partyPort;
+            LOG_VALUE("partyPort", partyPort);
+            networkConfig->_multiplayerPort = cfg->multiplayerPort;
+            LOG_VALUE("multiplayerPort", multiplayerPort);
+            networkConfig->_forceGameLift = cfg->forceGameLift;
+            LOG_VALUE("forceGameLift", forceGameLift);
         }
-        currentConfig.disableGameLift  = true;
-        ServerConfigManager::MasterServerChanged(currentConfig);
+
+        ServerChanged.invoke(cfg);
     }
 
-    void ServerConfigManager::UseMasterServer(std::string hostName, int port, std::string statusUrl, int maxPartySize) {
-        getLogger().debug("Master server set to '%s:%d'", hostName.c_str(), port);
-        currentConfig.masterServerHostName = hostName;
-        currentConfig.masterServerPort = port;
-        currentConfig.masterServerStatusUrl = statusUrl;
-        currentConfig.maxPartySize  = maxPartySize;
-        currentConfig.quickPlaySetupUrl  = statusUrl + "/mp_override.json";
-        currentConfig.disableGameLift  = true;
-        if (networkConfig) {
-            networkConfig->masterServerHostName = currentConfig.masterServerHostName;
-            networkConfig->masterServerPort = currentConfig.masterServerPort;
-            networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl;
-            networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl;
-            networkConfig->maxPartySize = currentConfig.maxPartySize;
-            networkConfig->forceGameLift = currentConfig.disableGameLift;
+    void NetworkConfigHooks::UseOfficialServer() {
+        if (!networkConfig) {
+            ERROR("NetworkConfigSO is null, official server not set");
+            return;
         }
-        ServerConfigManager::MasterServerChanged(currentConfig);
+        UseServer(&officialServerConfig);
+    }
+}
+
+using namespace MultiplayerCore::Hooks;
+
+MAKE_AUTO_HOOK_MATCH(MainSystemInit_Init, &::GlobalNamespace::MainSystemInit::Init, void, GlobalNamespace::MainSystemInit* self, ::GlobalNamespace::SettingsApplicatorSO* settingsApplicator) {
+    MainSystemInit_Init(self, settingsApplicator);
+    // construct original config from base game values
+    auto& officialConfig = NetworkConfigHooks::officialServerConfig;
+    officialConfig.graphUrl  = static_cast<std::string>(self->_networkConfig->_graphUrl);
+    officialConfig.masterServerStatusUrl  = static_cast<std::string>(self->_networkConfig->_multiplayerStatusUrl);
+    officialConfig.quickPlaySetupUrl = static_cast<std::string>(self->_networkConfig->_quickPlaySetupUrl);
+
+    officialConfig.maxPartySize = self->_networkConfig->_maxPartySize;
+    officialConfig.discoveryPort = self->_networkConfig->_discoveryPort;
+    officialConfig.partyPort = self->_networkConfig->_partyPort;
+    officialConfig.multiplayerPort = self->_networkConfig->_multiplayerPort;
+    officialConfig.forceGameLift = self->_networkConfig->_forceGameLift;
+
+    NetworkConfigHooks::networkConfig = self->_networkConfig;
+
+    NetworkConfigHooks::UseServer(NetworkConfigHooks::currentServerConfig);
+}
+
+MAKE_AUTO_HOOK_MATCH(UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType, &GlobalNamespace::UnifiedNetworkPlayerModel::SetActiveNetworkPlayerModelType, void, GlobalNamespace::UnifiedNetworkPlayerModel* self, GlobalNamespace::UnifiedNetworkPlayerModel::ActiveNetworkPlayerModelType activeNetworkPlayerModelType) {
+    if (NetworkConfigHooks::IsOverridingAPI()) {
+        DEBUG("Disabling MasterServer, Setting to GameLift");
+        UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, GlobalNamespace::UnifiedNetworkPlayerModel::ActiveNetworkPlayerModelType::GameLift);
+        return;
     }
 
-    void ServerConfigManager::UseMasterServer(GlobalNamespace::DnsEndPoint* endPoint, std::string statusUrl, int maxPartySize, std::string quickPlaySetupUrl) {
-        getLogger().debug("Master server set to '%s'", static_cast<std::string>(endPoint->ToString()).c_str());
-        currentConfig.masterServerHostName  = static_cast<std::string>(endPoint->hostName);
-        currentConfig.masterServerPort  = endPoint->port;
-        currentConfig.masterServerStatusUrl  = statusUrl;
-        currentConfig.maxPartySize  = maxPartySize;
-        currentConfig.quickPlaySetupUrl  = quickPlaySetupUrl.empty() ? statusUrl + "/mp_override.json" : quickPlaySetupUrl;
-        currentConfig.disableGameLift  = true;
-        if (networkConfig) {
-            networkConfig->masterServerHostName = currentConfig.masterServerHostName;
-            networkConfig->masterServerPort = currentConfig.masterServerPort;
-            networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl;
-            networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl;
-            networkConfig->maxPartySize = currentConfig.maxPartySize;
-            networkConfig->forceGameLift = currentConfig.disableGameLift;
-        }
-        ServerConfigManager::MasterServerChanged(currentConfig);
+    DEBUG("Using Default");
+    UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, activeNetworkPlayerModelType);
+}
+
+// possibly does not call orig
+MAKE_AUTO_HOOK_ORIG_MATCH(ClientCertificateValidator_ValidateCertificateChainInternal, &GlobalNamespace::ClientCertificateValidator::ValidateCertificateChainInternal, void, GlobalNamespace::ClientCertificateValidator* self, GlobalNamespace::DnsEndPoint* endPoint, System::Security::Cryptography::X509Certificates::X509Certificate2* certificate, ::ArrayW<::ArrayW<uint8_t>> certificateChain) {
+    if (NetworkConfigHooks::IsOverridingAPI()) {
+        DEBUG("Ignoring certificate validation");
+        return;
     }
 
-    void ServerConfigManager::UseOfficalServer() {
-        getLogger().debug("Master server set to 'official'");
-        currentConfig.masterServerHostName  = "";
-        currentConfig.masterServerPort  = 0;
-        currentConfig.masterServerStatusUrl  = "";
-        currentConfig.maxPartySize  = 0;
-        currentConfig.quickPlaySetupUrl  = "";
-        currentConfig.disableGameLift  = false;
-        if (networkConfig) {
-            networkConfig->masterServerHostName = originalConfig.masterServerHostName;
-            networkConfig->masterServerPort = originalConfig.masterServerPort;
-            networkConfig->multiplayerStatusUrl = originalConfig.masterServerStatusUrl;
-            networkConfig->quickPlaySetupUrl = originalConfig.quickPlaySetupUrl;
-            networkConfig->maxPartySize = originalConfig.maxPartySize;
-            networkConfig->forceGameLift = originalConfig.disableGameLift;
-            networkConfig->discoveryPort = originalConfig.discoveryPort;
-            networkConfig->partyPort = originalConfig.partyPort;
-            networkConfig->multiplayerPort = originalConfig.multiplayerPort;
-        }
-        ServerConfigManager::MasterServerChanged(originalConfig);
+    DEBUG("No EndPoint set, using default");
+    ClientCertificateValidator_ValidateCertificateChainInternal(self, endPoint, certificate, certificateChain);
+}
+
+MAKE_AUTO_HOOK_MATCH(IgnoranceClient_Start, &IgnoranceCore::IgnoranceClient::Start, void, IgnoranceCore::IgnoranceClient* self) {
+    if (NetworkConfigHooks::IsOverridingAPI()) {
+        auto cfg = NetworkConfigHooks::GetCurrentServer();
+        DEBUG("Changing IgnoranceClient ssl usage");
+
+        self->UseSsl = !cfg->disableSSL;
+        self->ValidateCertificate = !cfg->disableSSL;
     }
 
-    MAKE_HOOK_MATCH(MainSystemInit_Init, &GlobalNamespace::MainSystemInit::Init, void, GlobalNamespace::MainSystemInit* self) {
-        MainSystemInit_Init(self);
-        getLogger().info("Original status URL: %s", static_cast<std::string>(self->networkConfig->get_multiplayerStatusUrl()).c_str());
-        getLogger().info("Original QuickPlaySetup URL: %s", static_cast<std::string>(self->networkConfig->quickPlaySetupUrl).c_str());
-        // getLogger().info("ServiceEnvironment: %d", self->networkConfig->get_serviceEnvironment().value);
-
-        originalConfig.masterServerHostName  = static_cast<std::string>(self->networkConfig->masterServerHostName);
-        originalConfig.masterServerPort  = self->networkConfig->masterServerPort;
-        originalConfig.masterServerStatusUrl  = static_cast<std::string>(self->networkConfig->multiplayerStatusUrl);
-        originalConfig.quickPlaySetupUrl = static_cast<std::string>(self->networkConfig->quickPlaySetupUrl);
-        originalConfig.maxPartySize = self->networkConfig->maxPartySize;
-        originalConfig.disableGameLift = self->networkConfig->forceGameLift;
-        originalConfig.discoveryPort = self->networkConfig->discoveryPort;
-        originalConfig.partyPort = self->networkConfig->partyPort;
-        originalConfig.multiplayerPort = self->networkConfig->multiplayerPort;
-        networkConfig = reinterpret_cast<GlobalNamespace::NetworkConfigSO*>(self->networkConfig);
-
-        if (!currentConfig.masterServerHostName .empty())
-        {
-            getLogger().debug("MainSystemInit_Init overriding MasterServerHostName to '%s'", currentConfig.masterServerHostName .c_str());
-            self->networkConfig->masterServerHostName = currentConfig.masterServerHostName ;
-        }
-
-        if (currentConfig.masterServerPort  > 0)
-        {
-            getLogger().debug("MainSystemInit_Init overriding MasterServerPort to '%d'", currentConfig.masterServerPort );
-            self->networkConfig->masterServerPort = currentConfig.masterServerPort ;
-        }
-
-        if (!currentConfig.masterServerStatusUrl .empty()) {
-            getLogger().debug("MainSystemInit_Init overriding MasterServerStatusUrl to '%s'", currentConfig.masterServerStatusUrl .c_str());
-            self->networkConfig->multiplayerStatusUrl = currentConfig.masterServerStatusUrl ;
-        }
-
-
-        if (!currentConfig.quickPlaySetupUrl .empty()) {
-            getLogger().debug("MainSystemInit_Init overriding QuickPlaySetupUrl to '%s'", currentConfig.quickPlaySetupUrl .c_str());
-            self->networkConfig->quickPlaySetupUrl = currentConfig.quickPlaySetupUrl ;
-        }
-
-        if (currentConfig.maxPartySize  > 0) {
-            getLogger().debug("MainSystemInit_Init overriding MaxPartySize to '%d'", currentConfig.maxPartySize );
-            self->networkConfig->maxPartySize = currentConfig.maxPartySize ;
-        }
-
-        if (currentConfig.disableGameLift ) {
-            getLogger().debug("MainSystemInit_Init overriding forceGameLift to '%s'", currentConfig.disableGameLift  ? "false" : "true");
-            self->networkConfig->forceGameLift = !currentConfig.disableGameLift ;
-        }
-
-        if (currentConfig.discoveryPort  > 0) {
-            getLogger().debug("MainSystemInit_Init overriding discoveryPort to '%d'", currentConfig.discoveryPort );
-            self->networkConfig->discoveryPort = currentConfig.discoveryPort ;
-        }
-
-        if (currentConfig.partyPort  > 0) {
-            getLogger().debug("MainSystemInit_Init overriding partyPort to '%d'", currentConfig.partyPort );
-            self->networkConfig->partyPort = currentConfig.partyPort ;
-        }
-
-        if (currentConfig.multiplayerPort  > 0) {
-            getLogger().debug("MainSystemInit_Init overriding multiplayerPort to '%d'", currentConfig.multiplayerPort );
-            self->networkConfig->multiplayerPort = currentConfig.multiplayerPort ;
-        }
-        
-        getLogger().debug("MainSystemInit_Init finished");
-    }
-
-    MAKE_HOOK_MATCH(UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType, &GlobalNamespace::UnifiedNetworkPlayerModel::SetActiveNetworkPlayerModelType, void, GlobalNamespace::UnifiedNetworkPlayerModel* self, GlobalNamespace::UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType activeNetworkPlayerModelType)
-    {
-        if (currentConfig.disableGameLift )
-        {
-            getLogger().debug("UnifiedNetworkPlayerModel::SetActiveNetworkPlayerModelType: Disabling GameLift, Setting to MasterServer");
-            return UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, GlobalNamespace::UnifiedNetworkPlayerModel_ActiveNetworkPlayerModelType::MasterServer);
-        }
-        getLogger().debug("UnifiedNetworkPlayerModel::SetActiveNetworkPlayerModelType: Using default");
-        return UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType(self, activeNetworkPlayerModelType);
-    }
-
-    MAKE_HOOK_MATCH(ClientCertificateValidator_ValidateCertificateChainInternal, &GlobalNamespace::ClientCertificateValidator::ValidateCertificateChainInternal, void, GlobalNamespace::ClientCertificateValidator* self, GlobalNamespace::DnsEndPoint* endPoint, System::Security::Cryptography::X509Certificates::X509Certificate2* certificate, ::ArrayW<::ArrayW<uint8_t>> certificateChain)
-    {
-        if (currentConfig.masterServerHostName .empty() || currentConfig.masterServerPort  == 0)
-        {
-            getLogger().debug("ClientCertificateValidator::ValidateCertificateChainInternal: No EndPoint set, using default");
-            return ClientCertificateValidator_ValidateCertificateChainInternal(self, endPoint, certificate, certificateChain);
-        }
-        getLogger().debug("ClientCertificateValidator::ValidateCertificateChainInternal: Ignoring certificate validation");
-    }
-
-    void Hooks::NetworkConfigHooks()
-    {
-        getLogger().debug("Installing NetworkConfig hooks...");
-        INSTALL_HOOK(getLogger(), MainSystemInit_Init);
-        INSTALL_HOOK(getLogger(), UnifiedNetworkPlayerModel_SetActiveNetworkPlayerModelType);
-        INSTALL_HOOK(getLogger(), ClientCertificateValidator_ValidateCertificateChainInternal);
-        getLogger().debug("Installed NetworkConfig hooks!");
-    }
+    IgnoranceClient_Start(self);
 }

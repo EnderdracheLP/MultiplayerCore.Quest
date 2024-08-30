@@ -1,164 +1,180 @@
-#include "main.hpp"
 #include "Utils/ExtraSongData.hpp"
+#include "Utils/EnumUtils.hpp"
+#include "logging.hpp"
 
+#define GET_STR(src, id) \
+    auto id##Itr = src.FindMember("_" #id); \
+    if (id##Itr != src.MemberEnd() && id##Itr->value.IsString()) \
+        id = std::string(id##Itr->value.GetString(), id##Itr->value.GetStringLength());
+
+#define GET_COL(col, identifier) \
+    auto col##Itr = cD.FindMember(identifier);\
+    if (col##Itr != cD.MemberEnd() && col##Itr->value.IsObject()) \
+        col = MapColor(col##Itr->value.GetObject())
+
+#define GET_VEC(vec, identifier) \
+    auto vec##Itr = cD.FindMember(identifier);\
+    if (vec##Itr != cD.MemberEnd() && vec##Itr->value.IsArray() && !vec##Itr->value.Empty()) {\
+        for (const auto& val : vec##Itr->value.GetArray()) {\
+            if (val.IsString()) {\
+                vec.emplace_back(val.GetString(), val.GetStringLength());\
+            }\
+        }\
+    }
 namespace MultiplayerCore::Utils {
-    ExtraSongData::ExtraSongData(rapidjson::Document& document)
-    {
-        if (!document.HasParseError() && document.IsObject()) {
-            auto cdItr = document.FindMember("_customData");
-            if (cdItr != document.MemberEnd() && cdItr->value.IsObject()) {
-                auto contributorsItr = cdItr->value.FindMember("contributors");
-                if (contributorsItr != cdItr->value.MemberEnd() && contributorsItr->value.IsArray() && !contributorsItr->value.Empty()) {
-                    for (auto& c : contributorsItr->value.GetArray()) {
-                        auto nameItr = c.FindMember("_name");
-                        auto roleItr = c.FindMember("_role");
-                        auto iconItr = c.FindMember("_iconPath");
-                        if (nameItr != c.MemberEnd() && nameItr->value.IsString() && 
-                        roleItr != c.MemberEnd() && roleItr->value.IsString()) {
-                            contributors.emplace_back(nameItr->value.GetString(), roleItr->value.GetString(), 
-                            (iconItr != c.MemberEnd() && iconItr->value.IsString()) ? iconItr->value.GetString() : "");
+    ExtraSongData::ExtraSongData(const rapidjson::Document& doc) {
+        if (doc.HasParseError() || !doc.IsObject()) return;
+
+        auto cdItr = doc.FindMember("_customData");
+        if (cdItr != doc.MemberEnd() && cdItr->value.IsObject()) {
+            auto contributorsItr = cdItr->value.FindMember("contributors");
+            if (contributorsItr != cdItr->value.MemberEnd() && contributorsItr->value.IsArray() && !contributorsItr->value.Empty()) {
+                for (const auto& c : contributorsItr->value.GetArray()) {
+                    auto mEnd = c.MemberEnd();
+                    auto nameItr = c.FindMember("_name");
+                    auto roleItr = c.FindMember("_role");
+                    auto iconItr = c.FindMember("_iconPath");
+
+                    if (nameItr != mEnd && nameItr->value.IsString() &&
+                        roleItr != mEnd && roleItr->value.IsString()) {
+                            contributors.emplace_back(
+                                std::string(nameItr->value.GetString(), nameItr->value.GetStringLength()),
+                                std::string(roleItr->value.GetString(), roleItr->value.GetStringLength()),
+                                (iconItr != mEnd && iconItr->value.IsString()) ? std::string(iconItr->value.GetString(), iconItr->value.GetStringLength()) : ""
+                            );
                         }
-                    }
-                }
-                auto customEnvironmentItr = cdItr->value.FindMember("_customEnvironmentName");
-                if (customEnvironmentItr != cdItr->value.MemberEnd() && customEnvironmentItr->value.IsString()) {
-                    _customEnvironmentName = customEnvironmentItr->value.GetString();
-                }
-                auto customEnvironmentHashItr = cdItr->value.FindMember("_customEnvironmentHash");
-                if (customEnvironmentHashItr != cdItr->value.MemberEnd() && customEnvironmentHashItr->value.IsString()) {
-                    _customEnvironmentHash = customEnvironmentHashItr->value.GetString();
-                }
-                auto defaultCharacteristicItr = cdItr->value.FindMember("_defaultCharacteristic");
-                if (defaultCharacteristicItr != cdItr->value.MemberEnd() && defaultCharacteristicItr->value.IsString()) {
-                    _defaultCharacteristicName = defaultCharacteristicItr->value.GetString();
                 }
             }
+            GET_STR(cdItr->value, customEnvironmentName);
+            GET_STR(cdItr->value, customEnvironmentHash);
+            GET_STR(cdItr->value, defaultCharacteristicName);
+        }
 
-            std::vector<const DifficultyData> diffData;
-            auto difficultyBeatmapSetsItr = document.FindMember("_difficultyBeatmapSets");
-            if (difficultyBeatmapSetsItr != document.MemberEnd() && difficultyBeatmapSetsItr->value.IsArray() && !difficultyBeatmapSetsItr->value.Empty()) {
-                for (auto& dBS : difficultyBeatmapSetsItr->value.GetArray()) 
-                {
-                    rapidjson::Value::ConstMemberIterator bCN = dBS.FindMember("_beatmapCharacteristicName");
-                    std::string_view beatmapCharacteristicName = bCN != dBS.MemberEnd() && bCN->value.IsString() ? bCN->value.GetString() : "";
-                    auto dbItr = dBS.FindMember("_difficultyBeatmaps");
-                    if (dbItr != dBS.MemberEnd() && dbItr->value.IsArray() && !dbItr->value.Empty()) {
-                        for (auto& dB : dbItr->value.GetArray()) {
-                            std::vector<std::string> diffRequirements;
-                            std::vector<std::string> diffSuggestions;
-                            std::vector<std::string> diffWarnings;
-                            std::vector<std::string> diffInfo;
-                            std::string diffLabel;
-                            MapColor diffLeft;
-                            MapColor diffRight;
-                            MapColor diffEnvLeft;
-                            MapColor diffEnvRight;
-                            MapColor diffEnvLeftBoost;
-                            MapColor diffEnvRightBoost;
-                            MapColor diffObstacle;
-                            auto diffItr = dB.FindMember("_difficulty");
-                            GlobalNamespace::BeatmapDifficulty diffDifficulty = GlobalNamespace::BeatmapDifficulty::Normal;
-                            if (diffItr != dB.MemberEnd() && diffItr->value.IsString()) {
-                                auto diffEnumName = diffItr->value.GetString();
-                                diffDifficulty = EnumUtils::GetEnumValue<GlobalNamespace::BeatmapDifficulty>(diffEnumName);
+        auto dBSItr = doc.FindMember("_difficultyBeatmapSets");
+        if (dBSItr != doc.MemberEnd() && dBSItr->value.IsArray() && !dBSItr->value.Empty()) {
+            difficulties.reserve(dBSItr->value.Size());
+            for (const auto& set : dBSItr->value.GetArray()) {
+                auto bCNItr = set.FindMember("_beatmapCharacteristicName");
+
+                std::string_view beatmapCharacteristicName (
+                    (bCNItr != set.MemberEnd() && bCNItr->value.IsString()) ?
+                    std::string_view(bCNItr->value.GetString(), bCNItr->value.GetStringLength()) :
+                    std::string_view("", 0)
+                );
+
+                auto dBItr = set.FindMember("_difficultyBeatmaps");
+                if (dBItr != set.MemberEnd() && dBItr->value.IsArray() && !dBItr->value.Empty()) {
+
+                    for (const auto& dB : dBItr->value.GetArray()) {
+                        std::vector<std::string> diffRequirements, diffSuggestions, diffWarnings, diffInfo;
+                        std::string diffLabel;
+                        MapColor diffLeft, diffRight, diffEnvLeft, diffEnvRight, diffEnvLeftBoost, diffEnvRightBoost, diffObstacle;
+                        GlobalNamespace::BeatmapDifficulty diffDifficulty = GlobalNamespace::BeatmapDifficulty::Normal;
+                        auto diffItr = dB.FindMember("_difficulty");
+                        if (diffItr != dB.MemberEnd() && diffItr->value.IsString()) {
+                            std::string diffEnumName(diffItr->value.GetString(), diffItr->value.GetStringLength());
+                            diffDifficulty = EnumUtils::GetEnumValue<GlobalNamespace::BeatmapDifficulty>(diffEnumName);
+                        }
+
+                        auto cDItr = dB.FindMember("_customData");
+                        if (cDItr != dB.MemberEnd() && cDItr->value.IsObject()) {
+                            const auto& cD = cDItr->value;
+                            auto dLItr = cD.FindMember("_difficultyLabel");
+                            if (dLItr != cD.MemberEnd() && dLItr->value.IsString()) {
+                                diffLabel = std::string(dLItr->value.GetString(), dLItr->value.GetStringLength());
                             }
-                            // GlobalNamespace::BeatmapDifficulty diffDifficulty = (diffItr != dB.MemberEnd() && diffItr->value.IsInt()) ? diffItr->value.GetInt() : GlobalNamespace::BeatmapDifficulty::Normal;
 
-                            auto customDataItr = dB.FindMember("_customData");
-                            if (customDataItr != dB.MemberEnd() && customDataItr->value.IsObject()) {
-                                
-                                auto difficultyLabelItr = customDataItr->value.FindMember("_difficultyLabel");
-                                if (difficultyLabelItr != customDataItr->value.MemberEnd() && difficultyLabelItr->value.IsString()) {
-                                    diffLabel = difficultyLabelItr->value.GetString();
-                                }
+                            GET_COL(diffLeft, "_colorLeft");
+                            GET_COL(diffRight, "_colorRight");
+                            GET_COL(diffEnvLeft, "_colorEnvLeft");
+                            GET_COL(diffEnvRight, "_colorEnvRight");
+                            GET_COL(diffEnvLeftBoost, "_colorEnvLeftBoost");
+                            GET_COL(diffEnvRightBoost, "_colorEnvRightBoost");
+                            GET_COL(diffObstacle, "_colorObstacle");
 
-                                auto colorLeftItr = customDataItr->value.FindMember("_colorLeft");
-                                if (colorLeftItr != customDataItr->value.MemberEnd() && colorLeftItr->value.IsObject()) {
-                                    diffLeft = MapColor(colorLeftItr->value.GetObject());
-                                }
+                            GET_VEC(diffRequirements, "_requirements");
+                            GET_VEC(diffSuggestions, "_suggestions");
+                            GET_VEC(diffWarnings, "_warnings");
+                            GET_VEC(diffInfo, "_information");
 
-                                auto colorRightItr = customDataItr->value.FindMember("_colorRight");
-                                if (colorRightItr != customDataItr->value.MemberEnd() && colorRightItr->value.IsObject()) {
-                                    diffRight = MapColor(colorRightItr->value.GetObject());
-                                }
+                            RequirementData diffReqData(
+                                diffRequirements,
+                                diffSuggestions,
+                                diffWarnings,
+                                diffInfo
+                            );
 
-                                auto colorEnvLeftItr = customDataItr->value.FindMember("_colorEnvLeft");
-                                if (colorEnvLeftItr != customDataItr->value.MemberEnd() && colorEnvLeftItr->value.IsObject()) {
-                                    diffEnvLeft = MapColor(colorEnvLeftItr->value.GetObject());
-                                }
-
-                                auto colorEnvRightItr = customDataItr->value.FindMember("_colorEnvRight");
-                                if (colorEnvRightItr != customDataItr->value.MemberEnd() && colorEnvRightItr->value.IsObject()) {
-                                    diffEnvRight = MapColor(colorEnvRightItr->value.GetObject());
-                                }
-
-                                auto colorEnvLeftBoostItr = customDataItr->value.FindMember("_colorEnvLeftBoost");
-                                if (colorEnvLeftBoostItr != customDataItr->value.MemberEnd() && colorEnvLeftBoostItr->value.IsObject()) {
-                                    diffEnvLeftBoost = MapColor(colorEnvLeftBoostItr->value.GetObject());
-                                }
-
-                                auto colorEnvRightBoostItr = customDataItr->value.FindMember("_colorEnvRightBoost");
-                                if (colorEnvRightBoostItr != customDataItr->value.MemberEnd() && colorEnvRightBoostItr->value.IsObject()) {
-                                    diffEnvRightBoost = MapColor(colorEnvRightBoostItr->value.GetObject());
-                                }
-
-                                auto colorObstacleItr = customDataItr->value.FindMember("_colorObstacle");
-                                if (colorObstacleItr != customDataItr->value.MemberEnd() && colorObstacleItr->value.IsObject()) {
-                                    diffObstacle = MapColor(colorObstacleItr->value.GetObject());
-                                }
-
-                                auto warningsItr = customDataItr->value.FindMember("_warnings");
-                                if (warningsItr != customDataItr->value.MemberEnd() && warningsItr->value.IsArray() && !warningsItr->value.Empty()) {
-                                    for (auto& w : warningsItr->value.GetArray()) {
-                                        if (w.IsString()) {
-                                            diffWarnings.emplace_back(w.GetString());
-                                        }
-                                    }
-                                }
-
-                                auto informationItr = customDataItr->value.FindMember("_information");
-                                if (informationItr != customDataItr->value.MemberEnd() && informationItr->value.IsArray() && !informationItr->value.Empty()) {
-                                    for (auto& info : informationItr->value.GetArray()) {
-                                        if (info.IsString()) {
-                                            diffInfo.emplace_back(info.GetString());
-                                        }
-                                    }
-                                }
-
-                                auto suggestionsItr = customDataItr->value.FindMember("_suggestions");
-                                if (suggestionsItr != customDataItr->value.MemberEnd() && suggestionsItr->value.IsArray() && !suggestionsItr->value.Empty()) {
-                                    for (auto& s : suggestionsItr->value.GetArray()) {
-                                        if (s.IsString()) {
-                                            diffSuggestions.emplace_back(s.GetString());
-                                        }
-                                    }
-                                }
-                                
-                                auto requirementItr = customDataItr->value.FindMember("_requirements");
-                                if (requirementItr != customDataItr->value.MemberEnd() && requirementItr->value.IsArray() && !requirementItr->value.Empty()) {
-                                    for (auto& req : requirementItr->value.GetArray()) {
-                                        if (req.IsString()) {
-                                            diffRequirements.emplace_back(req.GetString());
-                                        }
-                                    }
-                                }
-
-                                RequirementData difReqData = { diffRequirements, diffSuggestions, diffWarnings, diffInfo };
-
-                                diffData.push_back({ beatmapCharacteristicName, 
-                                    diffDifficulty, diffLabel, 
-                                    difReqData, 
-                                    diffLeft, diffRight, 
-                                    diffEnvLeft, diffEnvRight, 
-                                    diffEnvLeftBoost, diffEnvRightBoost, 
-                                    diffObstacle 
-                                });
-                            }
+                            difficulties.emplace_back(
+                                beatmapCharacteristicName,
+                                diffDifficulty,
+                                diffLabel,
+                                diffReqData,
+                                diffLeft,
+                                diffRight,
+                                diffEnvLeft,
+                                diffEnvRight,
+                                diffEnvLeftBoost,
+                                diffEnvRightBoost,
+                                diffObstacle
+                            );
                         }
                     }
                 }
             }
-            _difficulties = std::move(diffData);
+        }
+    }
+
+    ExtraSongData::ExtraSongData(const SongCore::CustomJSONData::CustomSaveDataInfo::BasicCustomLevelDetails&levelDetails) {
+        for (const auto& contributor : levelDetails.contributors) {
+            contributors.emplace_back(
+                contributor.name,
+                contributor.role,
+                contributor.iconPath
+            );
+        }
+
+        for (const auto& [characteristic, difficultyBeatmaps] : levelDetails.characteristicNameToBeatmapDetailsSet) {
+            for (const auto& [difficulty, difficultyBeatmap] : difficultyBeatmaps.difficultyToDifficultyBeatmapDetails) {
+
+                auto colorLeft = MapColor();
+                auto colorRight = MapColor();
+                auto envColorLeft = MapColor();
+                auto envColorRight = MapColor();
+                auto envColorLeftBoost = MapColor();
+                auto envColorRightBoost = MapColor();
+                auto obstacleColor = MapColor();
+
+                if (difficultyBeatmap.customColors.has_value()) {
+                    auto& customColors = difficultyBeatmap.customColors.value();
+
+                    if (customColors.colorLeft.has_value()) colorLeft = customColors.colorLeft.value();
+                    if (customColors.colorRight.has_value()) colorRight = customColors.colorRight.value();
+                    if (customColors.envColorLeft.has_value()) envColorLeft = customColors.envColorLeft.value();
+                    if (customColors.envColorRight.has_value()) envColorRight = customColors.envColorRight.value();
+                    if (customColors.envColorLeftBoost.has_value()) envColorLeftBoost = customColors.envColorLeftBoost.value();
+                    if (customColors.envColorRightBoost.has_value()) envColorRightBoost = customColors.envColorRightBoost.value();
+                    if (customColors.obstacleColor.has_value()) obstacleColor = customColors.obstacleColor.value();
+                }
+
+                this->difficulties.emplace_back(
+                    characteristic,
+                    GlobalNamespace::BeatmapDifficulty((int)difficulty),
+                    difficultyBeatmap.customDiffLabel,
+                    RequirementData{
+                        difficultyBeatmap.requirements,
+                        difficultyBeatmap.suggestions,
+                        difficultyBeatmap.warnings,
+                        difficultyBeatmap.information
+                    },
+                    colorLeft,
+                    colorRight,
+                    envColorLeft,
+                    envColorRight,
+                    envColorLeftBoost,
+                    envColorRightBoost,
+                    obstacleColor
+                );
+            }
         }
     }
 }

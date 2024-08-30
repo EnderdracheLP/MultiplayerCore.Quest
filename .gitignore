@@ -50,7 +50,6 @@ out/
 *.zip
 extern/
 Android.mk.backup
-qpm.shared.json
 
 log_timestamp
 
@@ -65,3 +64,5 @@ ndkpath.txt
 *.log
 .vscode/launch.json.bak
 mod.json
+tombstone_*
+.cache
