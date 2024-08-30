@@ -1,5 +1,4 @@
 #include "Objects/MpPlayersDataModel.hpp"
-#include "Beatmaps/Abstractions/MpBeatmapLevel.hpp"
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 #include "logging.hpp"
 #include "Utilities.hpp"
@@ -10,9 +9,6 @@
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 #include "GlobalNamespace/LobbyPlayerData.hpp"
 #include "GlobalNamespace/IMultiplayerSessionManager.hpp"
-#include "GlobalNamespace/BeatmapLevelsModel.hpp"
-
-#include "bsml/shared/BSML/MainThreadScheduler.hpp"
 
 DEFINE_TYPE(MultiplayerCore::Objects, MpPlayersDataModel);
 
