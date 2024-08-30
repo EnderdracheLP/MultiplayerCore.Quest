@@ -8,7 +8,6 @@
 #include "Patchers/ModeSelectionPatcher.hpp"
 #include "Patchers/PlayerCountPatcher.hpp"
 #include "Repositories/MpStatusRepository.hpp"
-#include "NodePoseSyncState/MpNodePoseSyncStateManager.hpp"
 
 #include "Zenject/DiContainer.hpp"
 #include "Zenject/FromBinderNonGeneric.hpp"
@@ -22,7 +21,6 @@ using namespace MultiplayerCore::Objects;
 using namespace MultiplayerCore::Patchers;
 using namespace MultiplayerCore::Beatmaps::Providers;
 using namespace MultiplayerCore::Repositories;
-using namespace MultiplayerCore::NodePoseSyncState;
 
 namespace MultiplayerCore::Installers {
     void MpAppInstaller::InstallBindings() {
@@ -32,8 +30,7 @@ namespace MultiplayerCore::Installers {
 
         // player stuff
         container->BindInterfacesAndSelfTo<MpPlayerManager*>()->AsSingle();
-        container->BindInterfacesAndSelfTo<MpNodePoseSyncStateManager*>()->AsSingle();
-        
+
         // beatmap stuff
         container->Bind<MpLevelDownloader*>()->ToSelf()->AsSingle();
         container->Bind<MpBeatmapLevelProvider*>()->ToSelf()->AsSingle();
