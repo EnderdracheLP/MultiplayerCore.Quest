@@ -8,7 +8,7 @@
 #include "Patchers/ModeSelectionPatcher.hpp"
 #include "Patchers/PlayerCountPatcher.hpp"
 #include "Repositories/MpStatusRepository.hpp"
-#include "NodePoseSyncState/MpNodePoseSyncStateManager.hpp
+#include "NodePoseSyncState/MpNodePoseSyncStateManager.hpp"
 
 #include "Zenject/DiContainer.hpp"
 #include "Zenject/FromBinderNonGeneric.hpp"
