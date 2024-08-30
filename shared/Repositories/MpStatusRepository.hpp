@@ -1,7 +1,7 @@
 #pragma once
 #include "custom-types/shared/macros.hpp"
 
-#include "Models/MpStatusData.hpp"
+#include "../Models/MpStatusData.hpp"
 
 #include "System/Collections/Generic/Dictionary_2.hpp"
 
