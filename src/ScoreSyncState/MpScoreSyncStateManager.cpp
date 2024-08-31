@@ -26,11 +26,23 @@ namespace MultiplayerCore::ScoreSyncState {
 
     void MpScoreSyncStateManager::HandleScoreSyncUpdateReceived(MpScoreSyncStatePacket* data, GlobalNamespace::IConnectedPlayer* player) {
         if (player->get_isConnectionOwner()) {
+            DEBUG("Updating score sync frequency to following values: delta: {}ms, full: {}ms", data->deltaUpdateFrequencyMs, data->fullStateUpdateFrequencyMs);
+            bool shouldForceUpdate = deltaUpdateFrequencyMs != data->deltaUpdateFrequencyMs || fullStateUpdateFrequencyMs != data->fullStateUpdateFrequencyMs;
             deltaUpdateFrequencyMs = data->deltaUpdateFrequencyMs;
             fullStateUpdateFrequencyMs= data->fullStateUpdateFrequencyMs;
+            if (shouldForceUpdate) {
+                DEBUG("Forcing new state buffer update");
+                _localState = nullptr;
+            }
         }
     }
 
-    long MpScoreSyncStateManager::get_deltaUpdateFrequencyMs() { return deltaUpdateFrequencyMs; }
-    long MpScoreSyncStateManager::get_fullStateUpdateFrequencyMs() { return fullStateUpdateFrequencyMs; }
+    long MpScoreSyncStateManager::get_deltaUpdateFrequencyMs() { 
+        DEBUG("Returning delta update frequency: {}ms", deltaUpdateFrequencyMs);
+        return deltaUpdateFrequencyMs; 
+    }
+    long MpScoreSyncStateManager::get_fullStateUpdateFrequencyMs() { 
+        DEBUG("Returning full state update frequency: {}ms", fullStateUpdateFrequencyMs);
+        return fullStateUpdateFrequencyMs; 
+    }
 }
