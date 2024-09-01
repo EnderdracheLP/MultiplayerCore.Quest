@@ -15,7 +15,12 @@ namespace MultiplayerCore::Networking {
     }
 
     void MpPacketSerializer::Dispose() {
-        _sessionManager->UnregisterSerializer(GlobalNamespace::MultiplayerSessionManager::MessageType(ID), this->i_INetworkPacketSubSerializer_1_IConnectedPlayer());
+        try {
+            _sessionManager->UnregisterSerializer(GlobalNamespace::MultiplayerSessionManager::MessageType(ID), this->i_INetworkPacketSubSerializer_1_IConnectedPlayer());
+        }
+        catch (const std::exception& e) {
+            ERROR("Failed to unregister serializer: {}", e.what());
+        }
     }
 
     void MpPacketSerializer::Serialize(LiteNetLib::Utils::NetDataWriter* writer, LiteNetLib::Utils::INetSerializable* packet) {
