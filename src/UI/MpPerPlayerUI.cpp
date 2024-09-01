@@ -182,11 +182,12 @@ namespace MultiplayerCore::UI {
         auto locposition = _lobbyViewController->_startGameReadyButton->gameObject->transform->localPosition;
         ppth->gameObject->transform->localPosition = locposition;
 
-        DEBUG("Enabling PP Difficulties: {} PP Modifiers: {}", _statusRepository->GetLastStatusData()->get_SupportsPPDifficulties(), _statusRepository->GetLastStatusData()->get_SupportsPPModifiers());
+        DEBUG("Enabling PP Difficulties: {} PP Modifiers: {}", _statusRepository->GetLastStatusData() ? _statusRepository->GetLastStatusData()->get_SupportsPPDifficulties() : false, _statusRepository->GetLastStatusData() ? _statusRepository->GetLastStatusData()->get_SupportsPPModifiers() : false);
 
-        ppth->gameObject->SetActive(Hooks::NetworkConfigHooks::IsOverridingAPI() && (_statusRepository->GetLastStatusData()->get_SupportsPPDifficulties() || _statusRepository->GetLastStatusData()->get_SupportsPPModifiers()));
-        ppdt->gameObject->SetActive(_statusRepository->GetLastStatusData()->get_SupportsPPDifficulties());
-        ppmt->gameObject->SetActive(_statusRepository->GetLastStatusData()->get_SupportsPPModifiers());
+        ppth->gameObject->SetActive(Hooks::NetworkConfigHooks::IsOverridingAPI() && _statusRepository->GetLastStatusData() && (_statusRepository->GetLastStatusData()->get_SupportsPPDifficulties() || _statusRepository->GetLastStatusData()->get_SupportsPPModifiers()));
+        ppdt->gameObject->SetActive(_statusRepository->GetLastStatusData() && _statusRepository->GetLastStatusData()->get_SupportsPPDifficulties());
+        ppmt->gameObject->SetActive(_statusRepository->GetLastStatusData() && _statusRepository->GetLastStatusData()->get_SupportsPPModifiers());
+        if (!_statusRepository->GetLastStatusData()) ERROR("Missing Status Data for current server status endpoint {} (Check your config)", Hooks::NetworkConfigHooks::GetCurrentServer() ? Hooks::NetworkConfigHooks::GetCurrentServer()->masterServerStatusUrl : "null");
     }
 
     void MpPerPlayerUI::ModifierSelectionDidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
