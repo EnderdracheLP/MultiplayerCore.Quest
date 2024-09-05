@@ -135,6 +135,8 @@ namespace MultiplayerCore::Objects {
             return GlobalNamespace::EntitlementsStatus::Ok;
         }
 
+        // TODO: Check packet for the map
+
         // Check beatsaver for the map
         auto beatmapRes = BeatSaver::API::GetBeatmapByHash(std::string(levelHash));
         if (beatmapRes.DataParsedSuccessful()) {
@@ -154,11 +156,12 @@ namespace MultiplayerCore::Objects {
 
             std::list<std::string> requirements;
             for (const auto& diff : beatmapVersion->GetDiffs()) {
-                // if (diff.GetChroma()) requirements.emplace_back("Chroma");
+                // if (diff.GetChroma()) requirements.emplace_back("Chroma"); //  Ignore as BeatSaver marks Suggestions and Requirements, we only need requirements
                 if (diff.GetME()) requirements.emplace_back("Mapping Extensions");
                 if (diff.GetNE()) requirements.emplace_back("Noodle Extensions");
             }
 
+            // TODO: Also check packet for Chroma requirement
             for (const auto& req : requirements) {
                 if (!SongCore::API::Capabilities::IsCapabilityRegistered(req)) {
                     DEBUG("Missing requirement {}", req);
