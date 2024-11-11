@@ -124,13 +124,11 @@ MAKE_AUTO_HOOK_ORIG_MATCH(ClientCertificateValidator_ValidateCertificateChainInt
 }
 
 MAKE_AUTO_HOOK_MATCH(IgnoranceClient_Start, &IgnoranceCore::IgnoranceClient::Start, void, IgnoranceCore::IgnoranceClient* self) {
-    if (NetworkConfigHooks::IsOverridingAPI()) {
-        auto cfg = NetworkConfigHooks::GetCurrentServer();
-        DEBUG("Changing IgnoranceClient ssl usage");
+    auto cfg = NetworkConfigHooks::GetCurrentServer();
+    DEBUG("Changing IgnoranceClient ssl usage");
 
-        self->UseSsl = !cfg->disableSSL;
-        self->ValidateCertificate = !cfg->disableSSL;
-    }
+    self->UseSsl = !(cfg && cfg->disableSSL);
+    self->ValidateCertificate = !NetworkConfigHooks::IsOverridingAPI();
 
     IgnoranceClient_Start(self);
 }
