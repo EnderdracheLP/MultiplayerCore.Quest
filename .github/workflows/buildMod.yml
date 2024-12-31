@@ -38,9 +38,7 @@ jobs:
       shell: pwsh
       run: |
         $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Split('-')[0])-$($branchMain).${{ github.run_number }}+$($branchSub)ra${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-
-
+        $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "qmodversion=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Split('-')[0])+$($branchMain).${{ github.run_number }}-$($branchSub)ra${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - uses: seanmiddleditch/gha-setup-ninja@v5
 
@@ -106,9 +104,11 @@ jobs:
         echo "NAME=${files[0]}" >> $GITHUB_OUTPUT
 
     - name: Package QMOD
+      shell: pwsh
       run: |
-        cd ${GITHUB_WORKSPACE}
-        ./QPM/qpm qmod zip -i ./build/ -i ./extern/libs/ ${module_id}_${version}.qmod
+        cd ${{ github.workspace }}
+        ./QPM/qpm package edit --version ${{ env.qmodversion }}
+        ./QPM/qpm qmod zip -i ./build/ -i ./extern/libs/ ${{ env.module_id }}_${{ env.qmodversion }}.qmod
 
 
     - name: Upload non-debug artifact
