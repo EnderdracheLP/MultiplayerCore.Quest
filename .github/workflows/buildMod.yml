@@ -5,7 +5,7 @@ on:
   push:
     paths-ignore:
       - '**.yml'
-      - '!.github/workflows/BuildMod.yml'
+      - '!.github/workflows/buildMod.yml'
       - '**.json'
       - '!qpm.json'
       - '**.ps1'
