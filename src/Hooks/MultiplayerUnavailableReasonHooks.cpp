@@ -97,9 +97,20 @@ MAKE_AUTO_HOOK_MATCH(ConnectionFailedReasonMethods_LocalizedKey, &::GlobalNamesp
     switch(connectionFailedReason.value__) {
         case 50: { // Version not compatible with lobby host
             return
-                "Game Version Mismatch\n"
-                "Your Beat Saber version is not compatible with the lobby hosts\n"
-                "You or the host may need to either downgrade or update the game";
+                "Game Version Unknown\n"
+                "Your game version was not within any version ranges known by the server";
+        }
+        case 51: {
+            return 
+                    "Game Version Too Old\n"
+			        "Your game version is below the supported version range of the lobby\n"
+			        "You either need to update or the lobby host needs to downgrade their game";
+        }
+        case 52: {
+            return
+			        "Game Version Too New\n"
+			        "Your game version is above the supported version range of the lobby\n"
+			        "You either need to downgrade or the lobby host needs to update their game";
         }
     }
     return ConnectionFailedReasonMethods_LocalizedKey(connectionFailedReason);
