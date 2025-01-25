@@ -102,15 +102,15 @@ MAKE_AUTO_HOOK_MATCH(ConnectionFailedReasonMethods_LocalizedKey, &::GlobalNamesp
         }
         case 51: {
             return 
-                    "Game Version Too Old\n"
-			        "Your game version is below the supported version range of the lobby\n"
-			        "You either need to update or the lobby host needs to downgrade their game";
+                "Game Version Too Old\n"
+                "Your game version is below the supported version range of the lobby\n"
+                "You either need to update or the lobby host needs to downgrade their game";
         }
         case 52: {
             return
-			        "Game Version Too New\n"
-			        "Your game version is above the supported version range of the lobby\n"
-			        "You either need to downgrade or the lobby host needs to update their game";
+                "Game Version Too New\n"
+                "Your game version is above the supported version range of the lobby\n"
+                "You either need to downgrade or the lobby host needs to update their game";
         }
     }
     return ConnectionFailedReasonMethods_LocalizedKey(connectionFailedReason);
