@@ -37,46 +37,36 @@ jobs:
     - name: Get Version
       shell: pwsh
       run: |
-        $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Split('-')[0])-$($branchMain).${{ github.run_number }}+$($branchSub)ra${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "qmodversion=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Split('-')[0])+$($branchMain).$($branchSub)r${{ github.run_number }}a${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('+', '-').Split('-')[0])-$($branchMain).${{ github.run_number }}+$($branchSub)ra${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "qmodversion=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('+', '-').Split('-')[0])+$($branchMain).$($branchSub)r${{ github.run_number }}a${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - uses: seanmiddleditch/gha-setup-ninja@v5
 
-    - name: Create ndkpath.txt
-      run: |
-        echo "$ANDROID_NDK_LATEST_HOME" > ${GITHUB_WORKSPACE}/ndkpath.txt
+    # - name: Create ndkpath.txt
+    #   run: |
+    #     echo "$ANDROID_NDK_LATEST_HOME" > ${GITHUB_WORKSPACE}/ndkpath.txt
 
     - name: Get QPM
-      if: steps.cache-qpm.outputs.cache-hit != 'true'
-      uses: dawidd6/action-download-artifact@v2
+      uses: Fernthedev/qpm-action@v1
       with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: cargo-build.yml
-        name: linux-qpm
-        path: QPM
-        repo: QuestPackageManager/QPM.CLI
+        resolve_ndk: true
+        #required
+        workflow_token: ${{secrets.GITHUB_TOKEN}}
+        restore: true # will run restore on download
+        cache: true #will cache dependencies
+        version: '${{ env.version }}'
+        #qpm_qmod: '${{ env.module_id }}_${{ env.qmodversion }}.qmod'
         
     - name: QPM Collapse
       run: |
         chmod +x ./QPM/qpm
-        ./QPM/qpm collapse
+        qpm collapse
         
-    - name: QPM Dependencies Cache
-      id: cache-qpm-deps
-      uses: actions/cache@v4
-      env:
-        cache-name: cache-qpm-deps
-      with:
-        path: /home/runner/.local/share/QPM-RS/cache
-        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.json') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ env.cache-name }}-
-          ${{ runner.os }}-${{ env.cache-name }}
-      
-    - name: QPM Set Version & Restore
-      run: |
-        ./QPM/qpm package edit --version ${{ env.version }}
-        ./QPM/qpm restore
+        
+    # - name: QPM Set Version & Restore
+    #   run: |
+    #     ./QPM/qpm package edit --version ${{ env.version }}
+    #     ./QPM/qpm restore
 
     - name: Check dependency Folders
       run: |
@@ -107,8 +97,8 @@ jobs:
       shell: pwsh
       run: |
         cd ${{ github.workspace }}
-        ./QPM/qpm package edit --version ${{ env.qmodversion }}
-        ./QPM/qpm qmod zip -i ./build/ -i ./extern/libs/ ${{ env.module_id }}_${{ env.qmodversion }}.qmod
+        qpm package edit --version ${{ env.qmodversion }}
+        qpm qmod zip -i ./build/ -i ./extern/libs/ ${{ env.module_id }}_${{ env.qmodversion }}.qmod
 
 
     - name: Upload non-debug artifact

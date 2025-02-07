@@ -82,36 +82,38 @@ jobs:
 #        echo "$ANDROID_NDK_LATEST_HOME" > ${GITHUB_WORKSPACE}/ndkpath.txt
 
     - name: Get QPM
-      if: steps.cache-qpm.outputs.cache-hit != 'true'
-      uses: dawidd6/action-download-artifact@v2
+      uses: Fernthedev/qpm-action@v1
       with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: cargo-build.yml
-        name: linux-qpm
-        path: QPM
-        repo: QuestPackageManager/QPM.CLI
+        resolve_ndk: true
+        #required
+        workflow_token: ${{secrets.GITHUB_TOKEN}}
+        restore: true # will run restore on download
+        cache: true #will cache dependencies
+        version: '${{ env.version }}'
+        #qpm_qmod: '${{ env.module_id }}_${{ env.qmodversion }}.qmod'
+
         
     - name: QPM Collapse
       run: |
         chmod +x ./QPM/qpm
-        ./QPM/qpm collapse
+        qpm collapse
         
-    - name: QPM Dependencies Cache
-      id: cache-qpm-deps
-      uses: actions/cache@v4
-      env:
-        cache-name: cache-qpm-deps
-      with:
-        path: /home/runner/.local/share/QPM-RS/cache
-        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.shared.json') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ env.cache-name }}-
-          ${{ runner.os }}-${{ env.cache-name }}
+    # - name: QPM Dependencies Cache
+    #   id: cache-qpm-deps
+    #   uses: actions/cache@v4
+    #   env:
+    #     cache-name: cache-qpm-deps
+    #   with:
+    #     path: /home/runner/.local/share/QPM-RS/cache
+    #     key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.shared.json') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-${{ env.cache-name }}-
+    #       ${{ runner.os }}-${{ env.cache-name }}
       
-    - name: QPM Set Version & Restore
-      run: |
-        ./QPM/qpm package edit --version ${{ env.version }}
-        ./QPM/qpm restore
+    # - name: QPM Set Version & Restore
+    #   run: |
+    #     ./QPM/qpm package edit --version ${{ env.version }}
+    #     ./QPM/qpm restore
 
     - name: Check dependency Folders
       run: |
@@ -142,8 +144,8 @@ jobs:
       shell: pwsh
       run: |
         cd ${{ github.workspace }}
-        ./QPM/qpm package edit --version ${{ env.qmodversion }}
-        ./QPM/qpm qmod zip -i ./build/ -i ./extern/libs/ ${{ env.module_id }}_${{ env.qmodversion }}.qmod
+        qpm package edit --version ${{ env.qmodversion }}
+        qpm qmod zip -i ./build/ -i ./extern/libs/ ${{ env.module_id }}_${{ env.qmodversion }}.qmod
   
 
     - name: Upload non-debug artifact

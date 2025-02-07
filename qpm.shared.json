@@ -6,7 +6,7 @@
     "info": {
       "name": "MultiplayerCore",
       "id": "multiplayer-core",
-      "version": "1.6.0+Dev",
+      "version": "1.6.0",
       "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
       "additionalData": {
         "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.0/libMultiplayerCore.so",
@@ -19,6 +19,7 @@
     },
     "workspace": {
       "scripts": {},
+      "ndk": "^27.2.12479018",
       "qmodIncludeDirs": [],
       "qmodIncludeFiles": [],
       "qmodOutput": null
