@@ -7,7 +7,6 @@ on:
 env:
      module_id: MultiplayerCore
      version_num: 0.1.0
-#     ndkname: android-ndk-r24
     
 jobs:
   build:
@@ -26,60 +25,7 @@ jobs:
         $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Split('-')[0])-$($branchMain).${{ github.run_number }}+$($branchSub)ra${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "qmodversion=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Split('-')[0])+$($branchMain).$($branchSub)r${{ github.run_number }}a${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-
     - uses: seanmiddleditch/gha-setup-ninja@v3
-
-#    - name: Install Powershell
-#      run: sudo apt-get install -y powershell
-
-#    - name: Cache Android NDK
-#      id: cache-ndk
-#      uses: actions/cache@v2
-#      env:
-#        cache-name: cache-ndk
-#      with:
-#        path: ndk
-#        key: ${{ runner.os }}-${{ env.cache-name }}-${{ env.ndkname }}
-#        restore-keys: |
-#          ${{ runner.os }}-${{ env.cache-name }}-${{ env.ndkname }}
-    
-#    - name: Install Android NDK
-#      if: steps.cache-ndk.outputs.cache-hit != 'true'
-#      run: |
-#        wget -q -O ndk.zip https://dl.google.com/android/repository/${ndkname}-linux-x86_64.zip
-#        unzip -q ndk.zip
-#        mv ${ndkname} ndk
-      
-#    - name: Create ndkpath.txt
-#      run: |
-#        cd ndk
-#        pwd > ${GITHUB_WORKSPACE}/ndkpath.txt
-
-
-    # extract branch name
-#    - name: Extract branch name
-#      if: github.event_name != 'pull_request'
-#      shell: bash
-#      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-#      id: extract_branch
-
-    # extract branch name on pull request
-#    - name: Print branch name
-#      if: github.event_name == 'pull_request'
-#      run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
-
-#    - name: Set version
-#      run: echo "version=$(echo $version_num-$BRANCH_NAME.${{ github.run_number }})" >> $GITHUB_ENV
-
-    # print branch name and version
-#    - name: Get branch name
-#      run: |
-#        echo 'The branch name is' $BRANCH_NAME
-#        echo 'The version is' $version
-
-#    - name: Create ndkpath.txt
-#      run: |
-#        echo "$ANDROID_NDK_LATEST_HOME" > ${GITHUB_WORKSPACE}/ndkpath.txt
 
     - name: Get QPM
       uses: Fernthedev/qpm-action@v1
@@ -97,23 +43,6 @@ jobs:
       run: |
         qpm collapse
         
-    # - name: QPM Dependencies Cache
-    #   id: cache-qpm-deps
-    #   uses: actions/cache@v4
-    #   env:
-    #     cache-name: cache-qpm-deps
-    #   with:
-    #     path: /home/runner/.local/share/QPM-RS/cache
-    #     key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.shared.json') }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-${{ env.cache-name }}-
-    #       ${{ runner.os }}-${{ env.cache-name }}
-      
-    # - name: QPM Set Version & Restore
-    #   run: |
-    #     ./QPM/qpm package edit --version ${{ env.version }}
-    #     ./QPM/qpm restore
-
     - name: Check dependency Folders
       run: |
         echo "Checking extern includes"
