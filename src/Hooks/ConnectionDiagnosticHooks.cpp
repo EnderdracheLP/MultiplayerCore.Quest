@@ -169,6 +169,10 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerModeSelectionFlowCoordinator_PresentConnectionEr
     INFO("Connection Failed Reason: CFR-{} - {}, ConnectionType: {}", reason.value__, MultiplayerCore::Utils::EnumUtils::GetEnumName(reason), connectionType.value__);
     MultiplayerModeSelectionFlowCoordinator_PresentConnectionErrorDialog(self, connectionType, reason);
 
+    if (reason == GlobalNamespace::ConnectionFailedReason::ConnectionCanceled) {
+        return;
+    }
+
     // Diagnosing connection errors
     // Attempt dns resolve
     if (!self->_multiplayerModeSelectionViewController->_networkConfig || ! self->_multiplayerModeSelectionViewController->_networkConfig->graphUrl)

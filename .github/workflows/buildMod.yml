@@ -5,7 +5,7 @@ on:
   push:
     paths-ignore:
       - '**.yml'
-      - '!.github/workflows/BuildMod.yml'
+      - '!.github/workflows/buildMod.yml'
       - '**.json'
       - '!qpm.json'
       - '**.ps1'
@@ -20,7 +20,7 @@ env:
     
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
@@ -29,57 +29,29 @@ jobs:
         submodules: true
         lfs: true
         
-#    - name: Extract branch name
-#      shell: bash
-#      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-#      id: extract_branch
-
     - name: Get Version
       shell: pwsh
       run: |
-        $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Split('-')[0])-$($branchMain).${{ github.run_number }}+$($branchSub)ra${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-
-
+        $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('+', '-').Split('-')[0])-$($branchMain).${{ github.run_number }}+$($branchSub)ra${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "qmodversion=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('+', '-').Split('-')[0])+$($branchMain).$($branchSub)r${{ github.run_number }}a${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - uses: seanmiddleditch/gha-setup-ninja@v5
 
-    - name: Create ndkpath.txt
-      run: |
-        echo "$ANDROID_NDK_LATEST_HOME" > ${GITHUB_WORKSPACE}/ndkpath.txt
-
     - name: Get QPM
-      if: steps.cache-qpm.outputs.cache-hit != 'true'
-      uses: dawidd6/action-download-artifact@v6
+      uses: Fernthedev/qpm-action@v1
       with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: cargo-build.yml
-        name: linux-qpm
-        path: QPM
-        repo: QuestPackageManager/QPM.CLI
+        resolve_ndk: true
+        #required
+        workflow_token: ${{secrets.GITHUB_TOKEN}}
+        restore: true # will run restore on download
+        cache: true #will cache dependencies
+        version: '${{ env.version }}'
+        #qpm_qmod: '${{ env.module_id }}_${{ env.qmodversion }}.qmod'
         
     - name: QPM Collapse
       run: |
-        chmod +x ./QPM/qpm
-        ./QPM/qpm collapse
+        qpm collapse
         
-    - name: QPM Dependencies Cache
-      id: cache-qpm-deps
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-qpm-deps
-      with:
-        path: /home/runner/.local/share/QPM-RS/cache
-        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('qpm.json') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ env.cache-name }}-
-          ${{ runner.os }}-${{ env.cache-name }}
-      
-    - name: QPM Set Version & Restore
-      run: |
-        ./QPM/qpm package edit --version ${{ env.version }}
-        ./QPM/qpm restore
-
     - name: Check dependency Folders
       run: |
         echo "Checking extern includes"
@@ -106,9 +78,11 @@ jobs:
         echo "NAME=${files[0]}" >> $GITHUB_OUTPUT
 
     - name: Package QMOD
+      shell: pwsh
       run: |
-        cd ${GITHUB_WORKSPACE}
-        ./QPM/qpm qmod zip -i ./build/ -i ./extern/libs/ ${module_id}_${version}.qmod
+        cd ${{ github.workspace }}
+        qpm package edit --version ${{ env.qmodversion }}
+        qpm qmod zip -i ./build/ -i ./extern/libs/ ${{ env.module_id }}_${{ env.qmodversion }}.qmod
 
 
     - name: Upload non-debug artifact
@@ -131,5 +105,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.module_id }}-(UNZIP-for-QMOD).qmod
-        path: ./${{ env.module_id }}_${{ env.version }}.qmod
+        path: ./${{ env.module_id }}_${{ env.qmodversion }}.qmod
         if-no-files-found: warn

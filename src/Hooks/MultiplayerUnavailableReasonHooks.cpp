@@ -6,6 +6,9 @@
 
 #include "GlobalNamespace/MultiplayerUnavailableReason.hpp"
 #include "GlobalNamespace/MultiplayerUnavailableReasonMethods.hpp"
+#include "GlobalNamespace/ConnectionFailedReason.hpp"
+#include "GlobalNamespace/ConnectionFailedReasonMethods.hpp"
+#include "GlobalNamespace/MultiplayerPlacementErrorCodeMethods.hpp"
 #include "GlobalNamespace/MultiplayerStatusData.hpp"
 #include "UnityEngine/Application.hpp"
 
@@ -87,4 +90,37 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_LocalizedKey, &::Global
             break;
     }
     return MultiplayerUnavailableReasonMethods_LocalizedKey(multiplayerUnavailableReason);
+}
+
+
+MAKE_AUTO_HOOK_MATCH(ConnectionFailedReasonMethods_LocalizedKey, &::GlobalNamespace::ConnectionFailedReasonMethods::LocalizedKey, StringW, GlobalNamespace::ConnectionFailedReason connectionFailedReason) {
+    switch(connectionFailedReason.value__) {
+        case 50: { // Version not compatible with lobby host
+            return
+                "Game Version Unknown\n"
+                "Your game version was not within any version ranges known by the server";
+        }
+        case 51: {
+            return 
+                "Game Version Too Old\n"
+                "Your game version is below the supported version range of the lobby\n"
+                "You either need to update or the lobby host needs to downgrade their game";
+        }
+        case 52: {
+            return
+                "Game Version Too New\n"
+                "Your game version is above the supported version range of the lobby\n"
+                "You either need to downgrade or the lobby host needs to update their game";
+        }
+    }
+    return ConnectionFailedReasonMethods_LocalizedKey(connectionFailedReason);
+}
+
+MAKE_AUTO_HOOK_MATCH(MultiplayerPlacementErrorCodeMethods_ToConnectionFailedReason, &::GlobalNamespace::MultiplayerPlacementErrorCodeMethods::ToConnectionFailedReason, GlobalNamespace::ConnectionFailedReason, GlobalNamespace::MultiplayerPlacementErrorCode errorCode)
+{
+    if (errorCode.value__ >= 50)
+    {
+        return GlobalNamespace::ConnectionFailedReason(errorCode.value__);
+    }
+    return MultiplayerPlacementErrorCodeMethods_ToConnectionFailedReason(errorCode);
 }

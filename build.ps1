@@ -17,8 +17,8 @@ elseif (-not $Version) {
 } else {
     $VERSION = $Version
 }
-if ($release -ne $true -and -not $VERSION.Contains('-Dev') -and -not $actions) {
-    $VERSION += "-Dev"
+if ($release -ne $true -and -not $VERSION.Contains('+Dev') -and -not $actions) {
+    $VERSION += "+Dev"
 }
 
 if ([string]::IsNullOrEmpty($env:version) -and $VERSION) {
