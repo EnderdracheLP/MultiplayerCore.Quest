@@ -95,7 +95,6 @@ jobs:
         
     - name: QPM Collapse
       run: |
-        chmod +x ./QPM/qpm
         qpm collapse
         
     # - name: QPM Dependencies Cache
