@@ -38,18 +38,12 @@ add_compile_definitions(CORDL_RUNTIME_FIELD_NULL_CHECKS)
 file(GLOB_RECURSE cpp_file_list ${SOURCE_DIR}/*.cpp)
 file(GLOB_RECURSE c_file_list ${SOURCE_DIR}/*.c)
 
-file(GLOB_RECURSE inline_hook_c ${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook/*.c)
-file(GLOB_RECURSE inline_hook_cpp ${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook/*.cpp)
-
 # add all src files to compile
 add_library(
         ${COMPILE_ID}
         SHARED
         ${cpp_file_list}
-        ${c_file_list}
-        ${inline_hook_c}
-        ${inline_hook_cpp}
-)
+        ${c_file_list})
 
 target_include_directories(${COMPILE_ID} PRIVATE .)
 
@@ -64,6 +58,13 @@ add_assets(${COMPILE_ID}-assets STATIC ${CMAKE_CURRENT_LIST_DIR}/assets ${INCLUD
 target_link_libraries(${COMPILE_ID} PRIVATE -llog ${COMPILE_ID}-assets)
 # add extern stuff like libs and other includes
 include(extern.cmake)
+
+# beatsaber hook inline hook
+RECURSE_FILES(src_inline_hook_beatsaber_hook_local_extra_c ${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook/*.c)
+RECURSE_FILES(src_inline_hook_beatsaber_hook_local_extra_cpp ${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook/*.cpp)
+target_sources(${COMPILE_ID} PRIVATE ${src_inline_hook_beatsaber_hook_local_extra_c})
+target_sources(${COMPILE_ID} PRIVATE ${src_inline_hook_beatsaber_hook_local_extra_cpp})
+
 
 add_custom_command(TARGET ${COMPILE_ID} POST_BUILD
         COMMAND ${CMAKE_STRIP} -d --strip-all
