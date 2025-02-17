@@ -1,6 +1,9 @@
 # include some defines automatically made by qpm
 include(qpm_defines.cmake)
 
+# Bump Android sdk version
+set(ANDROID_PLATFORM 29)
+
 # Enable link time optimization
 # In my experience, this can be highly unstable but it nets a huge size optimization and likely performance
 # However, the instability was seen using Android.mk/ndk-build builds. With Ninja + CMake, this problem seems to have been solved.
