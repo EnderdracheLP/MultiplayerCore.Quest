@@ -17,8 +17,8 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Beatmaps, BeatSaverPreviewMedi
     DECLARE_INSTANCE_FIELD_PRIVATE(System::Threading::Tasks::Task_1<UnityEngine::Sprite*>*, _coverImageTask);
     DECLARE_INSTANCE_FIELD_PRIVATE(System::Threading::Tasks::Task_1<UnityEngine::AudioClip*>*, _audioClipTask);
 
-    DECLARE_OVERRIDE_METHOD_MATCH(System::Threading::Tasks::Task_1<UnityEngine::Sprite*>*, GetCoverSpriteAsync, &GlobalNamespace::IPreviewMediaData::GetCoverSpriteAsync, System::Threading::CancellationToken cancellationToken);
-    DECLARE_OVERRIDE_METHOD_MATCH(System::Threading::Tasks::Task_1<UnityEngine::AudioClip*>*, GetPreviewAudioClip, &GlobalNamespace::IPreviewMediaData::GetPreviewAudioClip, System::Threading::CancellationToken cancellationToken);
+    DECLARE_OVERRIDE_METHOD_MATCH(System::Threading::Tasks::Task_1<UnityEngine::Sprite*>*, GetCoverSpriteAsync, &GlobalNamespace::IPreviewMediaData::GetCoverSpriteAsync);
+    DECLARE_OVERRIDE_METHOD_MATCH(System::Threading::Tasks::Task_1<UnityEngine::AudioClip*>*, GetPreviewAudioClip, &GlobalNamespace::IPreviewMediaData::GetPreviewAudioClip);
     DECLARE_OVERRIDE_METHOD_MATCH(void, UnloadPreviewAudioClip, &GlobalNamespace::IPreviewMediaData::UnloadPreviewAudioClip);
 
     public:
