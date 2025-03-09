@@ -14,7 +14,6 @@
 #include "System/Threading/Tasks/Task_1.hpp"
 #include "System/Threading/CancellationToken.hpp"
 
-#include "Zenject/ITickable.hpp"
 #include <cstdarg>
 
 DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelLoader, GlobalNamespace::MultiplayerLevelLoader) {

@@ -1,5 +1,6 @@
 #include "MultiplayerCore.hpp"
 #include "Hooks/NetworkConfigHooks.hpp"
+#include "Repositories/MpStatusRepository.hpp"
 
 namespace MultiplayerCore {
     void API::UseOfficialServer() {
