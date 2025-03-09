@@ -65,7 +65,7 @@
       },
       {
         "id": "lapiz",
-        "versionRange": "^0.2.17",
+        "versionRange": "^0.2.18",
         "additionalData": {}
       },
       {
@@ -313,17 +313,17 @@
     {
       "dependency": {
         "id": "lapiz",
-        "versionRange": "=0.2.17",
+        "versionRange": "=0.2.18",
         "additionalData": {
-          "soLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.17/liblapiz.so",
-          "debugSoLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.17/debug_liblapiz.so",
+          "soLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.18/liblapiz.so",
+          "debugSoLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.18/debug_liblapiz.so",
           "overrideSoName": "liblapiz.so",
-          "modLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.17/Lapiz.qmod",
-          "branchName": "version/v0_2_17",
+          "modLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.18/Lapiz.qmod",
+          "branchName": "version/v0_2_18",
           "cmake": true
         }
       },
-      "version": "0.2.17"
+      "version": "0.2.18"
     },
     {
       "dependency": {
