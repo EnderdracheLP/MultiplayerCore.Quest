@@ -9,7 +9,7 @@
 #include "Beatmaps/Providers/MpBeatmapLevelProvider.hpp"
 #include "Beatmaps/Packets/MpBeatmapPacket.hpp"
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpPlayersDataModel, GlobalNamespace::LobbyPlayersDataModel,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpPlayersDataModel, GlobalNamespace::LobbyPlayersDataModel) {
     DECLARE_INSTANCE_FIELD_PRIVATE(Networking::MpPacketSerializer*, _packetSerializer);
     DECLARE_INSTANCE_FIELD(Beatmaps::Providers::MpBeatmapLevelProvider*, _beatmapLevelProvider);
     using PacketDict = System::Collections::Generic::Dictionary_2<StringW, Beatmaps::Packets::MpBeatmapPacket*>;
@@ -35,4 +35,4 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpPlayersDataModel, GlobalNamesp
         void SendMpBeatmapPacket(GlobalNamespace::BeatmapKey beatmapKey, GlobalNamespace::IConnectedPlayer* player = nullptr);
     private:
         void PutPlayerPacket(StringW playerId, Beatmaps::Packets::MpBeatmapPacket* packet);
-)
+};

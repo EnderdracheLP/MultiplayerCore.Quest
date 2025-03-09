@@ -17,7 +17,7 @@
 #include "Zenject/ITickable.hpp"
 #include <cstdarg>
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelLoader, GlobalNamespace::MultiplayerLevelLoader,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelLoader, GlobalNamespace::MultiplayerLevelLoader) {
     DECLARE_INSTANCE_FIELD_PRIVATE(SongCore::SongLoader::RuntimeSongLoader*, _runtimeSongLoader);
     DECLARE_INSTANCE_FIELD_PRIVATE(SongCore::Capabilities*, _capabilities);
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::IMultiplayerSessionManager*, _sessionManager);
@@ -35,4 +35,4 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpLevelLoader, GlobalNamespace::
     private:
         void UnloadLevelIfRequirementsNotMet();
         void Report(double progress);
-)
+};

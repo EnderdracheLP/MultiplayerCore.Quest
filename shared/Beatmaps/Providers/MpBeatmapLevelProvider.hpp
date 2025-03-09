@@ -9,21 +9,21 @@
 #include "../Packets/MpBeatmapPacket.hpp"
 #include <future>
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvider, System::Object,
-        using HashToLevelDict = System::Collections::Generic::Dictionary_2<StringW, GlobalNamespace::BeatmapLevel*>;
-        DECLARE_INSTANCE_FIELD_PRIVATE(HashToLevelDict*, _hashToNetworkLevels);
-        DECLARE_INSTANCE_FIELD_PRIVATE(HashToLevelDict*, _hashToBeatsaverLevels);
-        DECLARE_CTOR(ctor);
+DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Providers, MpBeatmapLevelProvider, System::Object) {
+    using HashToLevelDict = System::Collections::Generic::Dictionary_2<StringW, GlobalNamespace::BeatmapLevel*>;
+    DECLARE_INSTANCE_FIELD_PRIVATE(HashToLevelDict*, _hashToNetworkLevels);
+    DECLARE_INSTANCE_FIELD_PRIVATE(HashToLevelDict*, _hashToBeatsaverLevels);
+    DECLARE_CTOR(ctor);
 
-    public:
-        std::future<GlobalNamespace::BeatmapLevel*> GetBeatmapAsync(const std::string& levelHash);
-        std::future<GlobalNamespace::BeatmapLevel*> GetBeatmapFromBeatSaverAsync(const std::string& levelHash);
+public:
+    std::future<GlobalNamespace::BeatmapLevel*> GetBeatmapAsync(const std::string& levelHash);
+    std::future<GlobalNamespace::BeatmapLevel*> GetBeatmapFromBeatSaverAsync(const std::string& levelHash);
 
-        GlobalNamespace::BeatmapLevel* GetBeatmapFromLocalBeatmaps(const std::string& levelHash);
-        GlobalNamespace::BeatmapLevel* GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet);
-        GlobalNamespace::BeatmapLevel* GetBeatmapFromBeatSaver(std::string levelHash);
+    GlobalNamespace::BeatmapLevel* GetBeatmapFromLocalBeatmaps(const std::string& levelHash);
+    GlobalNamespace::BeatmapLevel* GetBeatmapFromPacket(Packets::MpBeatmapPacket* packet);
+    GlobalNamespace::BeatmapLevel* GetBeatmapFromBeatSaver(std::string levelHash);
 
-        GlobalNamespace::BeatmapLevel* TryGetBeatmapFromPacketHash(std::string levelHash);
+    GlobalNamespace::BeatmapLevel* TryGetBeatmapFromPacketHash(std::string levelHash);
 
-        GlobalNamespace::BeatmapLevel* AddBasicBeatmapDataToLevel(GlobalNamespace::BeatmapLevel* level, GlobalNamespace::BeatmapKey& beatmapKey, Packets::MpBeatmapPacket* packet = nullptr);
-)
+    GlobalNamespace::BeatmapLevel* AddBasicBeatmapDataToLevel(GlobalNamespace::BeatmapLevel* level, GlobalNamespace::BeatmapKey& beatmapKey, Packets::MpBeatmapPacket* packet = nullptr);
+};

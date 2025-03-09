@@ -44,7 +44,7 @@ namespace MultiplayerCore::Beatmaps {
                     
                     auto coverOpt = v->GetCoverImage();
                     if (coverOpt.has_value()) {
-                        auto coverBytes = il2cpp_utils::vectorToArray(coverOpt.value());
+                        auto coverBytes = ArrayW(coverOpt.value());
 
                         std::atomic<UnityEngine::Sprite*> result = nullptr;
                         BSML::MainThreadScheduler::Schedule([coverBytes, &result](){

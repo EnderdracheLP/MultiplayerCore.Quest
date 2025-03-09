@@ -8,7 +8,7 @@
 #include "UnityEngine/AudioClip.hpp"
 #include "Packets/MpBeatmapPacket.hpp"
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Beatmaps, BeatSaverPreviewMediaData, System::Object, classof(GlobalNamespace::IPreviewMediaData*),
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Beatmaps, BeatSaverPreviewMediaData, System::Object, GlobalNamespace::IPreviewMediaData*) {
     DECLARE_CTOR(ctor, StringW levelHash);
 
     DECLARE_INSTANCE_FIELD_PRIVATE(UnityEngine::Sprite*, _cachedCoverImage);
@@ -25,4 +25,4 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Beatmaps, BeatSaverPreviewMedi
         GlobalNamespace::IPreviewMediaData* i_IPreviewMediaData() noexcept { return reinterpret_cast<GlobalNamespace::IPreviewMediaData*>(this); }
     private:
         std::string _levelHash;
-)
+};

@@ -30,7 +30,7 @@ namespace MultiplayerCore::Beatmaps {
             0,
             GlobalNamespace::PlayerSensitivityFlag::Safe,
             BeatSaverPreviewMediaData::New_ctor(hash)->i_IPreviewMediaData(),
-            System::Collections::Generic::Dictionary_2<System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>, GlobalNamespace::BeatmapBasicData*>::New_ctor()->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_()
+            System::Collections::Generic::Dictionary_2<System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>, GlobalNamespace::BeatmapBasicData*>::New_ctor()
         );
     }
 }

@@ -9,7 +9,7 @@
 #include "GlobalNamespace/BeatmapKey.hpp"
 #include <list>
 
-DECLARE_CLASS_CUSTOM(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, MultiplayerCore::Networking::Abstractions::MpPacket,
+DECLARE_CLASS_CUSTOM(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, MultiplayerCore::Networking::Abstractions::MpPacket) {
     DECLARE_INSTANCE_FIELD(StringW, levelHash);
     DECLARE_INSTANCE_FIELD(StringW, songName);
     DECLARE_INSTANCE_FIELD(StringW, songSubName);
@@ -30,4 +30,4 @@ DECLARE_CLASS_CUSTOM(MultiplayerCore::Beatmaps::Packets, MpBeatmapPacket, Multip
         std::unordered_map<uint32_t, std::list<std::string>> requirements;
         std::unordered_map<uint32_t, MultiplayerCore::Beatmaps::Abstractions::DifficultyColors> mapColors;
         std::vector<const MultiplayerCore::Utils::ExtraSongData::Contributor> contributors;
-)
+};

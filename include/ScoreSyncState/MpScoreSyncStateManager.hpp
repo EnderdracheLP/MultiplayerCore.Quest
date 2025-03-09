@@ -9,7 +9,7 @@
 #include "System/IDisposable.hpp"
 #include "Zenject/IInitializable.hpp"
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::ScoreSyncState, MpScoreSyncStateManager, GlobalNamespace::ScoreSyncStateManager, std::vector<Il2CppClass*>({classof(Zenject::IInitializable*), classof(System::IDisposable*)}),
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::ScoreSyncState, MpScoreSyncStateManager, GlobalNamespace::ScoreSyncStateManager, Zenject::IInitializable*, System::IDisposable*) {
     DECLARE_INSTANCE_FIELD_PRIVATE(Networking::MpPacketSerializer*, _packetSerializer);
     DECLARE_INSTANCE_FIELD_PRIVATE(long, deltaUpdateFrequencyMs);
     DECLARE_INSTANCE_FIELD_PRIVATE(long, fullStateUpdateFrequencyMs);
@@ -26,4 +26,4 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::ScoreSyncState, MpScoreSyncSta
 
     public:
         void HandleScoreSyncUpdateReceived(MpScoreSyncStatePacket* data, GlobalNamespace::IConnectedPlayer* player);
-)
+};

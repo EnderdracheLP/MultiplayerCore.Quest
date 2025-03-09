@@ -21,8 +21,8 @@
 #include "bsml/shared/BSML/Components/CustomListTableData.hpp"
 #include "bsml/shared/BSML/Components/ModalView.hpp"
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, System::Object, std::vector<Il2CppClass*>({classof(::System::IDisposable*), classof(::Zenject::IInitializable*)}),
-
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, System::Object, ::System::IDisposable*, ::Zenject::IInitializable*) {
+        
     DECLARE_INSTANCE_FIELD_PRIVATE(SongCore::SongLoader::RuntimeSongLoader*, _runtimeSongLoader);
     DECLARE_INSTANCE_FIELD_PRIVATE(SongCore::Capabilities*, _capabilities);
     DECLARE_INSTANCE_FIELD_PRIVATE(SongCore::PlayButtonInteractable*, _playButtonInteractable);
@@ -99,4 +99,4 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpRequirementsUI, System::
 
         void PlayButtonDisablingModsChanged(std::span<SongCore::API::PlayButton::PlayButtonDisablingModInfo const> disablingModsInfos);
         void SetDisablingModInfoCells(std::span<SongCore::API::PlayButton::PlayButtonDisablingModInfo const> disablingModsInfos);
-)
+};
