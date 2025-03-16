@@ -103,14 +103,6 @@ namespace MultiplayerCore::Beatmaps {
         return _audioClipTask;
     }
 
-    void BeatSaverPreviewMediaData::UnloadPreviewAudioClip() {
-        if (_cachedAudioClip && !_cachedAudioClip->m_CachedPtr.IsNull()) {
-            UnityEngine::Object::Destroy(_cachedAudioClip);
-        }
-        _cachedAudioClip = nullptr;
-        _audioClipTask = nullptr;
-    }
-
     void BeatSaverPreviewMediaData::UnloadCoverSprite() {
         if (_cachedCoverImage && !_cachedCoverImage->m_CachedPtr.IsNull()) {
             if (_cachedCoverImage->texture && !_cachedCoverImage->texture->m_CachedPtr.IsNull())
@@ -119,5 +111,13 @@ namespace MultiplayerCore::Beatmaps {
         }
         _cachedCoverImage = nullptr;
         _coverImageTask = nullptr;
+    }
+
+    void BeatSaverPreviewMediaData::UnloadPreviewAudioClip() {
+        if (_cachedAudioClip && !_cachedAudioClip->m_CachedPtr.IsNull()) {
+            UnityEngine::Object::Destroy(_cachedAudioClip);
+        }
+        _cachedAudioClip = nullptr;
+        _audioClipTask = nullptr;
     }
 }
