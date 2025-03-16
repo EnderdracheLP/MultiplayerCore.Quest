@@ -10,6 +10,7 @@
 #include "bsml/shared/BSML/MainThreadScheduler.hpp"
 #include "beatsaverplusplus/shared/BeatSaver.hpp"
 #include <chrono>
+#include <cstddef>
 
 DEFINE_TYPE(MultiplayerCore::Beatmaps, BeatSaverPreviewMediaData);
 
@@ -108,5 +109,15 @@ namespace MultiplayerCore::Beatmaps {
         }
         _cachedAudioClip = nullptr;
         _audioClipTask = nullptr;
+    }
+
+    void BeatSaverPreviewMediaData::UnloadCoverSprite() {
+        if (_cachedCoverImage && !_cachedCoverImage->m_CachedPtr.IsNull()) {
+            if (_cachedCoverImage->texture && !_cachedCoverImage->texture->m_CachedPtr.IsNull())
+                UnityEngine::Object::Destroy(_cachedCoverImage->texture);
+            UnityEngine::Object::Destroy(_cachedCoverImage);
+        }
+        _cachedCoverImage = nullptr;
+        _coverImageTask = nullptr;
     }
 }
