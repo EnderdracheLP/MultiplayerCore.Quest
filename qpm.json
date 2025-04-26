@@ -3,103 +3,103 @@
   "sharedDir": "shared",
   "dependenciesDir": "extern",
   "info": {
- "name": "MultiplayerCore",
- "id": "multiplayer-core",
- "version": "1.6.1",
- "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
- "additionalData": {
-   "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.1/libMultiplayerCore.so",
-   "debugSoLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.1/debug_libMultiplayerCore.so",
-   "overrideSoName": "libMultiplayerCore.so",
-   "modLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.1/MultiplayerCore_1.6.1.qmod",
-   "branchName": "version/1.6.1",
-   "cmake": true
- }
+    "name": "MultiplayerCore",
+    "id": "multiplayer-core",
+    "version": "1.6.1",
+    "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
+    "additionalData": {
+      "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.1/libMultiplayerCore.so",
+      "debugSoLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.1/debug_libMultiplayerCore.so",
+      "overrideSoName": "libMultiplayerCore.so",
+      "modLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.1/MultiplayerCore_1.6.1.qmod",
+      "branchName": "version/1.6.1",
+      "cmake": true
+    }
   },
   "workspace": {
- "scripts": {},
- "ndk": "^27.2.12479018",
- "qmodIncludeDirs": [],
- "qmodIncludeFiles": [],
- "qmodOutput": null
+    "scripts": {},
+    "ndk": "^27.2.12479018",
+    "qmodIncludeDirs": [],
+    "qmodIncludeFiles": [],
+    "qmodOutput": null
   },
   "dependencies": [
- {
-   "id": "libil2cpp",
-   "versionRange": "^0.4.0",
-   "additionalData": {}
- },
- {
-   "id": "beatsaber-hook",
-   "versionRange": "^6.4.1",
-   "additionalData": {}
- },
- {
-   "id": "bs-cordl",
-   "versionRange": "4004.*",
-   "additionalData": {}
- },
- {
-   "id": "custom-types",
-   "versionRange": "^0.18.2",
-   "additionalData": {}
- },
- {
-   "id": "songcore",
-   "versionRange": "^1.1.20",
-   "additionalData": {}
- },
- {
-   "id": "scotland2",
-   "versionRange": "^0.1.6",
-   "additionalData": {
-  "includeQmod": false,
-  "private": true
-   }
- },
- {
-   "id": "paper2_scotland2",
-   "versionRange": "^4.6.1",
-   "additionalData": {}
- },
- {
-   "id": "lapiz",
-   "versionRange": "^0.2.19",
-   "additionalData": {}
- },
- {
-   "id": "bsml",
-   "versionRange": "^0.4.51",
-   "additionalData": {
-  "private": true
-   }
- },
- {
-   "id": "cpp-semver",
-   "versionRange": "^0.1.2",
-   "additionalData": {
-  "private": true
-   }
- },
- {
-   "id": "capstone",
-   "versionRange": "^0.1.0",
-   "additionalData": {}
- },
- {
-   "id": "kaleb",
-   "versionRange": "^0.1.9",
-   "additionalData": {}
- },
- {
-   "id": "beatsaverplusplus",
-   "versionRange": "^0.2.1",
-   "additionalData": {}
- },
- {
-   "id": "web-utils",
-   "versionRange": "^0.6.7",
-   "additionalData": {}
- }
+    {
+      "id": "libil2cpp",
+      "versionRange": "^0.4.0",
+      "additionalData": {}
+    },
+    {
+      "id": "beatsaber-hook",
+      "versionRange": "^6.4.1",
+      "additionalData": {}
+    },
+    {
+      "id": "bs-cordl",
+      "versionRange": "4004.*",
+      "additionalData": {}
+    },
+    {
+      "id": "custom-types",
+      "versionRange": "^0.18.2",
+      "additionalData": {}
+    },
+    {
+      "id": "songcore",
+      "versionRange": "^1.1.20",
+      "additionalData": {}
+    },
+    {
+      "id": "scotland2",
+      "versionRange": "^0.1.6",
+      "additionalData": {
+        "includeQmod": false,
+        "private": true
+      }
+    },
+    {
+      "id": "paper2_scotland2",
+      "versionRange": "^4.6.1",
+      "additionalData": {}
+    },
+    {
+      "id": "lapiz",
+      "versionRange": "^0.2.19",
+      "additionalData": {}
+    },
+    {
+      "id": "bsml",
+      "versionRange": "^0.4.51",
+      "additionalData": {
+        "private": true
+      }
+    },
+    {
+      "id": "cpp-semver",
+      "versionRange": "^0.1.2",
+      "additionalData": {
+        "private": true
+      }
+    },
+    {
+      "id": "capstone",
+      "versionRange": "^0.1.0",
+      "additionalData": {}
+    },
+    {
+      "id": "kaleb",
+      "versionRange": "^0.1.9",
+      "additionalData": {}
+    },
+    {
+      "id": "beatsaverplusplus",
+      "versionRange": "^0.2.1",
+      "additionalData": {}
+    },
+    {
+      "id": "web-utils",
+      "versionRange": "^0.6.7",
+      "additionalData": {}
+    }
   ]
 }
