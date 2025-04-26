@@ -1,7 +1,7 @@
 #pragma once
 #include "custom-types/shared/macros.hpp"
 
-#include "Models/MpStatusData.hpp"
+#include "../Models/MpStatusData.hpp"
 
 #include "System/Collections/Generic/Dictionary_2.hpp"
 
@@ -10,7 +10,7 @@
 using MpStatusDictionary = System::Collections::Generic::Dictionary_2<StringW, MultiplayerCore::Models::MpStatusData*>;
 
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::Repositories, MpStatusRepository, Il2CppObject,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::Repositories, MpStatusRepository, System::Object) {
     DECLARE_CTOR(New, GlobalNamespace::INetworkConfig* networkConfig);
 
     DECLARE_INSTANCE_FIELD(MpStatusDictionary*, _statusByUrl);
@@ -29,4 +29,4 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Repositories, MpStatusRepository, Il2CppO
 
     private:
         static MpStatusRepository* _instance;
-)
+};

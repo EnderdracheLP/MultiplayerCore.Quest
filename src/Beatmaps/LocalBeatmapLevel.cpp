@@ -30,7 +30,7 @@ namespace MultiplayerCore::Beatmaps {
             localLevel->songDuration,
             localLevel->contentRating,
             localLevel->previewMediaData,
-            localLevel->beatmapBasicData
+            localLevel->____beatmapBasicDatas // Use private field to avoid conversion problems
         );
 
         _localLevel = localLevel;

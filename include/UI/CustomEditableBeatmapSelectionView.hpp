@@ -9,7 +9,7 @@
 #include "Beatmaps/Providers/MpBeatmapLevelProvider.hpp"
 #include "GlobalNamespace/EditableBeatmapSelectionView.hpp"
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, CustomEditableBeatmapSelectionView, GlobalNamespace::EditableBeatmapSelectionView,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, CustomEditableBeatmapSelectionView, GlobalNamespace::EditableBeatmapSelectionView) {
     DECLARE_INSTANCE_FIELD_PRIVATE(Objects::MpPlayersDataModel*, _mpPlayersDataModel);
     DECLARE_INSTANCE_FIELD_PRIVATE(Beatmaps::Providers::MpBeatmapLevelProvider*, _mpBeatmapLevelProvider);
 
@@ -19,4 +19,4 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, CustomEditableBeatmapSelectionView, G
 
     public:
     custom_types::Helpers::Coroutine SetBeatmapCoroutine(GlobalNamespace::BeatmapKey beatmapKey, std::string levelHash);
-)
+};

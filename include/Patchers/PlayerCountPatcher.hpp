@@ -4,7 +4,7 @@
 #include "GlobalNamespace/INetworkConfig.hpp"
 #include "System/IDisposable.hpp"
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Patchers, PlayerCountPatcher, System::Object, classof(System::IDisposable*),
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Patchers, PlayerCountPatcher, System::Object, System::IDisposable*) {
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::INetworkConfig*, _networkConfig);
 
     DECLARE_OVERRIDE_METHOD_MATCH(void, Dispose, &::System::IDisposable::Dispose);
@@ -24,4 +24,4 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Patchers, PlayerCountPatcher, 
         static PlayerCountPatcher* get_instance();
     private:
         static PlayerCountPatcher* instance;
-)
+};

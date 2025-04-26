@@ -4,7 +4,7 @@
 #include "GlobalNamespace/INetworkConfig.hpp"
 #include "System/IDisposable.hpp"
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Patchers, ModeSelectionPatcher, System::Object, classof(System::IDisposable*),
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Patchers, ModeSelectionPatcher, System::Object, System::IDisposable*) {
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::INetworkConfig*, _networkConfig);
     DECLARE_INSTANCE_FIELD_PRIVATE(StringW, lastStatusUrl);
 
@@ -18,4 +18,4 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::Patchers, ModeSelectionPatcher
         static ModeSelectionPatcher* get_instance();
     private:
         static ModeSelectionPatcher* instance;
-)
+};

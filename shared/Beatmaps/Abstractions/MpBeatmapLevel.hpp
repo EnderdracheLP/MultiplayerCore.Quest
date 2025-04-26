@@ -10,7 +10,7 @@
 #include "System/Threading/Tasks/Task_1.hpp"
 #include "System/Threading/CancellationToken.hpp"
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Abstractions, MpBeatmapLevel, GlobalNamespace::BeatmapLevel,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Abstractions, MpBeatmapLevel, GlobalNamespace::BeatmapLevel) {
     DECLARE_INSTANCE_FIELD_PRIVATE(StringW, levelHash);
     public:
         std::string_view get_levelHash() const { return _levelHash; }
@@ -23,4 +23,4 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Beatmaps::Abstractions, MpBeatmapLevel, G
     protected:
         std::string _levelHash;
         void set_levelHash(std::string_view levelHash) { _levelHash = levelHash; }
-)
+};

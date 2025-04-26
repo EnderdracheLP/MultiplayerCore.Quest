@@ -239,12 +239,12 @@ namespace MultiplayerCore::UI {
             // Can't just set the field, as it checks if the instance changed
             // modifierController->_gameplayModifiers->_songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::Normal;
             modifierController->_gameplayModifiers = modifierController->gameplayModifiers->CopyWith(
-                        ::System::Nullable_1<::GlobalNamespace::__GameplayModifiers__EnergyType>(), ::System::Nullable_1<bool>(),
+                        ::System::Nullable_1<::GlobalNamespace::GameplayModifiers::EnergyType>(), ::System::Nullable_1<bool>(),
                         ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(),
-                        ::System::Nullable_1<::GlobalNamespace::__GameplayModifiers__EnabledObstacleType>(), ::System::Nullable_1<bool>(),
+                        ::System::Nullable_1<::GlobalNamespace::GameplayModifiers::EnabledObstacleType>(), ::System::Nullable_1<bool>(),
                         ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(),
                         // SongSpeed is set to Normal
-                        ::System::Nullable_1<::GlobalNamespace::__GameplayModifiers__SongSpeed>(true, GlobalNamespace::GameplayModifiers::SongSpeed::Normal), 
+                        ::System::Nullable_1<::GlobalNamespace::GameplayModifiers::SongSpeed>(true, GlobalNamespace::GameplayModifiers::SongSpeed::Normal), 
                         ::System::Nullable_1<bool>(),
                         ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>(), ::System::Nullable_1<bool>());
             _gameServerLobbyFlowCoordinator->_lobbyPlayersDataModel->SetLocalPlayerGameplayModifiers(
@@ -435,7 +435,7 @@ namespace MultiplayerCore::UI {
         BSML::MainThreadScheduler::Schedule([this](){
             if (_allowedDifficulties->Count > 1) {
                 segmentVert->gameObject->SetActive(true);
-                difficultyControl->SetTexts(_allowedDifficulties->i___System__Collections__Generic__IReadOnlyList_1_T_());
+                difficultyControl->SetTexts(_allowedDifficulties->i___System__Collections__Generic__IReadOnlyList_1_T_(), nullptr);
                 int index = _allowedDifficulties->IndexOf(Utils::EnumUtils::GetEnumName(_currentBeatmapKey.difficulty)->Replace("ExpertPlus", "Expert+"));
                 if (index >= 0) {
                     difficultyControl->SelectCellWithNumber(index);

@@ -2,7 +2,7 @@
 
 #include "Networking/Abstractions/MpPacket.hpp"
 
-DECLARE_CLASS_CUSTOM(MultiplayerCore::NodePoseSyncState, MpNodePoseSyncStatePacket, MultiplayerCore::Networking::Abstractions::MpPacket,
+DECLARE_CLASS_CUSTOM(MultiplayerCore::NodePoseSyncState, MpNodePoseSyncStatePacket, MultiplayerCore::Networking::Abstractions::MpPacket) {
     DECLARE_INSTANCE_FIELD(long, deltaUpdateFrequencyMs);
     DECLARE_INSTANCE_FIELD(long, fullStateUpdateFrequencyMs);
 
@@ -10,4 +10,4 @@ DECLARE_CLASS_CUSTOM(MultiplayerCore::NodePoseSyncState, MpNodePoseSyncStatePack
     DECLARE_OVERRIDE_METHOD_MATCH(void, Deserialize, &LiteNetLib::Utils::INetSerializable::Deserialize, LiteNetLib::Utils::NetDataReader* reader);
 
     DECLARE_CTOR(ctor);
-)
+};  

@@ -15,7 +15,7 @@
 
 using EntitlementsStatusTask = ::System::Threading::Tasks::Task_1<::GlobalNamespace::EntitlementsStatus>;
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpEntitlementChecker, GlobalNamespace::NetworkPlayerEntitlementChecker,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpEntitlementChecker, GlobalNamespace::NetworkPlayerEntitlementChecker) {
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::IMultiplayerSessionManager*, _sessionManager);
 
     DECLARE_INJECT_METHOD(void, Inject, GlobalNamespace::IMultiplayerSessionManager* sessionManager);
@@ -36,4 +36,4 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::Objects, MpEntitlementChecker, GlobalName
         GlobalNamespace::EntitlementsStatus GetEntitlementStatus(std::string_view levelHash);
         std::unordered_map<std::string, std::unordered_map<std::string, GlobalNamespace::EntitlementsStatus>> _entitlementsDictionary;
         std::unordered_map<std::string, SafePtr<EntitlementsStatusTask>> _entitlementsTasks;
-)
+};

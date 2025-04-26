@@ -2,7 +2,7 @@
 
 #include "./_config.h"
 #include "ServerConfig.hpp"
-#include "Repositories/MpStatusRepository.hpp"
+#include "Models/MpStatusData.hpp"
 
 namespace MultiplayerCore {
     struct MPCORE_EXPORT API {

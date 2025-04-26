@@ -27,8 +27,7 @@
 #include "Players/Packets/MpPerPlayerPacket.hpp"
 #include "Players/Packets/GetMpPerPlayerPacket.hpp"
 
-DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Object, std::vector<Il2CppClass*>({ classof(::Zenject::IInitializable*), classof(::System::IDisposable*)}),
-
+DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Object, ::Zenject::IInitializable*, ::System::IDisposable*) {
     DECLARE_INSTANCE_FIELD(GlobalNamespace::GameServerLobbyFlowCoordinator*, _gameServerLobbyFlowCoordinator);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::LobbySetupViewController*, _lobbyViewController);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::ILobbyGameStateController*, _gameStateController);
@@ -92,4 +91,4 @@ DECLARE_CLASS_CODEGEN_INTERFACES(MultiplayerCore::UI, MpPerPlayerUI, System::Obj
     DECLARE_INSTANCE_FIELD(System::Action_1<GlobalNamespace::BeatmapKey>*, updateDifficultyListDelegate);
     DECLARE_INSTANCE_FIELD(System::Action*, clearLocalSelectedBeatmapDelegate);
     DECLARE_INSTANCE_FIELD(System::Action*, updateButtonsEnabledDelegate);
-)
+};

@@ -102,7 +102,7 @@ namespace MultiplayerCore::Beatmaps::Providers {
 
         if (!dict) {
             dict = BasicDataDict::New_ctor();
-            level->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
+            level->____beatmapBasicDatas = dict;
         }
 
         auto key = System::ValueTuple_2<UnityW<GlobalNamespace::BeatmapCharacteristicSO>, GlobalNamespace::BeatmapDifficulty>(
@@ -116,14 +116,14 @@ namespace MultiplayerCore::Beatmaps::Providers {
                 key,
                 GlobalNamespace::BeatmapBasicData::New_ctor(
                     0, 0, GlobalNamespace::EnvironmentName::getStaticF_Empty(),
-                    nullptr, 0, 0, 0,
+                    nullptr, 0, 0, 0, 0,
                     (level->allMappers.size() > 0 ? level->allMappers : std::initializer_list<StringW>{packet ? packet->levelAuthorName : ""}), level->allLighters
 
                 )
             );
         }
 
-        level->beatmapBasicData = dict->i___System__Collections__Generic__IReadOnlyDictionary_2_TKey_TValue_();
+        level->____beatmapBasicDatas = dict;
         return level;
     }
 }

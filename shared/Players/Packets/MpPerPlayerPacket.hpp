@@ -2,7 +2,7 @@
 
 #include "custom-types/shared/macros.hpp"
 
-DECLARE_CLASS_CUSTOM(MultiplayerCore::Players::Packets, MpPerPlayerPacket, MultiplayerCore::Networking::Abstractions::MpPacket,
+DECLARE_CLASS_CUSTOM(MultiplayerCore::Players::Packets, MpPerPlayerPacket, MultiplayerCore::Networking::Abstractions::MpPacket) {
     DECLARE_INSTANCE_FIELD(bool, PPDEnabled);
     DECLARE_INSTANCE_FIELD(bool, PPMEnabled);
     
@@ -10,4 +10,4 @@ DECLARE_CLASS_CUSTOM(MultiplayerCore::Players::Packets, MpPerPlayerPacket, Multi
     DECLARE_OVERRIDE_METHOD_MATCH(void, Deserialize, &LiteNetLib::Utils::INetSerializable::Deserialize, LiteNetLib::Utils::NetDataReader* reader);
 public:
     DECLARE_DEFAULT_CTOR();
-)
+};

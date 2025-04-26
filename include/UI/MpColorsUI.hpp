@@ -11,7 +11,7 @@
 #include "UnityEngine/RectTransform.hpp"
 #include "UnityEngine/Vector3.hpp"
 
-DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, MpColorsUI, System::Object,
+DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, MpColorsUI, System::Object) {
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::LobbySetupViewController*, _lobbySetupViewController);
     DECLARE_INSTANCE_FIELD_PRIVATE(GlobalNamespace::ColorSchemeView*, _colorSchemeView);
 
@@ -32,4 +32,4 @@ DECLARE_CLASS_CODEGEN(MultiplayerCore::UI, MpColorsUI, System::Object,
 
         void AcceptColors(Beatmaps::Abstractions::DifficultyColors const& colors);
         void AcceptColors(SongCore::CustomJSONData::CustomSaveDataInfo::BasicCustomDifficultyBeatmapDetails::CustomColors const& colors);
-)
+};

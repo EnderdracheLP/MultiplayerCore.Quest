@@ -1,7 +1,8 @@
 #pragma once
 
+#include <future>
 #include <string>
-#include "paper/shared/utfcpp/source/utf8.h"
+#include "paper2_scotland2/shared/utfcpp/source/utf8.h"
 #include "beatsaber-hook/shared/utils/typedefs-string.hpp"
 
 namespace MultiplayerCore {
