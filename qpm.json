@@ -17,7 +17,30 @@
     }
   },
   "workspace": {
-    "scripts": {},
+    "scripts": {
+      "build": [
+        "pwsh build.ps1 $0:?"
+      ],
+      "bump": [
+        "pwsh ./scripts/bumpQPMdeps.ps1 $0:?"
+      ],
+      "clean": [
+        "qpm s build -- -clean $0:?"
+      ],
+      "copy": [
+        "pwsh copy.ps1 $0:?"
+      ],
+      "prepare-debugger": [
+        "pwsh PrepareEnvForDebugger.ps1 $0:?"
+      ],
+      "qmod": [
+        "qpm s build",
+        "pwsh buildQMOD.ps1 MultiplayerCore"
+      ],
+      "stack": [
+        "pwsh ndk-stack.ps1 $0:?"
+      ]
+    },
     "ndk": "^27.2.12479018",
     "qmodIncludeDirs": [],
     "qmodIncludeFiles": [],
