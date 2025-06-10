@@ -43,9 +43,12 @@
         ]
       },
       "ndk": "^27.2.12479018",
-      "qmodIncludeDirs": [],
+      "qmodIncludeDirs": [
+        "extern/libs",
+        "build"
+      ],
       "qmodIncludeFiles": [],
-      "qmodOutput": null
+      "qmodOutput": "MultiplayerCore.qmod"
     },
     "dependencies": [
       {
