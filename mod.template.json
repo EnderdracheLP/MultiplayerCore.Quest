@@ -11,6 +11,7 @@
   "coverImage": "Cover.png",
   "dependencies": [],
   "modFiles": [],
+  "lateModFiles": ["${binary}"],
   "libraryFiles": [],
   "fileCopies": [],
   "copyExtensions": []
