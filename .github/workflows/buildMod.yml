@@ -64,10 +64,17 @@ jobs:
         ls -lh $HOME/.local/share/QPM-RS/cache
         echo ""
 
-    - name: Build
+    # - name: Build
+    #   run: |
+    #     cd ${GITHUB_WORKSPACE}
+    #     pwsh -Command ./build.ps1 -actions
+
+    - name: Build & Package QMOD
+      shell: pwsh
       run: |
-        cd ${GITHUB_WORKSPACE}
-        pwsh -Command ./build.ps1 -actions
+        cd ${{ github.workspace }}
+        qpm package edit --version ${{ env.qmodversion }}
+        qpm qmod zip -i ./build/ -i ./extern/libs/ ${{ env.module_id }}_${{ env.qmodversion }}.qmod
 
     - name: Get Library Name
       id: libname
@@ -76,14 +83,6 @@ jobs:
         pattern="lib${module_id}*.so"
         files=( $pattern )
         echo "NAME=${files[0]}" >> $GITHUB_OUTPUT
-
-    - name: Package QMOD
-      shell: pwsh
-      run: |
-        cd ${{ github.workspace }}
-        qpm package edit --version ${{ env.qmodversion }}
-        qpm qmod zip -i ./build/ -i ./extern/libs/ ${{ env.module_id }}_${{ env.qmodversion }}.qmod
-
 
     - name: Upload non-debug artifact
       uses: actions/upload-artifact@v4
