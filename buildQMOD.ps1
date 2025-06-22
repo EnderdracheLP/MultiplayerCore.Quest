@@ -46,22 +46,28 @@ if ($package -eq $true) {
     echo "Actions: Packaging QMod $qmodName"
 }
 if (($args.Count -eq 0) -And $package -eq $false) {
-echo "Creating QMod $qmodName"
+    echo "Creating QMod $qmodName"
+
+    $qpm = "./qpm.json"
+    $qpmJson = Get-Content $qpm -Raw | ConvertFrom-Json
+
+    if ($release -ne $true -and -not $qpmjson.info.version.Contains('+Dev')) {
+        $version = $qpmjson.info.version + "+Dev"
+    }
+
     if ($version.Length -gt 0) {
         $qmodName += "_$($version)"
         qpm package edit --version $version
     }
     else {
-        $qpm = "./qpm.json"
-        $qpmJson = Get-Content $qpm -Raw | ConvertFrom-Json
         $qmodName += "_$($qpmJson.info.version)"
     }
-    & $PSScriptRoot/build.ps1 -clean:$clean -version:$version -release:$release
+    # & $PSScriptRoot/build.ps1 -clean:$clean -version:$version -release:$release
 
-    if ($LASTEXITCODE -ne 0) {
-        echo "Failed to build, exiting..."
-        exit $LASTEXITCODE
-    }
+    # if ($LASTEXITCODE -ne 0) {
+    #     echo "Failed to build, exiting..."
+    #     exit $LASTEXITCODE
+    # }
 
     # qpm qmod manifest
 }
