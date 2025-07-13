@@ -8,6 +8,7 @@
 #include "GlobalNamespace/MultiplayerUnavailableReasonMethods.hpp"
 #include "GlobalNamespace/ConnectionFailedReason.hpp"
 #include "GlobalNamespace/ConnectionFailedReasonMethods.hpp"
+#include "GlobalNamespace/MultiplayerPlacementErrorCode.hpp"
 #include "GlobalNamespace/MultiplayerPlacementErrorCodeMethods.hpp"
 #include "GlobalNamespace/MultiplayerStatusData.hpp"
 #include "UnityEngine/Application.hpp"
@@ -116,11 +117,38 @@ MAKE_AUTO_HOOK_MATCH(ConnectionFailedReasonMethods_LocalizedKey, &::GlobalNamesp
     return ConnectionFailedReasonMethods_LocalizedKey(connectionFailedReason);
 }
 
-MAKE_AUTO_HOOK_MATCH(MultiplayerPlacementErrorCodeMethods_ToConnectionFailedReason, &::GlobalNamespace::MultiplayerPlacementErrorCodeMethods::ToConnectionFailedReason, GlobalNamespace::ConnectionFailedReason, GlobalNamespace::MultiplayerPlacementErrorCode errorCode)
+MAKE_AUTO_HOOK_ORIG_MATCH(MultiplayerPlacementErrorCodeMethods_ToConnectionFailedReason, &::GlobalNamespace::MultiplayerPlacementErrorCodeMethods::ToConnectionFailedReason, GlobalNamespace::ConnectionFailedReason, GlobalNamespace::MultiplayerPlacementErrorCode errorCode)
 {
     if (errorCode.value__ >= 50)
     {
         return GlobalNamespace::ConnectionFailedReason(errorCode.value__);
     }
-    return MultiplayerPlacementErrorCodeMethods_ToConnectionFailedReason(errorCode);
+    // We do not run orig, as it currently causes a crash
+    // return MultiplayerPlacementErrorCodeMethods_ToConnectionFailedReason(errorCode);
+
+    // Reimplementation of orig method
+    switch (errorCode)
+    {
+    case GlobalNamespace::MultiplayerPlacementErrorCode::Success:
+        return GlobalNamespace::ConnectionFailedReason::None;
+    case GlobalNamespace::MultiplayerPlacementErrorCode::Unknown:
+        return GlobalNamespace::ConnectionFailedReason::Unknown;
+    case GlobalNamespace::MultiplayerPlacementErrorCode::ConnectionCanceled:
+        return GlobalNamespace::ConnectionFailedReason::ConnectionCanceled;
+    case GlobalNamespace::MultiplayerPlacementErrorCode::ServerDoesNotExist:
+        return GlobalNamespace::ConnectionFailedReason::ServerDoesNotExist;
+    case GlobalNamespace::MultiplayerPlacementErrorCode::ServerAtCapacity:
+        return GlobalNamespace::ConnectionFailedReason::ServerAtCapacity;
+    case GlobalNamespace::MultiplayerPlacementErrorCode::AuthenticationFailed:
+        return GlobalNamespace::ConnectionFailedReason::InvalidPassword;
+    case GlobalNamespace::MultiplayerPlacementErrorCode::RequestTimeout:
+        return GlobalNamespace::ConnectionFailedReason::Timeout;
+    case GlobalNamespace::MultiplayerPlacementErrorCode::MatchmakingTimeout:
+        return GlobalNamespace::ConnectionFailedReason::FailedToFindMatch;
+    case GlobalNamespace::MultiplayerPlacementErrorCode::MismatchedServerEnvironment:
+        return GlobalNamespace::ConnectionFailedReason::MismatchedServerEnvironment;
+    default:
+        return GlobalNamespace::ConnectionFailedReason::Unknown;
+    }
+
 }
