@@ -20,6 +20,7 @@
 #include "custom-types/shared/delegate.hpp"
 
 #include <atomic>
+#include <exception>
 #include <sys/system_properties.h>
 
 static ConstString dummy_auth("who_is_rem_?");
@@ -108,24 +109,36 @@ MAKE_AUTO_HOOK_ORIG_MATCH(OculusPlatformUserModel_GetUserInfo, &GlobalNamespace:
     DEBUG("Running Orig");
     auto t = OculusPlatformUserModel_GetUserInfo(self, ctx);
     DEBUG("Got Orig task, starting custom task");
-    return MultiplayerCore::StartTask<GlobalNamespace::UserInfo*>([=](){
-        using namespace std::chrono_literals;
-        DEBUG("Start UserInfoTask");
-        while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
-        GlobalNamespace::UserInfo* info = t->ResultOnSuccess;
-        DEBUG("Task finished getting result");
-        if (info) {
-            INFO("Successfully got user info, returning it!");
-            if (isPico.load())
-            {
-                INFO("User is on Pico, changing platform to 20");
-                info->platform = GlobalNamespace::UserInfo::Platform(20);
+    try {
+        return MultiplayerCore::StartTask<GlobalNamespace::UserInfo*>([=](){
+            using namespace std::chrono_literals;
+            DEBUG("Start UserInfoTask");
+            while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
+            DEBUG("Task finished getting result");
+            GlobalNamespace::UserInfo* info;
+            if (!t->IsFaulted) {
+                try {
+                    info = t->Result;
+                } catch (const std::exception& ex) {
+                    ERROR("Error getting UserInfo: {}", ex.what());
+                }
+            } else DEBUG("UserInfo Task faulted");
+            if (info) {
+                INFO("Successfully got user info, returning it!");
+                if (isPico.load())
+                {
+                    INFO("User is on Pico, changing platform to 20");
+                    info->platform = GlobalNamespace::UserInfo::Platform(20);
+                }
+            } else {
+                ERROR("UserInfo null!");
             }
-        } else {
-            ERROR("UserInfo null!");
-        }
-        return info;
-    });
+            return info;
+        });
+    } catch (const std::exception& ex) {
+        ERROR("Could not Start Task: {}", ex.what());
+        return t;
+    }
 }
 
 
