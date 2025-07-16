@@ -113,7 +113,11 @@ MAKE_AUTO_HOOK_ORIG_MATCH(OculusPlatformUserModel_GetUserInfo, &GlobalNamespace:
         return MultiplayerCore::StartTask<GlobalNamespace::UserInfo*>([=](){
             using namespace std::chrono_literals;
             DEBUG("Start UserInfoTask");
-            while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
+            try {
+                while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
+            } catch (const std::exception& ex) {
+                DEBUG("Exception while awaiting task: {}", ex.what());
+            }
             DEBUG("Task finished getting result");
             GlobalNamespace::UserInfo* info;
             if (!t->IsFaulted) {
