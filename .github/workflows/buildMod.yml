@@ -35,6 +35,11 @@ jobs:
         $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "version=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('+', '-').Split('-')[0])-$($branchMain).${{ github.run_number }}+$($branchSub)ra${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         $branchParts = '${{ github.ref_name }}'.Split('/'); $branchMain = $branchParts[0]; if ($branchParts[0] -match "^\d+$") { $branchMain = 'pr'; $branchSub = "$($branchParts[0])." } elseif ($branchParts.Length -eq 2) { $branchSub = "$($branchParts[1].Replace('.', '-'))." }; echo "qmodversion=$((Get-Content ./qpm.shared.json -Raw | ConvertFrom-Json).config.info.version.Replace('+', '-').Split('-')[0])+$($branchMain).$($branchSub)r${{ github.run_number }}a${{ github.run_attempt }}.$($env:GITHUB_SHA.Substring(0, 7))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+    - name: Get BSVersion
+      shell: pwsh
+      run: |
+        echo "BSVersion=$((Get-Content ./mod.template.json -Raw | ConvertFrom-Json).packageVersion)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
     - uses: seanmiddleditch/gha-setup-ninja@v5
 
     - name: Get QPM
