@@ -108,41 +108,46 @@ MAKE_AUTO_HOOK_ORIG_MATCH(OculusPlatformUserModel_GetUserInfo, &GlobalNamespace:
 
     DEBUG("Running Orig");
     auto t = OculusPlatformUserModel_GetUserInfo(self, ctx);
-    DEBUG("Got Orig task, starting custom task");
-    try {
-        return MultiplayerCore::StartTask<GlobalNamespace::UserInfo*>([=](){
-            using namespace std::chrono_literals;
-            DEBUG("Start UserInfoTask");
-            try {
-                while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
-            } catch (const std::exception& ex) {
-                DEBUG("Exception while awaiting task: {}", ex.what());
-            }
-            DEBUG("Task finished getting result");
-            GlobalNamespace::UserInfo* info;
-            if (!t->IsFaulted) {
+    if (isPico.load()) {
+        DEBUG("Got Orig task on Pico, starting custom task");
+        try {
+            return MultiplayerCore::StartTask<GlobalNamespace::UserInfo*>([=](){
+                using namespace std::chrono_literals;
+                DEBUG("Start UserInfoTask");
                 try {
-                    info = t->Result;
+                    while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
                 } catch (const std::exception& ex) {
-                    ERROR("Error getting UserInfo: {}", ex.what());
+                    DEBUG("Exception while awaiting task: {}", ex.what());
                 }
-            } else DEBUG("UserInfo Task faulted");
-            if (info) {
-                INFO("Successfully got user info, returning it!");
-                if (isPico.load())
-                {
+                DEBUG("Task finished getting result");
+                GlobalNamespace::UserInfo* info;
+                if (!t->IsFaulted) {
+                    try {
+                        info = t->Result;
+                    } catch (const std::exception& ex) {
+                        ERROR("Error getting UserInfo: {}", ex.what());
+                    }
+                } else DEBUG("UserInfo Task faulted");
+                if (info) {
+                    // INFO("Successfully got user info, returning it!");
+                    // if (isPico.load())
+                    // {
                     INFO("User is on Pico, changing platform to 20");
                     info->platform = GlobalNamespace::UserInfo::Platform(20);
+                    // }
+                } else {
+                    ERROR("UserInfo null!");
                 }
-            } else {
-                ERROR("UserInfo null!");
-            }
-            return info;
-        });
-    } catch (const std::exception& ex) {
-        ERROR("Could not Start Task: {}", ex.what());
-        return t;
+                return info;
+            });
+        } catch (const std::exception& ex) {
+            ERROR("Could not Start Task: {}", ex.what());
+            return t;
+        }
     }
+    DEBUG("On Oculus, skipping custom task, returning orig");
+    return t;
+    // t->ContinueWith(custom_types::MakeDelegate<::System::Threading::Tasks::Task_1<GlobalNamespace::UserInfo*>>())
 }
 
 
