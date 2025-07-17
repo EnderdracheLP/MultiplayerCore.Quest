@@ -110,6 +110,9 @@ MAKE_AUTO_HOOK_ORIG_MATCH(OculusPlatformUserModel_GetUserInfo, &GlobalNamespace:
     auto t = OculusPlatformUserModel_GetUserInfo(self, ctx);
     if (isPico.load()) {
         DEBUG("Got Orig task on Pico, starting custom task");
+        if (!il2cpp_functions::initialized) {
+            CRITICAL("il2cpp_functions not initialized, this should never happen");
+        }
         try {
             return MultiplayerCore::StartTask<GlobalNamespace::UserInfo*>([=](){
                 using namespace std::chrono_literals;
