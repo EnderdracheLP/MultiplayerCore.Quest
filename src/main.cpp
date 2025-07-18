@@ -2,6 +2,8 @@
 #include "hooking.hpp"
 #include "logging.hpp"
 
+#include "tasks.hpp"
+
 #include "custom-types/shared/register.hpp"
 
 #include "Installers/MpAppInstaller.hpp"
@@ -34,4 +36,14 @@ MPCORE_EXPORT_FUNC void late_load() {
     zenjector->Install<MultiplayerCore::Installers::MpMenuInstaller*>(Lapiz::Zenject::Location::Menu);
 
     INFO("Mod '{}' with version '{}' version long {} finished late load", MOD_ID, VERSION, VERSION_LONG);
+
+    // TODO: Remove test thread
+    DEBUG("Running Thread Test");
+    auto testT = MultiplayerCore::StartTask<bool>([]() {
+        try {
+            DEBUG("Message from Thread Test");
+        } catch (...) {}
+        return true;
+    });
+    DEBUG("Started Thread Test");
 }
