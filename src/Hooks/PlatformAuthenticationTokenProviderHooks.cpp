@@ -106,28 +106,18 @@ MAKE_AUTO_HOOK_ORIG_MATCH(OculusPlatformUserModel_GetUserInfo, &GlobalNamespace:
             }, nullptr);
     }
 
-    DEBUG("Running Orig");
     auto t = OculusPlatformUserModel_GetUserInfo(self, ctx);
     if (isPico.load()) {
-        DEBUG("Got Orig task on Pico, starting custom task");
+        DEBUG("Got Orig task, on Pico, starting custom task");
         try {
             return MultiplayerCore::StartTask<GlobalNamespace::UserInfo*>([=](){
                 using namespace std::chrono_literals;
                 DEBUG("Start UserInfoTask");
-                try {
-                    while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
-                } catch (const std::exception& ex) {
-                    DEBUG("Exception while awaiting task: {}", ex.what());
-                }
-                DEBUG("Task finished getting result");
+                while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
                 GlobalNamespace::UserInfo* info;
                 if (!t->IsFaulted) {
-                    try {
-                        info = t->Result;
-                    } catch (const std::exception& ex) {
-                        ERROR("Error getting UserInfo: {}", ex.what());
-                    }
-                } else DEBUG("UserInfo Task faulted");
+                    info = t->Result;
+                } else ERROR("UserInfo Task faulted");
                 if (info) {
                     // INFO("Successfully got user info, returning it!");
                     // if (isPico.load())
