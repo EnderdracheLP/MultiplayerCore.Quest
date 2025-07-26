@@ -67,7 +67,7 @@ void Patch_MultiplayerPlayersManager_SpawnPlayers() {
         }
     }
 }
-// AUTO_INSTALL_PATCH(MultiplayerPlayersManager_SpawnPlayers);
+AUTO_INSTALL_PATCH(MultiplayerPlayersManager_SpawnPlayers);
 
 void Patch_MultiplayerLobbyCenterStageManager_RecalculateCenterPosition() {
     static auto il2cpp_base = baseAddr("libil2cpp.so");
@@ -91,7 +91,7 @@ void Patch_MultiplayerLobbyCenterStageManager_RecalculateCenterPosition() {
         }
     }
 }
-// AUTO_INSTALL_PATCH(MultiplayerLobbyCenterStageManager_RecalculateCenterPosition);
+AUTO_INSTALL_PATCH(MultiplayerLobbyCenterStageManager_RecalculateCenterPosition);
 
 void Patch_MultiplayerLobbyAvatarPlaceManager_SpawnAllPlaces() {
     static auto il2cpp_base = baseAddr("libil2cpp.so");
@@ -115,7 +115,7 @@ void Patch_MultiplayerLobbyAvatarPlaceManager_SpawnAllPlaces() {
         }
     }
 }
-// AUTO_INSTALL_PATCH(MultiplayerLobbyAvatarPlaceManager_SpawnAllPlaces);
+AUTO_INSTALL_PATCH(MultiplayerLobbyAvatarPlaceManager_SpawnAllPlaces);
 
 void Patch_MultiplayerLobbyAvatarManager_AddPlayer() {
     static auto il2cpp_base = baseAddr("libil2cpp.so");
@@ -139,4 +139,4 @@ void Patch_MultiplayerLobbyAvatarManager_AddPlayer() {
         }
     }
 }
-// AUTO_INSTALL_PATCH(MultiplayerLobbyAvatarManager_AddPlayer);
+AUTO_INSTALL_PATCH(MultiplayerLobbyAvatarManager_AddPlayer);
