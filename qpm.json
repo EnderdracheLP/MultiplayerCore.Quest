@@ -6,14 +6,14 @@
   "info": {
     "name": "MultiplayerCore",
     "id": "multiplayer-core",
-    "version": "1.6.3",
+    "version": "1.6.4",
     "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
     "additionalData": {
-      "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.3/libMultiplayerCore.so",
-      "debugSoLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.3/debug_libMultiplayerCore.so",
+      "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.4/libMultiplayerCore.so",
+      "debugSoLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.4/debug_libMultiplayerCore.so",
       "overrideSoName": "libMultiplayerCore.so",
-      "modLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.3/MultiplayerCore_1.6.3.qmod",
-      "branchName": "version/1.6.3",
+      "modLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.4/MultiplayerCore_1.6.4.qmod",
+      "branchName": "version/1.6.4",
       "cmake": true
     }
   },
@@ -62,7 +62,7 @@
     },
     {
       "id": "bs-cordl",
-      "versionRange": "4007.*",
+      "versionRange": "4008.*",
       "additionalData": {}
     },
     {
@@ -72,7 +72,7 @@
     },
     {
       "id": "songcore",
-      "versionRange": "^1.1.23",
+      "versionRange": "^1.1.24",
       "additionalData": {}
     },
     {
@@ -90,12 +90,12 @@
     },
     {
       "id": "lapiz",
-      "versionRange": "^0.2.22",
+      "versionRange": "^0.2.23",
       "additionalData": {}
     },
     {
       "id": "bsml",
-      "versionRange": "^0.4.54",
+      "versionRange": "^0.4.55",
       "additionalData": {
         "private": true
       }

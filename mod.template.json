@@ -6,7 +6,7 @@
   "porter": "EnderdracheLP, cubic, RedBrumbler",
   "version": "${version}",
   "packageId": "com.beatgames.beatsaber",
-  "packageVersion": "1.40.7_7060",
+  "packageVersion": "1.40.8_7379",
   "description": "Adds custom songs to Beat Saber Multiplayer.",
   "coverImage": "Cover.png",
   "dependencies": [],

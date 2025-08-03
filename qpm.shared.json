@@ -1,5 +1,4 @@
 {
-  "$schema": "https://raw.githubusercontent.com/QuestPackageManager/QPM.Package/refs/heads/main/qpm.shared.schema.json",
   "config": {
     "version": "0.1.0",
     "sharedDir": "shared",
@@ -7,14 +6,14 @@
     "info": {
       "name": "MultiplayerCore",
       "id": "multiplayer-core",
-      "version": "1.6.3",
+      "version": "1.6.4",
       "url": "https://github.com/EnderdracheLP/MultiplayerCore.Quest",
       "additionalData": {
-        "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.3/libMultiplayerCore.so",
-        "debugSoLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.3/debug_libMultiplayerCore.so",
+        "soLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.4/libMultiplayerCore.so",
+        "debugSoLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.4/debug_libMultiplayerCore.so",
         "overrideSoName": "libMultiplayerCore.so",
-        "modLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.3/MultiplayerCore_1.6.3.qmod",
-        "branchName": "version/1.6.3",
+        "modLink": "https://github.com/EnderdracheLP/MultiplayerCore.Quest/releases/download/1.6.4/MultiplayerCore_1.6.4.qmod",
+        "branchName": "version/1.6.4",
         "cmake": true
       }
     },
@@ -63,7 +62,7 @@
       },
       {
         "id": "bs-cordl",
-        "versionRange": "4007.*",
+        "versionRange": "4008.*",
         "additionalData": {}
       },
       {
@@ -73,7 +72,7 @@
       },
       {
         "id": "songcore",
-        "versionRange": "^1.1.23",
+        "versionRange": "^1.1.24",
         "additionalData": {}
       },
       {
@@ -91,12 +90,12 @@
       },
       {
         "id": "lapiz",
-        "versionRange": "^0.2.22",
+        "versionRange": "^0.2.23",
         "additionalData": {}
       },
       {
         "id": "bsml",
-        "versionRange": "^0.4.54",
+        "versionRange": "^0.4.55",
         "additionalData": {
           "private": true
         }
@@ -133,117 +132,6 @@
   "restoredDependencies": [
     {
       "dependency": {
-        "id": "sombrero",
-        "versionRange": "=0.1.43",
-        "additionalData": {
-          "headersOnly": true,
-          "branchName": "version/v0_1_43"
-        }
-      },
-      "version": "0.1.43"
-    },
-    {
-      "dependency": {
-        "id": "beatsaverplusplus",
-        "versionRange": "=0.2.1",
-        "additionalData": {
-          "soLink": "https://github.com/bsq-ports/BeatSaverPlusPlus/releases/download/v0.2.1/libbeatsaverplusplus.so",
-          "debugSoLink": "https://github.com/bsq-ports/BeatSaverPlusPlus/releases/download/v0.2.1/debug_libbeatsaverplusplus.so",
-          "overrideSoName": "libbeatsaverplusplus.so",
-          "modLink": "https://github.com/bsq-ports/BeatSaverPlusPlus/releases/download/v0.2.1/BeatSaverPlusPlus.qmod",
-          "branchName": "version/v0_2_1",
-          "cmake": false
-        }
-      },
-      "version": "0.2.1"
-    },
-    {
-      "dependency": {
-        "id": "bs-cordl",
-        "versionRange": "=4007.0.0",
-        "additionalData": {
-          "headersOnly": true,
-          "branchName": "version/v4007_0_0",
-          "compileOptions": {
-            "includePaths": [
-              "include"
-            ],
-            "cppFeatures": [],
-            "cppFlags": [
-              "-DNEED_UNSAFE_CSHARP",
-              "-fdeclspec",
-              "-DUNITY_2021",
-              "-DHAS_CODEGEN",
-              "-Wno-invalid-offsetof"
-            ]
-          }
-        }
-      },
-      "version": "4007.0.0"
-    },
-    {
-      "dependency": {
-        "id": "lapiz",
-        "versionRange": "=0.2.22",
-        "additionalData": {
-          "soLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.22/liblapiz.so",
-          "debugSoLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.22/debug_liblapiz.so",
-          "overrideSoName": "liblapiz.so",
-          "modLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.22/Lapiz.qmod",
-          "branchName": "version/v0_2_22",
-          "cmake": true
-        }
-      },
-      "version": "0.2.22"
-    },
-    {
-      "dependency": {
-        "id": "tinyxml2",
-        "versionRange": "=10.0.0",
-        "additionalData": {
-          "soLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v10.0.0/libtinyxml2.so",
-          "debugSoLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v10.0.0/debug_libtinyxml2.so",
-          "overrideSoName": "libtinyxml2.so",
-          "modLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v10.0.0/tinyxml2.qmod",
-          "branchName": "version/v10_0_0",
-          "cmake": true
-        }
-      },
-      "version": "10.0.0"
-    },
-    {
-      "dependency": {
-        "id": "fmt",
-        "versionRange": "=11.0.2",
-        "additionalData": {
-          "headersOnly": true,
-          "branchName": "version/v11_0_2",
-          "compileOptions": {
-            "systemIncludes": [
-              "fmt/include/"
-            ],
-            "cppFlags": [
-              "-DFMT_HEADER_ONLY"
-            ]
-          }
-        }
-      },
-      "version": "11.0.2"
-    },
-    {
-      "dependency": {
-        "id": "capstone",
-        "versionRange": "=0.1.0",
-        "additionalData": {
-          "staticLinking": true,
-          "soLink": "https://github.com/sc2ad/capstone-qpm/releases/download/v0.1.0/libcapstone.a",
-          "overrideSoName": "libcapstone.a"
-        }
-      },
-      "version": "0.1.0"
-    },
-    {
-      "dependency": {
         "id": "web-utils",
         "versionRange": "=0.6.7",
         "additionalData": {
@@ -275,16 +163,71 @@
     },
     {
       "dependency": {
-        "id": "scotland2",
-        "versionRange": "=0.1.6",
+        "id": "bsml",
+        "versionRange": "=0.4.55",
         "additionalData": {
-          "soLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.6/libsl2.so",
-          "debugSoLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.6/debug_libsl2.so",
-          "overrideSoName": "libsl2.so",
-          "branchName": "version/v0_1_6"
+          "soLink": "https://github.com/bsq-ports/Quest-BSML/releases/download/v0.4.55/libbsml.so",
+          "debugSoLink": "https://github.com/bsq-ports/Quest-BSML/releases/download/v0.4.55/debug_libbsml.so",
+          "overrideSoName": "libbsml.so",
+          "modLink": "https://github.com/bsq-ports/Quest-BSML/releases/download/v0.4.55/BSML.qmod",
+          "branchName": "version/v0_4_55",
+          "cmake": true
         }
       },
-      "version": "0.1.6"
+      "version": "0.4.55"
+    },
+    {
+      "dependency": {
+        "id": "sombrero",
+        "versionRange": "=0.1.43",
+        "additionalData": {
+          "headersOnly": true,
+          "branchName": "version/v0_1_43"
+        }
+      },
+      "version": "0.1.43"
+    },
+    {
+      "dependency": {
+        "id": "capstone",
+        "versionRange": "=0.1.0",
+        "additionalData": {
+          "staticLinking": true,
+          "soLink": "https://github.com/sc2ad/capstone-qpm/releases/download/v0.1.0/libcapstone.a",
+          "overrideSoName": "libcapstone.a"
+        }
+      },
+      "version": "0.1.0"
+    },
+    {
+      "dependency": {
+        "id": "songcore",
+        "versionRange": "=1.1.24",
+        "additionalData": {
+          "soLink": "https://github.com/raineaeternal/Quest-SongCore/releases/download/v1.1.24/libsongcore.so",
+          "debugSoLink": "https://github.com/raineaeternal/Quest-SongCore/releases/download/v1.1.24/debug_libsongcore.so",
+          "overrideSoName": "libsongcore.so",
+          "modLink": "https://github.com/raineaeternal/Quest-SongCore/releases/download/v1.1.24/SongCore.qmod",
+          "branchName": "version/v1_1_24",
+          "cmake": true
+        }
+      },
+      "version": "1.1.24"
+    },
+    {
+      "dependency": {
+        "id": "tinyxml2",
+        "versionRange": "=10.0.0",
+        "additionalData": {
+          "soLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v10.0.0/libtinyxml2.so",
+          "debugSoLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v10.0.0/debug_libtinyxml2.so",
+          "overrideSoName": "libtinyxml2.so",
+          "modLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v10.0.0/tinyxml2.qmod",
+          "branchName": "version/v10_0_0",
+          "cmake": true
+        }
+      },
+      "version": "10.0.0"
     },
     {
       "dependency": {
@@ -302,6 +245,25 @@
         }
       },
       "version": "0.1.9"
+    },
+    {
+      "dependency": {
+        "id": "paper2_scotland2",
+        "versionRange": "=4.6.4",
+        "additionalData": {
+          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v4.6.4/libpaper2_scotland2.so",
+          "overrideSoName": "libpaper2_scotland2.so",
+          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v4.6.4/paper2_scotland2.qmod",
+          "branchName": "version/v4_6_4",
+          "compileOptions": {
+            "systemIncludes": [
+              "shared/utfcpp/source"
+            ]
+          },
+          "cmake": false
+        }
+      },
+      "version": "4.6.4"
     },
     {
       "dependency": {
@@ -325,22 +287,27 @@
     },
     {
       "dependency": {
-        "id": "paper2_scotland2",
-        "versionRange": "=4.6.4",
+        "id": "bs-cordl",
+        "versionRange": "=4008.0.0",
         "additionalData": {
-          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v4.6.4/libpaper2_scotland2.so",
-          "overrideSoName": "libpaper2_scotland2.so",
-          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v4.6.4/paper2_scotland2.qmod",
-          "branchName": "version/v4_6_4",
+          "headersOnly": true,
+          "branchName": "version/v4008_0_0",
           "compileOptions": {
-            "systemIncludes": [
-              "shared/utfcpp/source"
+            "includePaths": [
+              "include"
+            ],
+            "cppFeatures": [],
+            "cppFlags": [
+              "-DNEED_UNSAFE_CSHARP",
+              "-fdeclspec",
+              "-DUNITY_2021",
+              "-DHAS_CODEGEN",
+              "-Wno-invalid-offsetof"
             ]
-          },
-          "cmake": false
+          }
         }
       },
-      "version": "4.6.4"
+      "version": "4008.0.0"
     },
     {
       "dependency": {
@@ -375,33 +342,65 @@
     },
     {
       "dependency": {
-        "id": "songcore",
-        "versionRange": "=1.1.23",
+        "id": "lapiz",
+        "versionRange": "=0.2.23",
         "additionalData": {
-          "soLink": "https://github.com/raineaeternal/Quest-SongCore/releases/download/v1.1.23/libsongcore.so",
-          "debugSoLink": "https://github.com/raineaeternal/Quest-SongCore/releases/download/v1.1.23/debug_libsongcore.so",
-          "overrideSoName": "libsongcore.so",
-          "modLink": "https://github.com/raineaeternal/Quest-SongCore/releases/download/v1.1.23/SongCore.qmod",
-          "branchName": "version/v1_1_23",
+          "soLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.23/liblapiz.so",
+          "debugSoLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.23/debug_liblapiz.so",
+          "overrideSoName": "liblapiz.so",
+          "modLink": "https://github.com/raineaeternal/Lapiz/releases/download/v0.2.23/Lapiz.qmod",
+          "branchName": "version/v0_2_23",
           "cmake": true
         }
       },
-      "version": "1.1.23"
+      "version": "0.2.23"
     },
     {
       "dependency": {
-        "id": "bsml",
-        "versionRange": "=0.4.54",
+        "id": "scotland2",
+        "versionRange": "=0.1.6",
         "additionalData": {
-          "soLink": "https://github.com/bsq-ports/Quest-BSML/releases/download/v0.4.54/libbsml.so",
-          "debugSoLink": "https://github.com/bsq-ports/Quest-BSML/releases/download/v0.4.54/debug_libbsml.so",
-          "overrideSoName": "libbsml.so",
-          "modLink": "https://github.com/bsq-ports/Quest-BSML/releases/download/v0.4.54/BSML.qmod",
-          "branchName": "version/v0_4_54",
-          "cmake": true
+          "soLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.6/libsl2.so",
+          "debugSoLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.6/debug_libsl2.so",
+          "overrideSoName": "libsl2.so",
+          "branchName": "version/v0_1_6"
         }
       },
-      "version": "0.4.54"
+      "version": "0.1.6"
+    },
+    {
+      "dependency": {
+        "id": "beatsaverplusplus",
+        "versionRange": "=0.2.1",
+        "additionalData": {
+          "soLink": "https://github.com/bsq-ports/BeatSaverPlusPlus/releases/download/v0.2.1/libbeatsaverplusplus.so",
+          "debugSoLink": "https://github.com/bsq-ports/BeatSaverPlusPlus/releases/download/v0.2.1/debug_libbeatsaverplusplus.so",
+          "overrideSoName": "libbeatsaverplusplus.so",
+          "modLink": "https://github.com/bsq-ports/BeatSaverPlusPlus/releases/download/v0.2.1/BeatSaverPlusPlus.qmod",
+          "branchName": "version/v0_2_1",
+          "cmake": false
+        }
+      },
+      "version": "0.2.1"
+    },
+    {
+      "dependency": {
+        "id": "fmt",
+        "versionRange": "=11.0.2",
+        "additionalData": {
+          "headersOnly": true,
+          "branchName": "version/v11_0_2",
+          "compileOptions": {
+            "systemIncludes": [
+              "fmt/include/"
+            ],
+            "cppFlags": [
+              "-DFMT_HEADER_ONLY"
+            ]
+          }
+        }
+      },
+      "version": "11.0.2"
     }
   ]
 }
