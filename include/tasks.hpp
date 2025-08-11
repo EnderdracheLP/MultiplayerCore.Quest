@@ -42,10 +42,44 @@ namespace MultiplayerCore {
     }
 
     template<typename Ret, typename T>
+    requires(!std::is_same_v<Ret, void> && std::is_invocable_r_v<Ret, T>)
+    static SafePtr<Task<Ret>> StartSafePtrThread(T&& func) {
+        auto t = SafePtr<Task<Ret>>(Task<Ret>::New_ctor());
+        std::thread(&task_func<Ret, T>, t, std::forward<T>(func)).detach();
+        return t;
+    }
+
+    // Only use when keeping a reference to the task inside a custom type (C# class)
+    template<typename Ret, typename T>
+    requires(!std::is_same_v<Ret, void> && std::is_invocable_r_v<Ret, T>)
+    static Task<Ret>* StartThread(T&& func) {
+        auto t = Task<Ret>::New_ctor();
+        std::thread(&task_func<Ret, T>, t, std::forward<T>(func)).detach();
+        return t;
+    }
+
+    template<typename Ret, typename T>
     requires(!std::is_same_v<Ret, void> && std::is_invocable_r_v<Ret, T, CancellationToken>)
     static Task<Ret>* StartTask(T&& func, CancellationToken&& cancelToken) {
         auto t = Task<Ret>::New_ctor();
         il2cpp_utils::il2cpp_aware_thread(&task_cancel_func<Ret, T>, t, std::forward<T>(func), std::forward<CancellationToken>(cancelToken)).detach();
+        return t;
+    }
+
+    template<typename Ret, typename T>
+    requires(!std::is_same_v<Ret, void> && std::is_invocable_r_v<Ret, T, CancellationToken>)
+    static SafePtr<Task<Ret>> StartSafePtrThread(T&& func, CancellationToken&& cancelToken) {
+        auto t = SafePtr<Task<Ret>>(Task<Ret>::New_ctor());
+        std::thread(&task_cancel_func<Ret, T>, t, std::forward<T>(func), std::forward<CancellationToken>(cancelToken)).detach();
+        return t;
+    }
+
+    // Only use when keeping a reference to the task inside a custom type (C# class)
+    template<typename Ret, typename T>
+    requires(!std::is_same_v<Ret, void> && std::is_invocable_r_v<Ret, T, CancellationToken>)
+    static Task<Ret>* StartThread(T&& func, CancellationToken&& cancelToken) {
+        auto t = Task<Ret>::New_ctor();
+        std::thread(&task_cancel_func<Ret, T>, t, std::forward<T>(func), std::forward<CancellationToken>(cancelToken)).detach();
         return t;
     }
 }

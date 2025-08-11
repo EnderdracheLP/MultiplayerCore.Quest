@@ -30,7 +30,7 @@ namespace MultiplayerCore::Beatmaps {
         }
 
         if (!_coverImageTask || _coverImageTask->IsCancellationRequested) {
-            _coverImageTask = StartTask<UnityEngine::Sprite*>([this]() -> UnityEngine::Sprite* {
+            _coverImageTask = StartThread<UnityEngine::Sprite*>([this]() -> UnityEngine::Sprite* {
                 auto beatmapRes = BeatSaver::API::GetBeatmapByHash(_levelHash);
                 if (beatmapRes.DataParsedSuccessful()) {
                     auto versions = beatmapRes.responseData->GetVersions();
@@ -70,7 +70,7 @@ namespace MultiplayerCore::Beatmaps {
         }
 
         if (!_audioClipTask || _audioClipTask->IsCancellationRequested) {
-            _audioClipTask = StartTask<UnityEngine::AudioClip*>([this]() -> UnityEngine::AudioClip* {
+            _audioClipTask = StartThread<UnityEngine::AudioClip*>([this]() -> UnityEngine::AudioClip* {
                 auto beatmapRes = BeatSaver::API::GetBeatmapByHash(_levelHash);
 
                 if (beatmapRes.DataParsedSuccessful()) {

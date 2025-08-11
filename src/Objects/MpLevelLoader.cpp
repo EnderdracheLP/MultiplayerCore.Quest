@@ -145,13 +145,15 @@ namespace MultiplayerCore::Objects {
     }
 
     System::Threading::Tasks::Task_1<GlobalNamespace::LoadBeatmapLevelDataResult>* MpLevelLoader::StartDownloadBeatmapLevelAsyncTask(std::string levelId, System::Threading::CancellationToken cancellationToken) {
-        return StartTask<GlobalNamespace::LoadBeatmapLevelDataResult>([this, levelId](CancellationToken token) -> GlobalNamespace::LoadBeatmapLevelDataResult {
+        return StartThread<GlobalNamespace::LoadBeatmapLevelDataResult>([this, levelId](CancellationToken token) -> GlobalNamespace::LoadBeatmapLevelDataResult {
             try {
                 auto success = _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).get();
                 if (!success) {
                     DEBUG("Failed to download level");
                     // Somehow returning error here doesn't work, the game will just crash if we fail to download a level
-                    _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::NotOwned);
+                    Lapiz::Utilities::MainThreadScheduler::Schedule([this, levelId] {
+                        _rpcManager->SetIsEntitledToLevel(levelId, GlobalNamespace::EntitlementsStatus::NotOwned);
+                    });
                     _beatmapLevelData = nullptr;
                     return ::GlobalNamespace::LoadBeatmapLevelDataResult::getStaticF_Error();
                 }
