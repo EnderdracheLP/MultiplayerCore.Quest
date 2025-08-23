@@ -25,7 +25,7 @@ MAKE_AUTO_HOOK_MATCH(BeatmapLevelsModel_CheckBeatmapLevelDataExistsAsync, &Globa
         if (SongCore::API::Loading::GetLevelByHash(levelHash)) return t;
 
         // custom level, not locally available, get on beatsaver
-        return MultiplayerCore::StartThread<bool>([=](){
+        return MultiplayerCore::StartTask<bool>([=](){
             using namespace std::chrono_literals;
             while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
             // if orig says it's available, cool beans

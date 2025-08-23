@@ -34,7 +34,7 @@ System::Threading::Tasks::Task_1<GlobalNamespace::AuthenticationToken>*, GlobalN
     if (isPico.load()) self->_platform = GlobalNamespace::AuthenticationToken::Platform(20); // Set platform to 20 for Pico
 
     auto t = PlatformAuthenticationTokenProvider_GetAuthenticationToken(self);
-    return MultiplayerCore::StartThread<GlobalNamespace::AuthenticationToken>([=](){
+    return MultiplayerCore::StartTask<GlobalNamespace::AuthenticationToken>([=](){
         using namespace std::chrono_literals;
         while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
         GlobalNamespace::AuthenticationToken token = t->ResultOnSuccess;
@@ -110,7 +110,7 @@ MAKE_AUTO_HOOK_ORIG_MATCH(OculusPlatformUserModel_GetUserInfo, &GlobalNamespace:
     if (isPico.load()) {
         DEBUG("Got Orig task, on Pico, starting custom task");
         try {
-            return MultiplayerCore::StartThread<GlobalNamespace::UserInfo*>([=](){
+            return MultiplayerCore::StartTask<GlobalNamespace::UserInfo*>([=](){
                 using namespace std::chrono_literals;
                 DEBUG("Start UserInfoTask");
                 while (!(t->IsCompleted || t->IsCanceled)) std::this_thread::sleep_for(50ms);
