@@ -81,7 +81,7 @@ namespace MultiplayerCore::Objects {
         // therefore we get the base task before we enter our own new task which will await things, and is the one that we will return
         auto baseTask = NetworkPlayerEntitlementChecker::GetEntitlementStatus(levelId);
 
-        auto task = StartThread<GlobalNamespace::EntitlementsStatus>([this, baseTask, levelId](){
+        auto task = StartTask<GlobalNamespace::EntitlementsStatus>([this, baseTask, levelId](){
             using namespace std::chrono_literals;
 
             std::string levelHash(HashFromLevelID(levelId));

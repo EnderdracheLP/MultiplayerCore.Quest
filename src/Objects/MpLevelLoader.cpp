@@ -145,7 +145,7 @@ namespace MultiplayerCore::Objects {
     }
 
     System::Threading::Tasks::Task_1<GlobalNamespace::LoadBeatmapLevelDataResult>* MpLevelLoader::StartDownloadBeatmapLevelAsyncTask(std::string levelId, System::Threading::CancellationToken cancellationToken) {
-        return StartThread<GlobalNamespace::LoadBeatmapLevelDataResult>([this, levelId](CancellationToken token) -> GlobalNamespace::LoadBeatmapLevelDataResult {
+        return StartTask<GlobalNamespace::LoadBeatmapLevelDataResult>([this, levelId](CancellationToken token) -> GlobalNamespace::LoadBeatmapLevelDataResult {
             try {
                 auto success = _levelDownloader->TryDownloadLevelAsync(levelId, std::bind(&MpLevelLoader::Report, this, std::placeholders::_1)).get();
                 if (!success) {
