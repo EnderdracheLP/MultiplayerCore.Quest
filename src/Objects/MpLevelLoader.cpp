@@ -127,7 +127,7 @@ namespace MultiplayerCore::Objects {
 
         // SongCore::CustomJSONData::CustomSaveDataInfo::BasicCustomLevelDetails
         auto diffDataOpt = level->standardLevelInfoSaveDataV2.value()->CustomSaveDataInfo->get().TryGetCharacteristicAndDifficulty(beatmapKey.beatmapCharacteristic->serializedName, beatmapKey.difficulty);
-        if (diffDataOpt.has_value()) return;
+        if (!diffDataOpt.has_value()) return;
 
         auto& diffData = diffDataOpt->get();
         bool requirementsMet = true;

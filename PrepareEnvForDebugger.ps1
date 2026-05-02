@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 param(
     [Parameter(Mandatory=$false, HelpMessage="Whether to set the environment var for user")]
     [Alias("SetSystemEnvironment")]

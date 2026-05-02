@@ -43,6 +43,11 @@ namespace MultiplayerCore::Beatmaps::Providers {
         auto beatmapRes = BeatSaver::API::GetBeatmapByHash(static_cast<std::string>(levelHash));
         if (beatmapRes.DataParsedSuccessful()) {
             auto result  = beatmapRes.responseData.value();
+
+            if (result.GetVersions().empty()) {
+                DEBUG("BeatSaver returned level '{}' did not contain any versions!!!", levelHash);
+                return nullptr;
+            }
             // Test check Diffs
             auto diffs = result.GetVersions().front().GetDiffs();
             if (diffs.empty()) {

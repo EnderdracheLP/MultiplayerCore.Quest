@@ -50,6 +50,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
     if (!mpData->RequiredMods.empty()) {
         for (const auto& req : mpData->RequiredMods) {
             if (!req.required) continue;
+            // TODO: If mod is not installed at all and is required, we probably should also return a multiplayer unavailable reason for that
             auto installedMod = find_mod(req.id);
             if (!installedMod) continue;
 
@@ -61,7 +62,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
 
             reason.heldRef = GlobalNamespace::MultiplayerUnavailableReason(5);
             ::requiredMod = installedModInfo.id;
-            ::requiredVersion = installedModInfo.version;
+            ::requiredVersion = req.version;
 
             return true;
         }
@@ -69,7 +70,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_TryGetMultiplayerUnavai
 
     if (mpData->maximumAppVersion) {
         auto gameVersion = UnityEngine::Application::get_version();
-        if (semver::gt(mpData->maximumAppVersion, gameVersion)) {
+        if (semver::gt(gameVersion,mpData->maximumAppVersion)) {
             reason.heldRef = GlobalNamespace::MultiplayerUnavailableReason(6);
             maximumBsVersion = static_cast<std::string>(mpData->maximumAppVersion);
             return true;
@@ -82,7 +83,7 @@ MAKE_AUTO_HOOK_MATCH(MultiplayerUnavailableReasonMethods_LocalizedKey, &::Global
     switch(multiplayerUnavailableReason.value__) {
         case 5: { // a mod too old
             auto installedMod = find_mod(requiredMod);
-            return fmt::format("Multiplayer Unavailable\nMod {} is out of date.\nPlease update to version {} or newer", installedMod->info.version, requiredVersion);
+            return fmt::format("Multiplayer Unavailable\nMod {} is out of date.\nPlease update to version {} or newer", requiredMod, requiredVersion);
         } break;
         case 6: { // game too new
             return fmt::format("Multiplayer Unavailable\nBeat Saber version is too new\nMaximum version: {}\nCurrent version: {}", maximumBsVersion, UnityEngine::Application::get_version());

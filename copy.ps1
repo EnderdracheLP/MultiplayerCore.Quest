@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 Param (
 [Parameter(Mandatory=$false, HelpMessage="Switch to create a clean compilation")][Alias("rebuild")][Switch]$clean,
 [Parameter(Mandatory=$false, HelpMessage="Switch to build and copy only")][Alias("copyOnly")][Switch]$NoStart,

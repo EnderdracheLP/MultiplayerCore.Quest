@@ -55,14 +55,15 @@ namespace MultiplayerCore::Beatmaps {
             nullptr
         );
 
-        auto v = std::find_if(level->beatmap.GetVersions().begin(), level->beatmap.GetVersions().end(), 
+        auto versions = level->beatmap.GetVersions();
+        auto v = std::find_if(versions.begin(), versions.end(), 
             [hash = std::string_view(hash)](auto& x){ return std::ranges::equal(x.GetHash(), hash, 
                 [](char a, char b){
                     return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); 
                 });
             }
         );
-        if (v != level->beatmap.GetVersions().end()) {
+        if (v != versions.end()) {
             if (v->GetDiffs().empty()) {
                 WARNING("No difficulties found for hash {} using BPP, this should not happen!", hash);
             }
@@ -79,10 +80,10 @@ namespace MultiplayerCore::Beatmaps {
         else {
             WARNING("Could not find version for hash {}", hash);
             // Using latest to get the difficulties
-            if (level->beatmap.GetVersions().front().GetDiffs().empty()) {
+            if (versions.front().GetDiffs().empty()) {
                 WARNING("No difficulties found for hash {} using BPP, this should not happen!", hash);
             }
-            for (const auto& difficulty : level->beatmap.GetVersions().front().GetDiffs()) {
+            for (const auto& difficulty : versions.front().GetDiffs()) {
                 DEBUG("Adding difficulty {} to characteristic {}", difficulty.GetDifficulty(), difficulty.GetCharacteristic());
                 auto& list = level->requirements[difficulty.GetCharacteristic()][ConvertDifficulty(difficulty.GetDifficulty())];
             }

@@ -23,12 +23,12 @@ namespace MultiplayerCore::Beatmaps::Abstractions {
 
     void DifficultyColors::Deserialize(LiteNetLib::Utils::NetDataReader* reader) {
         uint8_t colors = reader->GetByte();
-        if (((colors << 0) & 0x1) != 0) colorLeft = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
-        if (((colors << 1) & 0x1) != 0) colorRight = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
-        if (((colors << 2) & 0x1) != 0) envColorLeft = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
-        if (((colors << 3) & 0x1) != 0) envColorRight = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
-        if (((colors << 4) & 0x1) != 0) envColorLeftBoost = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
-        if (((colors << 5) & 0x1) != 0) envColorRightBoost = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
-        if (((colors << 6) & 0x1) != 0) obstacleColor = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
+        if (((colors >> 0) & 0x1) != 0) colorLeft = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
+        if (((colors >> 1) & 0x1) != 0) colorRight = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
+        if (((colors >> 2) & 0x1) != 0) envColorLeft = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
+        if (((colors >> 3) & 0x1) != 0) envColorRight = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
+        if (((colors >> 4) & 0x1) != 0) envColorLeftBoost = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
+        if (((colors >> 5) & 0x1) != 0) envColorRightBoost = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
+        if (((colors >> 6) & 0x1) != 0) obstacleColor = MultiplayerCore::Utils::ExtraSongData::MapColor(reader);
     }
 }

@@ -8,6 +8,7 @@
 #include "UnityEngine/GameObject.hpp"
 #include "UI/GameServerPlayerTableCellCustomData.hpp"
 #include "Utilities.hpp"
+#include "bsml/shared/Helpers/getters.hpp"
 
 // does not call orig
 MAKE_AUTO_HOOK_ORIG_MATCH(
@@ -34,6 +35,13 @@ MAKE_AUTO_HOOK_ORIG_MATCH(
             return GameServerPlayerTableCell_SetData(self, connectedPlayer, playerData, hasKickPermissions, allowSelection, getLevelEntitlementTask);
         }
         customData->Awake();
+        // Injection does not happen after awake here, so we need to manually trigger injection
+        auto diContainer = BSML::Helpers::GetDiContainer();
+        if (!diContainer) {
+            ERROR("Failed to get DiContainer. This should never happen, set data will likely fail the first time");
+        } else { 
+            diContainer->Inject(customData);
+        }
         return customData->SetData(connectedPlayer, playerData, hasKickPermissions, allowSelection, getLevelEntitlementTask);
     }
 }
@@ -42,6 +50,19 @@ MAKE_AUTO_HOOK_ORIG_MATCH(
 // WARNING, this only applies to cells of other players not the local player
 MAKE_AUTO_HOOK_MATCH(GameServerPlayersTableView_GetCurrentPrefab, &GlobalNamespace::GameServerPlayersTableView::GetCurrentPrefab, UnityW<GlobalNamespace::GameServerPlayerTableCell>, GlobalNamespace::GameServerPlayersTableView* self) {
     auto res = GameServerPlayersTableView_GetCurrentPrefab(self);
-    if (!res->GetComponent<MultiplayerCore::UI::GameServerPlayerTableCellCustomData*>()) res->gameObject->AddComponent<MultiplayerCore::UI::GameServerPlayerTableCellCustomData*>();
+    if (!res->GetComponent<MultiplayerCore::UI::GameServerPlayerTableCellCustomData*>()) {
+        auto customData = res->gameObject->AddComponent<MultiplayerCore::UI::GameServerPlayerTableCellCustomData*>();
+        if (!customData) {
+            ERROR("Failed to add custom data component to prefab");
+            return res;
+        }
+        // Injection does not happen after awake here, so we need to manually trigger injection
+        auto diContainer = BSML::Helpers::GetDiContainer();
+        if (!diContainer) {
+            ERROR("Failed to get DiContainer. This should never happen, calling orig and praying");
+        } else { 
+            diContainer->Inject(customData);
+        }
+    };
     return res;
 }

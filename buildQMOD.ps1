@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 Param(
     [Parameter(Mandatory=$false, HelpMessage="The name the output qmod file should have")][String] $qmodname="MultiplayerCore",
 

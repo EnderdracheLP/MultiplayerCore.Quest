@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 # Find QPM path or check for local github actions path
 Param(
     [string]$QPMPath,

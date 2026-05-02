@@ -37,6 +37,9 @@
 #include "assets.hpp"
 #include "logging.hpp"
 
+#include <algorithm>
+#include <vector>
+
 DEFINE_TYPE(MultiplayerCore::UI, MpPerPlayerUI);
 
 template<typename T>
@@ -46,6 +49,9 @@ std::future<T> finished_future(T& value) {
     return p.get_future();
 }
 namespace MultiplayerCore::UI {
+    // Setting toggle triggers setters, guard every set_Value with this to prevent unwanted state resets
+    bool skipUpdateHandler = false;
+
     void MpPerPlayerUI::ctor(
             GlobalNamespace::GameServerLobbyFlowCoordinator* gameServerLobbyFlowCoordinator,
             GlobalNamespace::BeatmapLevelsModel* beatmapLevelsModel,
@@ -166,8 +172,10 @@ namespace MultiplayerCore::UI {
             if (addedToHierarchy)
             {
                 // Reset our buttons
+                skipUpdateHandler = true; // set_Value triggers on update
                 ppdt->set_Value(false);
                 ppmt->set_Value(false);
+                skipUpdateHandler = false;
 
                 // Request Updated state
                 _multiplayerSessionManager->Send(Players::Packets::GetMpPerPlayerPacket::New_ctor());
@@ -225,8 +233,10 @@ namespace MultiplayerCore::UI {
         // Check if player is party Owner
         if (ppdt && ppmt && player->get_isConnectionOwner() && (packet->PPDEnabled != ppdt->get_Value() || packet->PPMEnabled != ppmt->get_Value())) {
             DEBUG("Player is Connection Owner, updating toogle values");
+            skipUpdateHandler = true;
             ppdt->set_Value(packet->PPDEnabled);
             ppmt->set_Value(packet->PPMEnabled);
+            skipUpdateHandler = false;
         } else if (!player->get_isConnectionOwner()) {
             WARNING("Player is not Connection Owner, ignoring packet");
         }
@@ -377,9 +387,6 @@ namespace MultiplayerCore::UI {
                 for (const auto& [key, value] : reqCharItr->second) {
                     difficulties->Add(Utils::EnumUtils::GetEnumName<GlobalNamespace::BeatmapDifficulty>(key));
                 }
-                // std::transform(reqCharItr->second.begin(), reqCharItr->second.end(), difficulties.begin(), [](const auto& pair) {
-                //     return Utils::EnumUtils::GetEnumName<GlobalNamespace::BeatmapDifficulty>(pair.first);
-                // });
                 UpdateDifficultyList(difficulties);
             });
         }
@@ -431,6 +438,24 @@ namespace MultiplayerCore::UI {
             return;
         }
 
+        // Sort difficulties from Easy to ExpertPlus by enum value
+        std::vector<std::string> sortedDifficulties(_allowedDifficulties->Count);
+        for (int i = 0; i < _allowedDifficulties->Count; i++) {
+            sortedDifficulties[i] = static_cast<std::string>(_allowedDifficulties->get_Item(i));
+        }
+        std::sort(sortedDifficulties.begin(), sortedDifficulties.end(), [](const std::string& a, const std::string& b) {
+            std::string aNorm = a, bNorm = b;
+            if (aNorm == "Expert+") aNorm = "ExpertPlus";
+            if (bNorm == "Expert+") bNorm = "ExpertPlus";
+            auto aVal = Utils::EnumUtils::GetEnumValue<GlobalNamespace::BeatmapDifficulty>(aNorm);
+            auto bVal = Utils::EnumUtils::GetEnumValue<GlobalNamespace::BeatmapDifficulty>(bNorm);
+            return aVal.value__ < bVal.value__;
+        });
+        _allowedDifficulties->Clear();
+        for (auto& diff : sortedDifficulties) {
+            _allowedDifficulties->Add(diff);
+        }
+
         // Updating UI has to be done on the main thread
         BSML::MainThreadScheduler::Schedule([this](){
             if (_allowedDifficulties->Count > 1) {
@@ -463,6 +488,7 @@ namespace MultiplayerCore::UI {
     }
 
     void MpPerPlayerUI::set_PerPlayerDifficulty(bool value) {
+        if (skipUpdateHandler) return;
         // set_PerPlayerDifficulty
         if (ppdt) ppdt->set_Value(value);
         // Send updated MpPerPlayerPacket
@@ -478,6 +504,7 @@ namespace MultiplayerCore::UI {
     }
 
     void MpPerPlayerUI::set_PerPlayerModifiers(bool value) {
+        if (skipUpdateHandler) return;
         // set_PerPlayerModifiers
         if (ppmt) ppmt->set_Value(value);
         // Send updated MpPerPlayerPacket

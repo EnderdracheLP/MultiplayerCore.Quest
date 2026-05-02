@@ -131,7 +131,7 @@ void Patch_MultiplayerLobbyAvatarManager_AddPlayer() {
         DEBUG("Found 1st and @ {} (offset {:x})", fmt::ptr(ins), ((uintptr_t)ins) - il2cpp_base);
         DEBUG("Instruction before edit: {:x}", *ins);
         if (*ins == 0x12000129u) { // check for 'and w9, w9, 0x1'
-            if (set_ins(ins, 0x52800009u)) { // mov w9, 0x0
+            if (!set_ins(ins, 0x52800009u)) { // mov w9, 0x0
                 ERROR("Failed to set instruction in MultiplayerLobbyAvatarManager_AddPlayer");
             }
         } else {

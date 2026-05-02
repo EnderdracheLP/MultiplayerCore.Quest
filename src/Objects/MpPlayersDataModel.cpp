@@ -123,15 +123,18 @@ namespace MultiplayerCore::Objects {
     }
 
     Beatmaps::Packets::MpBeatmapPacket* MpPlayersDataModel::FindLevelPacket(std::string_view levelHash) {
+        // Uppercase the hash we get just in case
+        auto upperHash = std::string(levelHash);
+        std::transform(upperHash.begin(), upperHash.end(), upperHash.begin(), toupper);
+
         Beatmaps::Packets::MpBeatmapPacket* packet = nullptr;
-        return packet;
         auto enumerator = _lastPlayerBeatmapPackets->GetEnumerator();
         while (enumerator.MoveNext()) {
             auto [_, p] = enumerator.Current;
             std::string packetHash(p->levelHash);
             DEBUG("Found packetHash {}", packetHash);
             std::transform(packetHash.begin(), packetHash.end(), packetHash.begin(), toupper);
-            if (packetHash == levelHash) {
+            if (packetHash == upperHash) {
                 packet = p;
                 break;
             }
