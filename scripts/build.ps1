@@ -8,7 +8,7 @@ Param(
 )
 
 if ($help -eq $true) {
-    Write-Output "`"Build`" - Copiles your mod into a `".so`" or a `".a`" library"
+    Write-Output "`"Build`" - Compiles your mod into a `".so`" or a `".a`" library"
     Write-Output "`n-- Arguments --`n"
 
     Write-Output "-Clean `t`t Deletes the `"build`" folder, so that the entire library is rebuilt"
